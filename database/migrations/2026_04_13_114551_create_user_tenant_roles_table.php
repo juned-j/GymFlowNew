@@ -17,7 +17,7 @@ return new class extends Migration {
 
             $table->foreignId('branch_id')
                 ->nullable()
-                ->constrained()
+                ->constrained('branches')
                 ->nullOnDelete();
 
             $table->timestamps();
