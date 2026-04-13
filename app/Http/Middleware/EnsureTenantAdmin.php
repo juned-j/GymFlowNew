@@ -8,21 +8,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureTenantAdmin
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle($request, Closure $next)
     {
-        $user = $request->user();
+        $user = auth()->user();
 
-        if (!$user) {
-            abort(401, 'Unauthenticated');
-        }
+        $hasTenantRole = $user?->roles()
+            ->whereIn('role', ['owner', 'trainer'])
+            ->exists();
 
-        // super admin can also access tenant panel (optional)
-        if ($user->hasRole('super_admin')) {
-            return $next($request);
-        }
-
-        if (!$user->hasRole('owner') && !$user->hasRole('trainer')) {
-            abort(403, 'Tenant admin access only.');
+        if (! $hasTenantRole) {
+            abort(403, 'Tenant Admin only');
         }
 
         return $next($request);

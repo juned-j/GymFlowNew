@@ -8,12 +8,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IsSuperAdmin
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle($request, Closure $next)
     {
-        $user = $request->user();
+        $user = auth()->user();
 
-        if (!$user || !$user->hasRole('super_admin')) {
-            abort(403, 'Unauthorized. Super Admin only.');
+        $isSuper = $user?->roles()
+            ->where('role', 'super_admin')
+            ->exists();
+
+        if (! $isSuper) {
+            abort(403, 'Super Admin only');
         }
 
         return $next($request);
