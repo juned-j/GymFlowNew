@@ -10,14 +10,8 @@ class IsSuperAdmin
 {
     public function handle($request, Closure $next)
     {
-        $user = auth()->user();
-
-        $isSuper = $user?->roles()
-            ->where('role', 'super_admin')
-            ->exists();
-
-        if (! $isSuper) {
-            abort(403, 'Super Admin only');
+        if (! auth()->check() || ! auth()->user()->isSuperAdmin()) {
+            abort(403, 'Unauthorized. Super Admin only.');
         }
 
         return $next($request);

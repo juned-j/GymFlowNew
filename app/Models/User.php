@@ -33,4 +33,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\UserTenantRole::class);
     }
+    public function isSuperAdmin(): bool
+    {
+        return $this->roles()
+            ->where('role', 'super_admin')
+            ->exists();
+    }
+
+    public function isTenantUser(): bool
+    {
+        return $this->roles()
+            ->whereIn('role', ['owner', 'trainer'])
+            ->exists();
+    }
 }

@@ -11,13 +11,10 @@ class LoginResponse
     {
         $user = auth()->user();
 
-        $role = $user->roles->first()?->name;
+        if ($user->isSuperAdmin()) {
+            return redirect('/platform');
+        }
 
-        return match ($role) {
-            'super_admin' => redirect('/platform'),
-            'owner'       => redirect('/admin'),
-            'trainer'     => redirect('/admin'),
-            default        => redirect('/admin'),
-        };
+        return redirect('/admin');
     }
 }

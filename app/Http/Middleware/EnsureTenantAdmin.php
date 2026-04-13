@@ -12,12 +12,8 @@ class EnsureTenantAdmin
     {
         $user = auth()->user();
 
-        $hasTenantRole = $user?->roles()
-            ->whereIn('role', ['owner', 'trainer'])
-            ->exists();
-
-        if (! $hasTenantRole) {
-            abort(403, 'Tenant Admin only');
+        if (! $user || ! $user->isTenantUser()) {
+            abort(403, 'Tenant access only');
         }
 
         return $next($request);
