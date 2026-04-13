@@ -52,7 +52,8 @@ class PlatformPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                // Authenticate::class,
+                \App\Http\Middleware\IsSuperAdmin::class,
             ]);
     }
 }
