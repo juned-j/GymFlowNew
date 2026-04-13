@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class UserTenantRole extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'tenant_id',
+        'role',
+        'branch_id',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
