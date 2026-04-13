@@ -10,10 +10,13 @@ class IsSuperAdmin
 {
     public function handle($request, Closure $next)
     {
-        if (! auth()->check() || ! auth()->user()->isSuperAdmin()) {
+        $user = auth()->user();
+        if (! $user) {
+            return $next($request); // allow login page
+        }
+        if (! $user->isSuperAdmin()) {
             abort(403, 'Unauthorized. Super Admin only.');
         }
-
         return $next($request);
     }
 }

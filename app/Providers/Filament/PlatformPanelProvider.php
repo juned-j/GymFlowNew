@@ -51,7 +51,6 @@ class PlatformPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                \App\Http\Middleware\IsSuperAdmin::class,
             ])
             ->authMiddleware([
                 // Authenticate::class,
