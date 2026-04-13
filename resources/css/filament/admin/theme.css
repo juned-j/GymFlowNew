@@ -1,0 +1,50 @@
+/* === FONT IMPORTS === */
+@import "/vendor/filament/filament/resources/css/theme.css";
+@config 'tailwind.config.js';
+:root {
+    --primary: 99 102 241; /* Indigo like Stripe */
+}
+
+/* Global Dark SaaS Look */
+body {
+    background-color: #0b0f19;
+}
+
+/* Sidebar */
+.fi-sidebar {
+    background-color: #0f172a;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Topbar */
+.fi-topbar {
+    background-color: #0f172a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Cards */
+.fi-section,
+.fi-wi-widget {
+    background-color: #111827;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+}
+
+/* Tables */
+.fi-ta-table {
+    background-color: #0f172a;
+}
+
+/* Buttons */
+.fi-btn {
+    border-radius: 10px;
+}
+
+/* Inputs */
+input,
+select,
+textarea {
+    background-color: #0b1220 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+}
