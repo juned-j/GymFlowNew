@@ -30,7 +30,6 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->loginResponse(fn() => app(LoginResponse::class))
             ->colors([
                 'primary' => Color::Amber,
             ])
