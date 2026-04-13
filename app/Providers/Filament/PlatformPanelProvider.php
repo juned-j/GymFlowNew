@@ -54,6 +54,7 @@ class PlatformPanelProvider extends PanelProvider
             ->authMiddleware([
                 // Authenticate::class,
                 \App\Http\Middleware\IsSuperAdmin::class,
-            ]);
+            ])
+            ->loginResponse(fn() => redirect('/platform'));
     }
 }
