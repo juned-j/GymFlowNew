@@ -42,7 +42,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentInfoWidget::class,
             ])
             ->darkMode()
-            ->viteTheme('resources/css/filament/admin/theme.css')
+            // ->viteTheme('resources/css/filament/admin/theme.css')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
