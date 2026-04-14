@@ -40,7 +40,7 @@ class BranchForm
                         ->label('Address Line 2'),
                 ]),
 
-                Grid::make(3)->components([
+                Grid::make(2)->components([
                     TextInput::make('city')->required(),
                     TextInput::make('state')->required(),
 
