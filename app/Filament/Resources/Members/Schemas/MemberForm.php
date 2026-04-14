@@ -26,7 +26,7 @@ class BranchForm
                     ->label('Branch Name')
                     ->placeholder('e.g. South Mumbai Center')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(100),
 
                 Toggle::make('is_main')
                     ->label('Main Branch')
