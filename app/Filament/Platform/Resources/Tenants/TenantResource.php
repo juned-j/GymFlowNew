@@ -7,7 +7,6 @@ use App\Filament\Platform\Resources\Tenants\Pages\EditTenant;
 use App\Filament\Platform\Resources\Tenants\Pages\ListTenants;
 use App\Filament\Platform\Resources\Tenants\Schemas\TenantForm;
 use App\Filament\Platform\Resources\Tenants\Tables\TenantsTable;
-
 use App\Models\Tenant;
 use Filament\Schemas\Components\Grid;
 use Filament\Resources\Resource;
@@ -54,37 +53,24 @@ class TenantResource extends Resource
                 ]),
 
                 Step::make('Owner')->schema([
-                    Select::make('owner_user_id')
-                        ->relationship('owner', 'name')
-                        ->searchable()
-                        ->preload()
+                    TextInput::make('owner_name')
                         ->required(),
-                ]),
+
+                    TextInput::make('owner_email')
+                        ->email()
+                        ->required(),
+
+                    TextInput::make('owner_password')
+                        ->password()
+                        ->required(),
+                ])
             ])
         ]);
-    }
-    public static function configure(Table $table): Table
-    {
-        return $table
-            ->columns([
-                TextColumn::make('name')->searchable(),
-                TextColumn::make('slug'),
-                TextColumn::make('email'),
-                TextColumn::make('city'),
-                TextColumn::make('country'),
-                TextColumn::make('is_active')->badge(),
-                TextColumn::make('created_at')->dateTime(),
-            ])
-            ->filters([])
-            ->actions([
-                EditAction::make(),
-            ]);
     }
     public static function table(Table $table): Table
     {
         return TenantsTable::configure($table);
     }
-
     public static function getPages(): array
     {
         return [
