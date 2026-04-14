@@ -35,7 +35,39 @@ class TenantResource extends Resource
 
                 Step::make('Branch')
                     ->schema([
-                        TextInput::make('branch_name')->required(),
+                        TextInput::make('branch_name')
+                            ->label('Branch Name')
+                            ->required()
+                            ->default('Main Branch'),
+                        Grid::make(2)->schema([
+                            TextInput::make('address_line_1')
+                                ->label('Address Line 1')
+                                ->required(),
+                            TextInput::make('address_line_2')
+                                ->label('Address Line 2'),
+                        ]),
+                        Grid::make(3)->schema([
+                            TextInput::make('city')
+                                ->required(),
+                            TextInput::make('state')
+                                ->required(),
+                            TextInput::make('postal_code')
+                                ->label('ZIP Code'),
+                        ]),
+                        TextInput::make('country')
+                            ->default('India')
+                            ->required(),
+                        Grid::make(2)->schema([
+                            TextInput::make('latitude')
+                                ->numeric()
+                                ->placeholder('e.g. 19.0760'),
+                            TextInput::make('longitude')
+                                ->numeric()
+                                ->placeholder('e.g. 72.8777'),
+                        ]),
+                        \Filament\Forms\Components\Toggle::make('is_main')
+                            ->label('Set as Main Branch')
+                            ->default(true),
                     ]),
 
                 Step::make('Plans')

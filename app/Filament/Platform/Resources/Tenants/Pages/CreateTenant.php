@@ -26,6 +26,11 @@ class CreateTenant extends CreateRecord
             'address' => $data['branch_address'],
         ]);
 
+        \App\Models\UserTenantRole::create([
+            'user_id' => $data['owner_user_id'],
+            'tenant_id' => $this->record->id,
+            'role' => 'owner',
+        ]);
         // 3. Create Default Membership Plan (Goal 3)
         // MembershipPlan::create([
         //     'tenant_id' => $tenant->id,

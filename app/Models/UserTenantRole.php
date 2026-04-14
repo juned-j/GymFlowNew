@@ -17,4 +17,12 @@ class UserTenantRole extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function tenant()
+    {
+        return $this->belongsTo(\App\Models\Tenant::class);
+    }
+    public function branch()
+    {
+        return $this->belongsTo(\App\Models\Branch::class);
+    }
 }
