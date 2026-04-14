@@ -5,16 +5,14 @@ namespace App\Filament\Platform\Resources\Tenants;
 use App\Filament\Platform\Resources\Tenants\Pages\CreateTenant;
 use App\Filament\Platform\Resources\Tenants\Pages\EditTenant;
 use App\Filament\Platform\Resources\Tenants\Pages\ListTenants;
-use App\Filament\Platform\Resources\Tenants\Schemas\TenantForm;
-use App\Filament\Platform\Resources\Tenants\Tables\TenantsTable;
 use App\Models\Tenant;
+use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
-use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
-use Filament\Resources\Resource;
+use Filament\Forms\Components\Toggle;
 use Filament\Tables\Table;
 use Filament\Support\Icons\Heroicon;
 use BackedEnum;
@@ -22,60 +20,67 @@ use BackedEnum;
 class TenantResource extends Resource
 {
     protected static ?string $model = Tenant::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
+
             Wizard::make([
+
+                /*
+                |--------------------------------------------------------------------------
+                | STEP 1: TENANT IDENTITY
+                |--------------------------------------------------------------------------
+                */
                 Step::make('Gym Identity')
                     ->schema([
                         TextInput::make('name')->required(),
-                        TextInput::make('slug')->required(),
+                        TextInput::make('slug')->required()->unique(Tenant::class, 'slug'),
+
+                        TextInput::make('email')->email()->required(),
+                        TextInput::make('phone')->tel(),
                     ]),
 
-                Step::make('Branch')
+                /*
+                |--------------------------------------------------------------------------
+                | STEP 2: LOCATION (TENANT LEVEL - NOT BRANCH)
+                |--------------------------------------------------------------------------
+                */
+                Step::make('Location')
                     ->schema([
-                        TextInput::make('branch_name')
-                            ->label('Branch Name')
-                            ->required()
-                            ->default('Main Branch'),
-                        Grid::make(2)->schema([
-                            TextInput::make('address_line_1')
-                                ->label('Address Line 1')
-                                ->required(),
-                            TextInput::make('address_line_2')
-                                ->label('Address Line 2'),
-                        ]),
-                        Grid::make(3)->schema([
-                            TextInput::make('city')
-                                ->required(),
-                            TextInput::make('state')
-                                ->required(),
-                            TextInput::make('postal_code')
-                                ->label('ZIP Code'),
-                        ]),
-                        TextInput::make('country')
-                            ->default('India')
-                            ->required(),
-                        Grid::make(2)->schema([
-                            TextInput::make('latitude')
-                                ->numeric()
-                                ->placeholder('e.g. 19.0760'),
-                            TextInput::make('longitude')
-                                ->numeric()
-                                ->placeholder('e.g. 72.8777'),
-                        ]),
-                        \Filament\Forms\Components\Toggle::make('is_main')
-                            ->label('Set as Main Branch')
+                        TextInput::make('address')->label('Address'),
+                        TextInput::make('city')->required(),
+                        TextInput::make('country')->required()->default('India'),
+                    ]),
+
+                /*
+                |--------------------------------------------------------------------------
+                | STEP 3: SYSTEM CONFIG
+                |--------------------------------------------------------------------------
+                */
+                Step::make('Settings')
+                    ->schema([
+                        TextInput::make('timezone')
+                            ->default('Asia/Kolkata'),
+
+                        TextInput::make('currency')
+                            ->default('INR'),
+
+                        Toggle::make('is_active')
                             ->default(true),
+
+                        TextInput::make('trial_ends_at')
+                            ->label('Trial Ends At')
+                            ->placeholder('YYYY-MM-DD'),
                     ]),
 
-                Step::make('Plans')
-                    ->schema([
-                        TextInput::make('plan_name')->default('Monthly Pro'),
-                        TextInput::make('plan_price')->numeric(),
-                    ]),
-
+                /*
+                |--------------------------------------------------------------------------
+                | STEP 4: OWNER ASSIGNMENT
+                |--------------------------------------------------------------------------
+                */
                 Step::make('Owner')
                     ->schema([
                         Select::make('owner_user_id')

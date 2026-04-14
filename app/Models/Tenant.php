@@ -12,17 +12,35 @@ class Tenant extends Model
     protected $table = 'tenants';
 
     protected $fillable = [
+        // Identity
         'name',
         'slug',
         'logo_url',
-        'primary_color',
-        'secondary_color',
+
+        // Ownership
         'owner_user_id',
+
+        // Contact
+        'email',
+        'phone',
+
+        // Location
+        'address',
+        'city',
+        'country',
+
+        // SaaS config
+        'timezone',
+        'currency',
+
+        // Status
         'status',
+        'is_active',
+        'trial_ends_at',
     ];
 
     /**
-     * Owner of the tenant
+     * Owner of the tenant (gym owner)
      */
     public function owner()
     {
@@ -30,19 +48,19 @@ class Tenant extends Model
     }
 
     /**
-     * Scope: Active tenants only
+     * Scope: Active tenants
      */
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('is_active', true);
     }
 
     /**
-     * Scope: Suspended tenants only
+     * Scope: Suspended tenants
      */
     public function scopeSuspended($query)
     {
-        return $query->where('status', 'suspended');
+        return $query->where('is_active', false);
     }
 
     /**
@@ -50,6 +68,6 @@ class Tenant extends Model
      */
     public function isActive(): bool
     {
-        return $this->status === 'active';
+        return (bool) $this->is_active;
     }
 }

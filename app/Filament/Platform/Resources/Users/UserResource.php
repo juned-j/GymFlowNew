@@ -46,12 +46,10 @@ class UserResource extends Resource
                     ->required(fn($context) => $context === 'create')
                     ->dehydrated(false),
             ]),
-
             Repeater::make('roles')
                 ->relationship()
-                ->columnSpanFull() // ✅ full width
+                ->columnSpanFull()
                 ->schema([
-
                     Select::make('role')
                         ->options([
                             'super_admin' => 'Super Admin',
@@ -59,17 +57,18 @@ class UserResource extends Resource
                             'trainer' => 'Trainer',
                             'member' => 'Member',
                         ])
-                        ->required(),
-
+                        ->required()
+                        ->live(), // important for dynamic rules
                     Select::make('tenant_id')
                         ->relationship('tenant', 'name')
                         ->searchable()
-                        ->nullable(),
-
+                        ->nullable()
+                        ->required(fn(callable $get) => $get('role') !== 'super_admin'),
                     Select::make('branch_id')
                         ->relationship('branch', 'name')
                         ->searchable()
-                        ->nullable(),
+                        ->nullable()
+                        ->visible(fn(callable $get) => in_array($get('role'), ['trainer', 'member'])),
                 ]),
         ]);
     }

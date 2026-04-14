@@ -25,4 +25,18 @@ class UserTenantRole extends Model
     {
         return $this->belongsTo(\App\Models\Branch::class);
     }
+    protected static function booted()
+    {
+        static::saving(function ($model) {
+
+            if ($model->role === 'owner') {
+                $model->branch_id = null;
+            }
+
+            if ($model->role === 'super_admin') {
+                $model->tenant_id = null;
+                $model->branch_id = null;
+            }
+        });
+    }
 }
