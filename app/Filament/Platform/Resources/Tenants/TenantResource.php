@@ -5,17 +5,21 @@ namespace App\Filament\Platform\Resources\Tenants;
 use App\Filament\Platform\Resources\Tenants\Pages\CreateTenant;
 use App\Filament\Platform\Resources\Tenants\Pages\EditTenant;
 use App\Filament\Platform\Resources\Tenants\Pages\ListTenants;
+use App\Filament\Platform\Resources\Tenants\Schemas\TenantForm;
+use App\Filament\Platform\Resources\Tenants\Tables\TenantsTable;
 use App\Models\Tenant;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Support\Icons\Heroicon;
 use BackedEnum;
+
 
 class TenantResource extends Resource
 {
