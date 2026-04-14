@@ -5,13 +5,12 @@ namespace App\Filament\Platform\Resources\Users;
 use App\Filament\Platform\Resources\Users\Pages\CreateUser;
 use App\Filament\Platform\Resources\Users\Pages\EditUser;
 use App\Filament\Platform\Resources\Users\Pages\ListUsers;
-use App\Filament\Platform\Resources\Users\Schemas\UserForm;
-use App\Filament\Platform\Resources\Users\Tables\UsersTable;
 use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -26,14 +25,33 @@ class UserResource extends Resource
     {
         return $schema->schema([
 
-            TextInput::make('name')->required(),
-            TextInput::make('email')->email()->required(),
-            TextInput::make('password')
-                ->password()
-                ->required(fn($context) => $context === 'create'),
+            Grid::make(2)->schema([
+
+                TextInput::make('name')
+                    ->required(),
+
+                TextInput::make('email')
+                    ->email()
+                    ->required(),
+
+                TextInput::make('password')
+                    ->password()
+                    ->required(fn($context) => $context === 'create')
+                    ->dehydrated(fn($state) => filled($state))
+                    ->confirmed()
+                    ->maxLength(255),
+
+                TextInput::make('password_confirmation')
+                    ->password()
+                    ->required(fn($context) => $context === 'create')
+                    ->dehydrated(false),
+            ]),
+
             Repeater::make('roles')
-                ->relationship() // uses hasMany
+                ->relationship()
+                ->columnSpanFull() // ✅ full width
                 ->schema([
+
                     Select::make('role')
                         ->options([
                             'super_admin' => 'Super Admin',
@@ -42,23 +60,18 @@ class UserResource extends Resource
                             'member' => 'Member',
                         ])
                         ->required(),
+
                     Select::make('tenant_id')
                         ->relationship('tenant', 'name')
                         ->searchable()
                         ->nullable(),
+
                     Select::make('branch_id')
                         ->relationship('branch', 'name')
                         ->searchable()
                         ->nullable(),
-                ])
+                ]),
         ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array
