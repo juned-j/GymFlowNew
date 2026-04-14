@@ -62,7 +62,7 @@ class BranchForm
                         ->numeric()
                         ->placeholder('e.g. 72.8777'),
                 ]),
-                Grid::make(2)->components([
+                Grid::make(1)->components([
                     TextInput::make('map_link') // optional nice addition
                         ->label('Google Map Link')
                         ->placeholder('https://maps.google.com/...'),
