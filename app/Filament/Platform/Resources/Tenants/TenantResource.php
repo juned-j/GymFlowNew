@@ -65,6 +65,7 @@ class TenantResource extends Resource
                         ->required(),
                 ])
             ])
+                ->columnSpanFull()
         ]);
     }
     public static function table(Table $table): Table
