@@ -87,15 +87,41 @@ class TenantResource extends Resource
                 */
                 Step::make('Owner')
                     ->schema([
-                        Select::make('owner_user_id')
-                            ->relationship('owner', 'name')
-                            ->required(),
+                        Step::make('Owner')
+                            ->schema([
+                                TextInput::make('owner_name')
+                                    ->required(),
+
+                                TextInput::make('owner_email')
+                                    ->email()
+                                    ->required(),
+
+                                TextInput::make('owner_password')
+                                    ->password()
+                                    ->required(),
+                            ]),
                     ]),
             ])
                 ->columnSpanFull()
         ]);
     }
-
+    public static function configure(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('slug'),
+                TextColumn::make('email'),
+                TextColumn::make('city'),
+                TextColumn::make('country'),
+                TextColumn::make('is_active')->badge(),
+                TextColumn::make('created_at')->dateTime(),
+            ])
+            ->filters([])
+            ->actions([
+                EditAction::make(),
+            ]);
+    }
     public static function table(Table $table): Table
     {
         return TenantsTable::configure($table);

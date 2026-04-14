@@ -50,6 +50,7 @@ class UserResource extends Resource
                 ->relationship()
                 ->columnSpanFull()
                 ->schema([
+
                     Select::make('role')
                         ->options([
                             'super_admin' => 'Super Admin',
@@ -58,18 +59,20 @@ class UserResource extends Resource
                             'member' => 'Member',
                         ])
                         ->required()
-                        ->live(), // important for dynamic rules
+                        ->live(),
+
                     Select::make('tenant_id')
                         ->relationship('tenant', 'name')
                         ->searchable()
                         ->nullable()
-                        ->required(fn(callable $get) => $get('role') !== 'super_admin'),
+                        ->visible(fn($get) => $get('role') !== 'super_admin'),
+
                     Select::make('branch_id')
                         ->relationship('branch', 'name')
                         ->searchable()
                         ->nullable()
-                        ->visible(fn(callable $get) => in_array($get('role'), ['trainer', 'member'])),
-                ]),
+                        ->visible(fn($get) => in_array($get('role'), ['trainer', 'member'])),
+                ])
         ]);
     }
 
