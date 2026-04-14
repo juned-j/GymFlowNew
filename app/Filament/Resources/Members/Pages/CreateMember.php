@@ -12,34 +12,32 @@ class CreateMember extends CreateRecord
 {
     protected static string $resource = MemberResource::class;
 
+    protected ?User $createdUser = null;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // ✅ Create User first
-        $user = User::create([
-            'name' => $data['user_name'],
-            'email' => $data['user_email'],
-            'password' => Hash::make($data['user_password']),
+        $state = $this->form->getState();
+
+        $this->createdUser = User::create([
+            'name' => $state['user_name'],
+            'email' => $state['user_email'],
+            'password' => Hash::make($state['user_password']),
         ]);
 
-        // attach to member
-        $data['user_id'] = $user->id;
-
-        // store for later
-        $this->createdUser = $user;
+        $data['user_id'] = $this->createdUser->id;
 
         return $data;
     }
 
     protected function afterCreate(): void
     {
-        $tenantId = auth()->user()->roles()->first()->tenant_id;
+        $state = $this->form->getState();
 
-        // ✅ Assign MEMBER role
         UserTenantRole::create([
             'user_id' => $this->createdUser->id,
-            'tenant_id' => $tenantId,
+            'tenant_id' => auth()->user()->roles()->first()?->tenant_id,
             'role' => 'member',
-            'branch_id' => $this->data['branch_id'],
+            'branch_id' => $state['branch_id'] ?? null,
         ]);
     }
 }
