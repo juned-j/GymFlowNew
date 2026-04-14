@@ -70,7 +70,6 @@ class UserResource extends Resource
                         })
                         ->required()
                         ->live(),
-
                     Select::make('tenant_id')
                         ->relationship('tenant', 'name')
                         ->searchable()
@@ -78,15 +77,12 @@ class UserResource extends Resource
                         ->visible(fn($get) => $get('role') !== 'super_admin')
                         ->default(function () {
                             $user = auth()->user();
-
                             if ($user->isTenantUser()) {
                                 return $user->roles()->first()?->tenant_id;
                             }
-
                             return null;
                         })
                         ->disabled(fn() => auth()->user()->isTenantUser()),
-
                     Select::make('branch_id')
                         ->relationship('branch', 'name')
                         ->searchable()
