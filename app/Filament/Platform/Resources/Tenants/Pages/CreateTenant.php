@@ -14,38 +14,54 @@ class CreateTenant extends CreateRecord
         $tenant = $this->record;
         $data = $this->form->getRawState();
 
-        // 1. Assign Owner Role to the user
-        // Assuming you use Spatie Permission or a manual 'role' column
-        $owner = $tenant->owner;
-        $owner->assignRole('owner');
-
-        // 2. Create Default Branch (Goal 2)
-        Branch::create([
-            'tenant_id' => $tenant->id,
-            'name' => $data['branch_name'],
-            'address' => $data['branch_address'],
-        ]);
-
+        /*
+    |--------------------------------------------------------------------------
+    | 1. Assign OWNER ROLE (NO Spatie)
+    |--------------------------------------------------------------------------
+    */
         \App\Models\UserTenantRole::create([
-            'user_id' => $data['owner_user_id'],
-            'tenant_id' => $this->record->id,
-            'role' => 'owner',
+            'user_id'   => $data['owner_user_id'],
+            'tenant_id' => $tenant->id,
+            'role'      => 'owner',
         ]);
-        // 3. Create Default Membership Plan (Goal 3)
+
+        /*
+    |--------------------------------------------------------------------------
+    | 2. Create DEFAULT BRANCH (FULL SCHEMA)
+    |--------------------------------------------------------------------------
+    */
+        \App\Models\Branch::create([
+            'tenant_id'       => $tenant->id,
+            'name'            => $data['branch_name'],
+            'address_line_1'  => $data['address_line_1'] ?? null,
+            'address_line_2'  => $data['address_line_2'] ?? null,
+            'city'            => $data['city'] ?? null,
+            'state'           => $data['state'] ?? null,
+            'country'         => $data['country'] ?? null,
+            'postal_code'     => $data['postal_code'] ?? null,
+            'latitude'        => $data['latitude'] ?? null,
+            'longitude'       => $data['longitude'] ?? null,
+            'is_main'         => true,
+        ]);
+
+        /*
+    |--------------------------------------------------------------------------
+    | 3. DEFAULT MEMBERSHIP PLAN (future)
+    |--------------------------------------------------------------------------
+    */
         // MembershipPlan::create([
         //     'tenant_id' => $tenant->id,
-        //     'name' => $data['plan_name'],
-        //     'price' => $data['plan_price'],
-        //     'is_active' => true,
+        //     'name'      => $data['plan_name'],
+        //     'price'     => $data['plan_price'],
         // ]);
 
-        // 4. Setup Tenant Settings (Goal 4)
-        // Store theme data or settings in your tenant record/metadata
-        // $tenant->update([
-        //     'primary_color' => $data['primary_color'],
-        //     'settings' => [
-        //         'notifications' => $data['enable_notifications'],
-        //     ]
-        // ]);
+        /*
+    |--------------------------------------------------------------------------
+    | 4. TENANT SETTINGS (future)
+    |--------------------------------------------------------------------------
+    */
+        $tenant->update([
+            'primary_color' => $data['primary_color'] ?? null,
+        ]);
     }
 }
