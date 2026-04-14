@@ -34,8 +34,7 @@ class MemberForm
                     TextInput::make('user_password')
                         ->label('Password')
                         ->password()
-                        ->required(fn($context) => $context === 'create')
-                        ->dehydrated(false),
+                        ->required(fn($context) => $context === 'create'),
                     Select::make('branch_id')
                         ->relationship('branch', 'name')
                         ->searchable()
