@@ -14,6 +14,8 @@ use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use App\Filament\Platform\Resources\Users\Tables\UsersTable;
+use Filament\Tables\Table;
 
 class UserResource extends Resource
 {
@@ -52,12 +54,20 @@ class UserResource extends Resource
                 ->schema([
 
                     Select::make('role')
-                        ->options([
-                            'super_admin' => 'Super Admin',
-                            'owner' => 'Owner',
-                            'trainer' => 'Trainer',
-                            'member' => 'Member',
-                        ])
+                        ->options(function () {
+                            $user = auth()->user();
+                            if ($user->isSuperAdmin()) {
+                                return [
+                                    'super_admin' => 'Super Admin',
+                                    'owner' => 'Owner',
+                                ];
+                            }
+                            // Gym Owner
+                            return [
+                                'trainer' => 'Trainer',
+                                'member' => 'Member',
+                            ];
+                        })
                         ->required()
                         ->live(),
 
@@ -65,17 +75,30 @@ class UserResource extends Resource
                         ->relationship('tenant', 'name')
                         ->searchable()
                         ->nullable()
-                        ->visible(fn($get) => $get('role') !== 'super_admin'),
+                        ->visible(fn($get) => $get('role') !== 'super_admin')
+                        ->default(function () {
+                            $user = auth()->user();
+
+                            if ($user->isTenantUser()) {
+                                return $user->roles()->first()?->tenant_id;
+                            }
+
+                            return null;
+                        })
+                        ->disabled(fn() => auth()->user()->isTenantUser()),
 
                     Select::make('branch_id')
                         ->relationship('branch', 'name')
                         ->searchable()
                         ->nullable()
-                        ->visible(fn($get) => in_array($get('role'), ['trainer', 'member'])),
+                        ->visible(fn($get) => in_array($get('role'), ['trainer', 'member']))
                 ])
         ]);
     }
-
+    public static function table(Table $table): Table
+    {
+        return UsersTable::configure($table);
+    }
     public static function getPages(): array
     {
         return [

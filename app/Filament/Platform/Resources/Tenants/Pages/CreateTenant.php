@@ -12,26 +12,31 @@ use Illuminate\Support\Facades\Hash;
 class CreateTenant extends CreateRecord
 {
     protected static string $resource = TenantResource::class;
-    protected function afterCreate(): void
-    {
-        $tenant = $this->record;
-        $data = $this->form->getRawState();
 
-        // 1. CREATE OWNER USER
-        $owner = User::create([
+    protected ?User $ownerUser = null;
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        // 1. Create Owner User FIRST
+        $this->ownerUser = User::create([
             'name' => $data['owner_name'],
             'email' => $data['owner_email'],
             'password' => Hash::make($data['owner_password']),
         ]);
 
-        // 2. LINK OWNER TO TENANT
-        $tenant->update([
-            'owner_user_id' => $owner->id,
-        ]);
+        // 2. Attach owner to tenant
+        $data['owner_user_id'] = $this->ownerUser->id;
 
-        // 3. CREATE ROLE ENTRY
+        return $data;
+    }
+
+    protected function afterCreate(): void
+    {
+        $tenant = $this->record;
+
+        // 3. Create Role Mapping
         UserTenantRole::create([
-            'user_id' => $owner->id,
+            'user_id' => $this->ownerUser->id,
             'tenant_id' => $tenant->id,
             'role' => 'owner',
         ]);
