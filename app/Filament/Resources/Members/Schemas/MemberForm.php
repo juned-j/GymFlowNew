@@ -1,81 +1,78 @@
 <?php
 
-namespace App\Filament\Platform\Resources\Branches\Schemas;
+namespace App\Filament\Resources\Members\Schemas;
 
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Hidden;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Grid;
-use Filament\Forms\Form;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 
-class BranchForm
+class MemberForm
 {
-    public static function configure(Form $form): Form
+    public static function configure(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema
+            ->components([
 
-            // Hidden tenant assignment
-            Hidden::make('tenant_id')
-                ->default(fn() => auth()->user()->tenant_id) // simplified logic
-                ->dehydrated(true),
+                // 🔒 Tenant auto attach
+                Hidden::make('tenant_id')
+                    ->default(fn() => auth()->user()->roles()->first()?->tenant_id)
+                    ->dehydrated(true),
+                Grid::make(2)->components([
+                    TextInput::make('user_name')
+                        ->label('Name')
+                        ->required(),
+                    TextInput::make('user_email')
+                        ->label('Email')
+                        ->email()
+                        ->required(),
+                ]),
 
-            // Row 1: Name and Toggle
-            Grid::make(2)->schema([
-                TextInput::make('name')
-                    ->label('Branch Name')
-                    ->placeholder('e.g. South Mumbai Center')
-                    ->required()
-                    ->maxLength(100),
+                Grid::make(2)->components([
+                    TextInput::make('user_password')
+                        ->label('Password')
+                        ->password()
+                        ->required(fn($context) => $context === 'create')
+                        ->dehydrated(false),
+                    Select::make('branch_id')
+                        ->relationship('branch', 'name')
+                        ->searchable()
+                        ->required(),
+                ]),
+                Grid::make(2)->components([
+                    TextInput::make('height')
+                        ->numeric()
+                        ->suffix('cm'),
 
-                Toggle::make('is_main')
-                    ->label('Main Branch')
-                    ->inline(false) // Better vertical alignment in grids
-                    ->default(false),
-            ]),
+                    TextInput::make('weight')
+                        ->numeric()
+                        ->suffix('kg'),
+                ]),
+                Grid::make(2)->components([
+                    Select::make('gender')
+                        ->options([
+                            'male' => 'Male',
+                            'female' => 'Female',
+                            'other' => 'Other',
+                        ]),
 
-            // Row 2: Address
-            Grid::make(2)->schema([
-                TextInput::make('address_line_1')
-                    ->label('Address Line 1')
-                    ->required(),
-
-                TextInput::make('address_line_2')
-                    ->label('Address Line 2'),
-            ]),
-
-            // Row 3: Location
-            Grid::make(2)->schema([
-                TextInput::make('city')->required(),
-                TextInput::make('state')->required(),
-            ]),
-
-            // Row 4: Regional
-            Grid::make(2)->schema([
-                TextInput::make('postal_code')->label('Postal Code'),
-
-                TextInput::make('country')
-                    ->required()
-                    ->default('India'),
-            ]),
-
-            // Row 5: Coordinates
-            Grid::make(2)->schema([
-                TextInput::make('latitude')
-                    ->numeric()
-                    ->placeholder('e.g. 19.0760'),
-
-                TextInput::make('longitude')
-                    ->numeric()
-                    ->placeholder('e.g. 72.8777'),
-            ]),
-
-            // Full Width Row
-            TextInput::make('map_link')
-                ->label('Google Map Link')
-                ->url()
-                ->placeholder('https://maps.google.com/...')
-                ->columnSpanFull(),
-        ]);
+                    DatePicker::make('dob')
+                        ->label('Date of Birth'),
+                ]),
+                Grid::make(2)->components([
+                    TextInput::make('goal')
+                        ->placeholder('Weight loss, Muscle gain...'),
+                    Select::make('status')
+                        ->options([
+                            'active' => 'Active',
+                            'inactive' => 'Inactive',
+                        ])
+                        ->default('active')
+                        ->required(),
+                ])
+                    ->columnSpanFull(),
+            ]);
     }
 }
