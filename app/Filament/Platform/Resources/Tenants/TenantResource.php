@@ -51,6 +51,7 @@ class TenantResource extends Resource
                             ->required(),
                     ]),
             ])
+                ->columnSpanFull()
         ]);
     }
 

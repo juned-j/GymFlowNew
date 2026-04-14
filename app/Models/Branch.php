@@ -19,7 +19,15 @@ class Branch extends Model
     protected $fillable = [
         'tenant_id',
         'name',
-        'address',
+        'address_line_1',
+        'address_line_2',
+        'city',
+        'state',
+        'country',
+        'postal_code',
+        'latitude',
+        'longitude',
+        'is_main',
     ];
 
     /**
