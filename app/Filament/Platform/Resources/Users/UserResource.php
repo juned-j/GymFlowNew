@@ -47,12 +47,12 @@ class UserResource extends Resource
                     ->password()
                     ->required(fn($context) => $context === 'create')
                     ->dehydrated(false),
-            ]),
+            ])
+                ->columnSpanFull(),
             Repeater::make('roles')
                 ->relationship()
                 ->columnSpanFull()
                 ->schema([
-
                     Select::make('role')
                         ->options(function () {
                             $user = auth()->user();
