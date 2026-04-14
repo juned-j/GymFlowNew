@@ -20,44 +20,27 @@ class MemberForm
                 Hidden::make('tenant_id')
                     ->default(fn() => auth()->user()->roles()->first()?->tenant_id)
                     ->dehydrated(true),
-
-                /*
-                |--------------------------------------------------------------------------
-                | USER (LOGIN ACCOUNT)
-                |--------------------------------------------------------------------------
-                */
                 Grid::make(2)->components([
                     TextInput::make('user_name')
                         ->label('Name')
                         ->required(),
-
                     TextInput::make('user_email')
                         ->label('Email')
                         ->email()
                         ->required(),
+                ]),
 
+                Grid::make(2)->components([
                     TextInput::make('user_password')
                         ->label('Password')
                         ->password()
                         ->required(fn($context) => $context === 'create')
                         ->dehydrated(false),
+                    Select::make('branch_id')
+                        ->relationship('branch', 'name')
+                        ->searchable()
+                        ->required(),
                 ]),
-
-                /*
-                |--------------------------------------------------------------------------
-                | BRANCH
-                |--------------------------------------------------------------------------
-                */
-                Select::make('branch_id')
-                    ->relationship('branch', 'name')
-                    ->searchable()
-                    ->required(),
-
-                /*
-                |--------------------------------------------------------------------------
-                | BODY DETAILS
-                |--------------------------------------------------------------------------
-                */
                 Grid::make(2)->components([
                     TextInput::make('height')
                         ->numeric()
@@ -67,12 +50,6 @@ class MemberForm
                         ->numeric()
                         ->suffix('kg'),
                 ]),
-
-                /*
-                |--------------------------------------------------------------------------
-                | PROFILE
-                |--------------------------------------------------------------------------
-                */
                 Grid::make(2)->components([
                     Select::make('gender')
                         ->options([
@@ -84,17 +61,18 @@ class MemberForm
                     DatePicker::make('dob')
                         ->label('Date of Birth'),
                 ]),
-
-                TextInput::make('goal')
-                    ->placeholder('Weight loss, Muscle gain...'),
-
-                Select::make('status')
-                    ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
-                    ])
-                    ->default('active')
-                    ->required(),
+                Grid::make(2)->components([
+                    TextInput::make('goal')
+                        ->placeholder('Weight loss, Muscle gain...'),
+                    Select::make('status')
+                        ->options([
+                            'active' => 'Active',
+                            'inactive' => 'Inactive',
+                        ])
+                        ->default('active')
+                        ->required(),
+                ])
+                    ->columnSpanFull(),
             ]);
     }
 }
