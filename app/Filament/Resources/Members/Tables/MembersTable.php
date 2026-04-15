@@ -7,6 +7,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Filters\SelectFilter;
+use App\Models\Branch;
 
 class MembersTable
 {
@@ -41,7 +43,24 @@ class MembersTable
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('branch_id')
+                    ->label('Branch')
+                    ->options(
+                        \App\Models\Branch::where('tenant_id', auth()->user()->getTenantId())
+                            ->pluck('name', 'id')
+                    )
+                    ->query(function ($query, $value) {
+                        $query->whereHas('roles', function ($q) use ($value) {
+                            $q->where('branch_id', $value);
+                        });
+                    }),
+
+                SelectFilter::make('city')
+                    ->options(
+                        fn() => \App\Models\User::query()
+                            ->distinct()
+                            ->pluck('city', 'city')
+                    ),
             ])
             ->recordActions([
                 EditAction::make(),
