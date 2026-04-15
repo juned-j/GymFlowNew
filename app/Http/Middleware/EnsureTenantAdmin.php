@@ -16,11 +16,6 @@ class EnsureTenantAdmin
             abort(403, 'Unauthorized'); // or redirect to login
         }
 
-        dd([
-            'isTenantUser' => $user->isTenantUser(),
-            'roles' => $user->roles()->with('role')->get()->pluck('role.name'),
-        ]);
-
         if (! $user->isTenantUser()) {
             abort(403, 'Tenant access only');
         }
