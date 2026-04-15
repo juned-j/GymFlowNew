@@ -38,7 +38,7 @@ class CreateTenant extends CreateRecord
         UserTenantRole::create([
             'user_id' => $this->ownerUser->id,
             'tenant_id' => $tenant->id,
-            'role' => 'owner',
+            'role_id' => 2,
         ]);
     }
 }
