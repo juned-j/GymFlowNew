@@ -58,7 +58,8 @@ class MembersTable
 
                 SelectFilter::make('city')
                     ->options(
-                        fn() => \App\Models\User::query()
+                        fn() => \App\Models\Member::query()
+                            ->where('tenant_id', auth()->user()->getTenantId())
                             ->distinct()
                             ->pluck('city', 'city')
                     ),
