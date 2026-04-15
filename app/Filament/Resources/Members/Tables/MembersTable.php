@@ -45,12 +45,13 @@ class MembersTable
             ->filters([
                 SelectFilter::make('branch_id')
                     ->label('Branch')
-                    ->options(
-                        \App\Models\Branch::where('tenant_id', auth()->user()->getTenantId())
-                            ->pluck('name', 'id')
-                    )
+                    ->options(function () {
+                        $user = auth()->user();
+                        return \App\Models\Branch::where('tenant_id', $user->getTenantId())
+                            ->pluck('name', 'id');
+                    })
                     ->query(function ($query, $value) {
-                        $query->whereHas('roles', function ($q) use ($value) {
+                        $query->whereHas('user.roles', function ($q) use ($value) {
                             $q->where('branch_id', $value);
                         });
                     }),
