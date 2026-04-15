@@ -17,6 +17,12 @@ class Member extends Model
         'gender',
         'dob',
         'status',
+        'age',
+        'fitness_level',
+        'activity_level',
+        'injuries',
+        'program_match',
+
     ];
 
     public function tenant()
