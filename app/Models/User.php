@@ -50,7 +50,7 @@ class User extends Authenticatable
     public function isTenantUser(): bool
     {
         return $this->roles()
-            ->whereIn('role', ['owner', 'trainer'])
+            ->whereIn('role_id', [2, 3]) // roles table owner=2, trainer=3
             ->exists();
     }
 }
