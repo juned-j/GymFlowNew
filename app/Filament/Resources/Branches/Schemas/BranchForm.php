@@ -15,7 +15,19 @@ class BranchForm
         return $schema->components([
 
             Hidden::make('tenant_id')
-                ->default(fn() => auth()->user()->roles()->first()?->tenant_id)
+                ->default(function () {
+                    $user = auth()->user();
+                    if (! $user) {
+                        throw new \Exception('User not authenticated');
+                    }
+                    $tenantId = $user->roles()
+                        ->whereHas('role', fn($q) => $q->where('name', 'owner'))
+                        ->value('tenant_id');
+                    if (! $tenantId) {
+                        throw new \Exception('Tenant ID not found for user');
+                    }
+                    return $tenantId;
+                })
                 ->dehydrated(true),
 
             Grid::make(2)->schema([

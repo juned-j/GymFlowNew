@@ -46,10 +46,16 @@ class BranchResource extends Resource
             'edit' => EditBranch::route('/{record}/edit'),
         ];
     }
+
     public static function getEloquentQuery(): Builder
     {
         $user = auth()->user();
+
+        $tenantId = $user->roles()
+            ->whereHas('role', fn($q) => $q->where('name', 'owner')) // or tenant roles
+            ->value('tenant_id');
+
         return parent::getEloquentQuery()
-            ->where('tenant_id', $user->roles()->first()?->tenant_id);
+            ->where('tenant_id', $tenantId);
     }
 }

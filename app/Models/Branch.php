@@ -30,6 +30,18 @@ class Branch extends Model
         'is_main',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($branch) {
+            if (! $branch->tenant_id) {
+                $user = auth()->user();
+
+                $branch->tenant_id = $user?->roles()
+                    ->whereHas('role', fn($q) => $q->where('name', 'owner'))
+                    ->value('tenant_id');
+            }
+        });
+    }
     /**
      * Get the tenant that owns the branch.
      * * Essential for your multi-tenant scoping.
