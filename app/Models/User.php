@@ -53,7 +53,7 @@ class User extends Authenticatable
     {
         return $this->roles()
             ->whereHas('role', function ($q) {
-                $q->whereIn('name', ['owner', 'trainer']);
+                $q->whereRaw('LOWER(name) IN (?, ?)', ['owner', 'trainer']);
             })
             ->exists();
     }
