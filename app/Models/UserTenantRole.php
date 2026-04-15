@@ -32,11 +32,13 @@ class UserTenantRole extends Model
     {
         static::saving(function ($model) {
 
-            if ($model->role === 'owner') {
+            $roleName = $model->role?->name;
+
+            if ($roleName === 'owner') {
                 $model->branch_id = null;
             }
 
-            if ($model->role === 'super_admin') {
+            if ($roleName === 'super_admin') {
                 $model->tenant_id = null;
                 $model->branch_id = null;
             }
