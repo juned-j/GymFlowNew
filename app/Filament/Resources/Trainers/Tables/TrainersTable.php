@@ -21,8 +21,10 @@ class TrainersTable
                     ->label('Branch')
                     ->formatStateUsing(function ($record) {
                         return $record->roles
+                            ->where('role.name', 'trainer') // 👈 Filter only trainer roles
                             ->pluck('branch.name')
                             ->filter()
+                            ->unique() // 👈 Remove duplicates
                             ->join(', ');
                     }),
                 TextColumn::make('trainerProfile.specialization')
