@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Member extends Model
 {
+    protected $table = 'members';
     protected $fillable = [
         'user_id',
         'height',
