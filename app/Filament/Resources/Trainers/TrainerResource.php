@@ -51,6 +51,8 @@ class TrainerResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
+        dd('getEloquentQuery called', auth()->user());
+
         $query = parent::getEloquentQuery()
             ->whereHas('roles.role', fn($q) => $q->where('name', 'trainer'));
 
