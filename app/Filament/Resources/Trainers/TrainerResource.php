@@ -49,28 +49,41 @@ class TrainerResource extends Resource
             'edit' => EditTrainer::route('/{record}/edit'),
         ];
     }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     $user = auth()->user();
+
+    //     // 1. Get the base query and eager load profiles to prevent missing rows
+    //     $query = parent::getEloquentQuery()->with(['trainerProfile', 'roles.branch']);
+
+    //     // 2. If the user is a Super Admin, show ALL trainers across all tenants
+    //     if ($user->isSuperAdmin()) {
+    //         return $query->whereHas('roles', function ($q) {
+    //             $q->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
+    //         });
+    //     }
+
+    //     // 3. For gym owners, get their specific tenant context
+    //     $tenantId = $user->getTenantId();
+
+    //     return $query->whereHas('roles', function ($q) use ($tenantId) {
+    //         $q->where('tenant_id', $tenantId)
+    //             ->whereHas('role', function ($rq) {
+    //                 $rq->where('name', 'trainer');
+    //             });
+    //     });
+    // }
     public static function getEloquentQuery(): Builder
     {
         $user = auth()->user();
-
-        // 1. Get the base query and eager load profiles to prevent missing rows
-        $query = parent::getEloquentQuery()->with(['trainerProfile', 'roles.branch']);
-
-        // 2. If the user is a Super Admin, show ALL trainers across all tenants
-        if ($user->isSuperAdmin()) {
-            return $query->whereHas('roles', function ($q) {
-                $q->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
-            });
-        }
-
-        // 3. For gym owners, get their specific tenant context
         $tenantId = $user->getTenantId();
 
-        return $query->whereHas('roles', function ($q) use ($tenantId) {
-            $q->where('tenant_id', $tenantId)
-                ->whereHas('role', function ($rq) {
-                    $rq->where('name', 'trainer');
-                });
-        });
+        $query = static::getModel()::query()
+            ->whereHas('roles', function ($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId)
+                    ->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
+            });
+
+        dd($query->toSql(), $query->getBindings());
     }
 }
