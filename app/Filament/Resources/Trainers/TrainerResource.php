@@ -51,16 +51,17 @@ class TrainerResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
-        $tenantId = auth()->user()->getTenantId();
+        return parent::getEloquentQuery(); // Remove ALL filters
+        // $tenantId = auth()->user()->getTenantId();
 
-        return parent::getEloquentQuery()
-            // Force eager loading so Filament doesn't drop null relationships
-            ->with(['trainerProfile', 'roles.role', 'roles.branch'])
-            ->whereHas('roles', function ($q) use ($tenantId) {
-                $q->where('tenant_id', $tenantId)
-                    ->whereHas('role', function ($rq) {
-                        $rq->where('name', 'trainer');
-                    });
-            });
+        // return parent::getEloquentQuery()
+        //     // Force eager loading so Filament doesn't drop null relationships
+        //     ->with(['trainerProfile', 'roles.role', 'roles.branch'])
+        //     ->whereHas('roles', function ($q) use ($tenantId) {
+        //         $q->where('tenant_id', $tenantId)
+        //             ->whereHas('role', function ($rq) {
+        //                 $rq->where('name', 'trainer');
+        //             });
+        //     });
     }
 }
