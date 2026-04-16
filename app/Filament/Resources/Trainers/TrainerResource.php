@@ -18,6 +18,9 @@ use Illuminate\Database\Eloquent\Builder;
 class TrainerResource extends Resource
 {
     protected static ?string $model = \App\Models\User::class;
+    protected static ?string $navigationLabel = 'Trainers';
+    protected static ?string $modelLabel = 'Trainer';
+    protected static ?string $pluralModelLabel = 'Trainers';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

@@ -23,7 +23,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
-    public $timestamps = false;
+    public $timestamps = true;
     /**
      * Get the attributes that should be cast.
      *
