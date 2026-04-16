@@ -75,8 +75,12 @@ class User extends Authenticatable
         return $this->hasOne(Member::class);
     }
 
-    public function trainerProfile()
+    // public function trainerProfile()
+    // {
+    //     return $this->hasOne(Trainer::class);
+    // }
+    public function trainerProfile() // <--- This name must match exactly
     {
-        return $this->hasOne(Trainer::class);
+        return $this->hasOne(Trainer::class, 'user_id');
     }
 }
