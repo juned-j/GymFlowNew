@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TrainerResource extends Resource
 {
-    protected static ?string $model = Trainer::class;
+    protected static ?string $model = \App\Models\User::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
