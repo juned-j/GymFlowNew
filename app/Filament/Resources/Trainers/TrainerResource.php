@@ -86,10 +86,21 @@ class TrainerResource extends Resource
     //                 ->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
     //         });
     // }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     // Try this to see if ANY users show up
+    //     return parent::getEloquentQuery()
+    //         ->with(['trainerProfile']);
+    // }
     public static function getEloquentQuery(): Builder
     {
-        // Try this to see if ANY users show up
+        // Add ->withTrashed() temporarily to debug
         return parent::getEloquentQuery()
-            ->with(['trainerProfile']);
+            ->withTrashed()
+            ->with(['trainerProfile', 'roles.branch', 'roles.role'])
+            ->whereHas('roles', function ($q) {
+                $q->where('tenant_id', auth()->user()->getTenantId())
+                    ->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
+            });
     }
 }
