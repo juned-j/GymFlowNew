@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\Trainers;
 
 use App\Filament\Resources\Trainers\Pages\CreateTrainer;
 use App\Filament\Resources\Trainers\Pages\EditTrainer;
@@ -8,7 +8,6 @@ use App\Filament\Resources\Trainers\Pages\ListTrainers;
 use App\Filament\Resources\Trainers\Schemas\TrainerForm;
 use App\Filament\Resources\Trainers\Tables\TrainersTable;
 use App\Models\Trainer;
-use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -18,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TrainerResource extends Resource
 {
-    protected static ?string $model = User::class;
+    protected static ?string $model = \App\Models\User::class;
     protected static ?string $navigationLabel = 'Trainers';
     protected static ?string $modelLabel = 'Trainer';
     protected static ?string $pluralModelLabel = 'Trainers';
@@ -50,21 +49,26 @@ class TrainerResource extends Resource
             'edit' => EditTrainer::route('/{record}/edit'),
         ];
     }
-
     public static function getEloquentQuery(): Builder
     {
         $user = auth()->user();
 
         $query = static::getModel()::query()
-            ->whereHas('roles', function ($q) {
+            ->whereHas('roles', function ($q) use ($user) {
                 // Global filter for trainers
                 $q->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
 
                 // Tenant filter for non-super admins
-                if (!auth()->user()->isSuperAdmin()) {
-                    $q->where('tenant_id', auth()->user()->getTenantId());
+                if (!$user->isSuperAdmin()) {
+                    $q->where('tenant_id', $user->getTenantId());
                 }
             });
+
+        // Debug check as requested by the user
+        dd([
+            'tenant_id' => $user->getTenantId(),
+            'branches' => \App\Models\Branch::where('tenant_id', $user->getTenantId())->get()
+        ]);
 
         return $query;
     }

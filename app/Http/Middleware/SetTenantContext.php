@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Auth;
 
 class SetTenantContext
 {
-    public function handle($request, Closure $next)
+    public function handle($request, \Closure $next)
     {
-        if (Auth::check()) {
-            $user = Auth::user();
-            $tenantId = $user->getTenantId();
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $tenantId = $user?->getTenantId();
 
             if ($tenantId) {
                 app()->instance('tenant_id', $tenantId);

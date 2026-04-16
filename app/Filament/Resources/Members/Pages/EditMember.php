@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Members\Pages;
 
-use App\Filament\Resources\MemberResource;
+use App\Filament\Resources\Members\MemberResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;

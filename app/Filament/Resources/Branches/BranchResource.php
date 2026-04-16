@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\Branches;
 
 use App\Filament\Resources\Branches\Pages\CreateBranch;
 use App\Filament\Resources\Branches\Pages\EditBranch;
@@ -49,12 +49,14 @@ class BranchResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
+        $user = auth()->user();
+
         $query = static::getModel()::query();
 
-        if (auth()->user()->isSuperAdmin()) {
+        if ($user->isSuperAdmin()) {
             return $query;
         }
 
-        return $query->where('tenant_id', auth()->user()->getTenantId());
+        return $query->where('tenant_id', $user->getTenantId());
     }
 }

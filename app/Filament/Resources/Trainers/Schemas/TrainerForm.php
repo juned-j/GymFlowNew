@@ -21,13 +21,13 @@ class TrainerForm
                 ->label('Branch')
                 ->required()
                 ->options(function () {
-                    $user = auth()->user();
-                    $tenantId = $user->getTenantId();
 
-                    return \App\Models\Branch::where(
-                        'tenant_id',
-                        $tenantId
-                    )->pluck('name', 'id');
+                    $user = auth()->user();
+
+                    $tenantId = $user->getTenantId(); // 👈 BEST SOURCE
+
+                    return \App\Models\Branch::where('tenant_id', $tenantId)
+                        ->pluck('name', 'id');
                 }),
 
             // TRAINER PROFILE
