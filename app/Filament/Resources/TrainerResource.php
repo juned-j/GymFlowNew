@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Trainers;
+namespace App\Filament\Resources;
 
 use App\Filament\Resources\Trainers\Pages\CreateTrainer;
 use App\Filament\Resources\Trainers\Pages\EditTrainer;
@@ -8,6 +8,7 @@ use App\Filament\Resources\Trainers\Pages\ListTrainers;
 use App\Filament\Resources\Trainers\Schemas\TrainerForm;
 use App\Filament\Resources\Trainers\Tables\TrainersTable;
 use App\Models\Trainer;
+use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TrainerResource extends Resource
 {
-    protected static ?string $model = \App\Models\User::class;
+    protected static ?string $model = User::class;
     protected static ?string $navigationLabel = 'Trainers';
     protected static ?string $modelLabel = 'Trainer';
     protected static ?string $pluralModelLabel = 'Trainers';
@@ -49,24 +50,22 @@ class TrainerResource extends Resource
             'edit' => EditTrainer::route('/{record}/edit'),
         ];
     }
+
     public static function getEloquentQuery(): Builder
     {
-        // dd('getEloquentQuery called', auth()->user());
-
-        $query = parent::getEloquentQuery()
-            ->whereHas('roles.role', fn($q) => $q->where('name', 'trainer'));
-
         $user = auth()->user();
 
-        if ($user->isSuperAdmin()) {
-            return $query;
-        }
+        $query = static::getModel()::query()
+            ->whereHas('roles', function ($q) {
+                // Global filter for trainers
+                $q->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
 
-        // dd([
-        //     'tenant_id' => $user->getTenantId(),
-        //     'branches' => \App\Models\Branch::where('tenant_id', $user->getTenantId())->get()
-        // ]);
+                // Tenant filter for non-super admins
+                if (!auth()->user()->isSuperAdmin()) {
+                    $q->where('tenant_id', auth()->user()->getTenantId());
+                }
+            });
 
-        return $query->whereHas('roles', fn($q) => $q->where('tenant_id', $user->getTenantId()));
+        return $query;
     }
 }

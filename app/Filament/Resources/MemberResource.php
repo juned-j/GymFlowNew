@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Members;
+namespace App\Filament\Resources;
 
 use App\Filament\Resources\Members\Pages\CreateMember;
 use App\Filament\Resources\Members\Pages\EditMember;
@@ -35,16 +35,15 @@ class MemberResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()
-            ->whereHas('user.roles.role', fn($q) => $q->where('name', 'member'));
+        $query = static::getModel()::query();
 
-        $user = auth()->user();
-
-        if ($user->isSuperAdmin()) {
+        if (auth()->user()->isSuperAdmin()) {
             return $query;
         }
 
-        return $query->whereHas('user.roles', fn($q) => $q->where('tenant_id', $user->getTenantId()));
+        return $query->whereHas('user.roles', function ($q) {
+            $q->where('tenant_id', auth()->user()->getTenantId());
+        });
     }
 
     public static function getPages(): array
