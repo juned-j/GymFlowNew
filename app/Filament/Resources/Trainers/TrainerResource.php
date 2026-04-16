@@ -52,24 +52,14 @@ class TrainerResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $user = auth()->user();
+        $tenantId = $user->getTenantId();
 
-        $query = static::getModel()::query()
-            ->whereHas('roles', function ($q) use ($user) {
-                // Global filter for trainers
-                $q->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
-
-                // Tenant filter for non-super admins
-                if (!$user->isSuperAdmin()) {
-                    $q->where('tenant_id', $user->getTenantId());
-                }
+        return static::getModel()::query()
+            ->whereHas('roles', function ($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId)
+                    ->whereHas('role', function ($rq) {
+                        $rq->where('name', 'trainer');
+                    });
             });
-
-        // Debug check as requested by the user
-        // dd([
-        //     'tenant_id' => $user->getTenantId(),
-        //     'branches' => \App\Models\Branch::where('tenant_id', $user->getTenantId())->get()
-        // ]);
-
-        return $query;
     }
 }
