@@ -56,9 +56,12 @@ class User extends Authenticatable
     }
     public function getTenantId(): ?int
     {
-        // Don't just look for owner/trainer. 
-        // Look for ANY tenant association this user has.
-        return $this->roles()->whereNotNull('tenant_id')->value('tenant_id');
+        // We explicitly look for the first non-null tenant_id 
+        // to avoid Super Admin 'null' conflicts.
+        return $this->roles()
+            ->whereNotNull('tenant_id')
+            ->orderBy('id', 'asc')
+            ->value('tenant_id');
     }
     public function getTenantIds()
     {

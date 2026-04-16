@@ -51,17 +51,26 @@ class TrainerResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery(); // Remove ALL filters
-        // $tenantId = auth()->user()->getTenantId();
+        $user = auth()->user();
 
-        // return parent::getEloquentQuery()
-        //     // Force eager loading so Filament doesn't drop null relationships
-        //     ->with(['trainerProfile', 'roles.role', 'roles.branch'])
-        //     ->whereHas('roles', function ($q) use ($tenantId) {
-        //         $q->where('tenant_id', $tenantId)
-        //             ->whereHas('role', function ($rq) {
-        //                 $rq->where('name', 'trainer');
-        //             });
-        //     });
+        // 1. Get the base query and eager load profiles to prevent missing rows
+        $query = parent::getEloquentQuery()->with(['trainerProfile', 'roles.branch']);
+
+        // 2. If the user is a Super Admin, show ALL trainers across all tenants
+        if ($user->isSuperAdmin()) {
+            return $query->whereHas('roles', function ($q) {
+                $q->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
+            });
+        }
+
+        // 3. For gym owners, get their specific tenant context
+        $tenantId = $user->getTenantId();
+
+        return $query->whereHas('roles', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId)
+                ->whereHas('role', function ($rq) {
+                    $rq->where('name', 'trainer');
+                });
+        });
     }
 }
