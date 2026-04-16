@@ -14,10 +14,19 @@ class SetTenantContext
     {
         if (Auth::check()) {
             $user = Auth::user();
+            $tenantId = session('tenant_id');
 
-            $tenantId = $user->current_tenant_id
-                ?? $user->tenant_id
-                ?? null;
+            if (!$tenantId && !$user->isSuperAdmin()) {
+                // Recovery: Try to find a tenant ID if session is missing
+                $tenantId = $user->roles()
+                    ->whereHas('role', fn($q) => $q->where('name', 'owner'))
+                    ->value('tenant_id')
+                    ?? $user->roles()->value('tenant_id');
+
+                if ($tenantId) {
+                    session(['tenant_id' => $tenantId]);
+                }
+            }
 
             if ($tenantId) {
                 app()->instance('tenant_id', $tenantId);
