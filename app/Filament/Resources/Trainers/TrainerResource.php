@@ -65,10 +65,10 @@ class TrainerResource extends Resource
             });
 
         // Debug check as requested by the user
-        dd([
-            'tenant_id' => $user->getTenantId(),
-            'branches' => \App\Models\Branch::where('tenant_id', $user->getTenantId())->get()
-        ]);
+        // dd([
+        //     'tenant_id' => $user->getTenantId(),
+        //     'branches' => \App\Models\Branch::where('tenant_id', $user->getTenantId())->get()
+        // ]);
 
         return $query;
     }
