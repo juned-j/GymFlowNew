@@ -65,4 +65,13 @@ class User extends Authenticatable
             })
             ->value('tenant_id');
     }
+    public function memberProfile()
+    {
+        return $this->hasOne(Member::class);
+    }
+
+    public function trainerProfile()
+    {
+        return $this->hasOne(Trainer::class);
+    }
 }
