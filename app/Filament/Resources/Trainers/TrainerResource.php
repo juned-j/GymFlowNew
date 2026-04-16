@@ -78,12 +78,12 @@ class TrainerResource extends Resource
         $user = auth()->user();
         $tenantId = $user->getTenantId();
 
-        $query = static::getModel()::query()
+        // 1. You MUST add the 'return' keyword here
+        return parent::getEloquentQuery()
+            ->with(['trainerProfile', 'roles.branch', 'roles.role']) // Eager load for performance
             ->whereHas('roles', function ($q) use ($tenantId) {
                 $q->where('tenant_id', $tenantId)
                     ->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
             });
-
-        // dd($query->toSql(), $query->getBindings());
     }
 }
