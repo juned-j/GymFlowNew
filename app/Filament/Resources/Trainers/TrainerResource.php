@@ -84,6 +84,6 @@ class TrainerResource extends Resource
                     ->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
             });
 
-        dd($query->toSql(), $query->getBindings());
+        // dd($query->toSql(), $query->getBindings());
     }
 }
