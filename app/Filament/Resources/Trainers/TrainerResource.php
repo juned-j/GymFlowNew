@@ -95,6 +95,14 @@ class TrainerResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->withoutGlobalScopes();
+        $tenantId = auth()->user()->getTenantId();
+
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes() // Stops hidden tenant/admin logic from hiding rows
+            ->with(['trainerProfile', 'roles.branch', 'roles.role']) // Eager load for speed
+            ->whereHas('roles', function ($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId)
+                    ->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
+            });
     }
 }
