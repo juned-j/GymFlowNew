@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Trainers\Pages;
 
-use App\Filament\Resources\Trainers\TrainerResource;
+use App\Filament\Resources\TrainerResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 

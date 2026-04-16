@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Members\Pages;
 
-use App\Filament\Resources\Members\MemberResource;
+use App\Filament\Resources\MemberResource;
 use Filament\Resources\Pages\CreateRecord;
 use App\Models\User;
 use App\Models\UserTenantRole;
