@@ -38,11 +38,13 @@ class MemberResource extends Resource
         $query = parent::getEloquentQuery()
             ->whereHas('user.roles.role', fn($q) => $q->where('name', 'member'));
 
-        if (auth()->user()->isSuperAdmin()) {
+        $user = auth()->user();
+
+        if ($user->isSuperAdmin()) {
             return $query;
         }
 
-        return $query->whereHas('user.roles', fn($q) => $q->where('tenant_id', session('tenant_id')));
+        return $query->whereHas('user.roles', fn($q) => $q->where('tenant_id', $user->getTenantId()));
     }
 
     public static function getPages(): array

@@ -51,10 +51,12 @@ class BranchResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (auth()->user()->isSuperAdmin()) {
+        $user = auth()->user();
+
+        if ($user->isSuperAdmin()) {
             return $query;
         }
 
-        return $query->where('tenant_id', session('tenant_id'));
+        return $query->where('tenant_id', $user->getTenantId());
     }
 }

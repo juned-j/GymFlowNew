@@ -57,6 +57,14 @@ class User extends Authenticatable
             })
             ->exists();
     }
+    public function getTenantId(): ?int
+    {
+        return $this->roles()
+            ->whereHas('role', function ($q) {
+                $q->whereIn('name', ['owner', 'trainer']);
+            })
+            ->value('tenant_id');
+    }
     public function getTenantIds()
     {
         return $this->roles()

@@ -11,14 +11,14 @@ class CreateBranch extends CreateRecord
     protected static string $resource = BranchResource::class;
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['tenant_id'] = session('tenant_id');
+        $data['tenant_id'] = auth()->user()->getTenantId();
 
         return $data;
     }
     protected function beforeCreate(): void
     {
         if ($this->data['is_main']) {
-            Branch::where('tenant_id', session('tenant_id'))
+            Branch::where('tenant_id', auth()->user()->getTenantId())
                 ->update(['is_main' => false]);
         }
     }

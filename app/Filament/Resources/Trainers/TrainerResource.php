@@ -54,10 +54,17 @@ class TrainerResource extends Resource
         $query = parent::getEloquentQuery()
             ->whereHas('roles.role', fn($q) => $q->where('name', 'trainer'));
 
-        if (auth()->user()->isSuperAdmin()) {
+        $user = auth()->user();
+
+        if ($user->isSuperAdmin()) {
             return $query;
         }
 
-        return $query->whereHas('roles', fn($q) => $q->where('tenant_id', session('tenant_id')));
+        dd([
+            'tenant_id' => $user->getTenantId(),
+            'branches' => \App\Models\Branch::where('tenant_id', $user->getTenantId())->get()
+        ]);
+
+        return $query->whereHas('roles', fn($q) => $q->where('tenant_id', $user->getTenantId()));
     }
 }

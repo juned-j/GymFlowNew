@@ -10,7 +10,7 @@ class CreateTrainer extends CreateRecord
     protected static string $resource = TrainerResource::class;
     protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
-        $tenantId = session('tenant_id');
+        $tenantId = auth()->user()->getTenantId();
 
         // 1. Create User
         $user = \App\Models\User::create([

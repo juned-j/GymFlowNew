@@ -46,7 +46,7 @@ class MembersTable
                 SelectFilter::make('branch_id')
                     ->label('Branch')
                     ->options(function () {
-                        return \App\Models\Branch::where('tenant_id', session('tenant_id'))
+                        return \App\Models\Branch::where('tenant_id', auth()->user()->getTenantId())
                             ->pluck('name', 'id');
                     })
                     ->query(function ($query, $value) {
@@ -58,7 +58,7 @@ class MembersTable
                 SelectFilter::make('city')
                     ->options(
                         fn() => \App\Models\Branch::query()
-                            ->where('tenant_id', session('tenant_id'))
+                            ->where('tenant_id', auth()->user()->getTenantId())
                             ->distinct()
                             ->pluck('city', 'city')
                     ),
