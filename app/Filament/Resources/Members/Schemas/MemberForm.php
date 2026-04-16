@@ -36,9 +36,14 @@ class MemberForm
                         ->password()
                         ->required(fn($context) => $context === 'create'),
                     Select::make('branch_id')
-                        ->relationship('branch', 'name')
-                        ->searchable()
-                        ->required(),
+                        ->label('Branch')
+                        ->required()
+                        ->options(function () {
+                            $user = auth()->user();
+                            $tenantId = $user->getTenantId(); // 👈 BEST SOURCE
+                            return \App\Models\Branch::where('tenant_id', $tenantId)
+                                ->pluck('name', 'id');
+                        }),
                 ]),
                 Grid::make(2)->components([
                     TextInput::make('height')
