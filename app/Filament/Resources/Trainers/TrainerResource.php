@@ -51,7 +51,7 @@ class TrainerResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
-        dd('getEloquentQuery called', auth()->user());
+        // dd('getEloquentQuery called', auth()->user());
 
         $query = parent::getEloquentQuery()
             ->whereHas('roles.role', fn($q) => $q->where('name', 'trainer'));
@@ -62,10 +62,10 @@ class TrainerResource extends Resource
             return $query;
         }
 
-        dd([
-            'tenant_id' => $user->getTenantId(),
-            'branches' => \App\Models\Branch::where('tenant_id', $user->getTenantId())->get()
-        ]);
+        // dd([
+        //     'tenant_id' => $user->getTenantId(),
+        //     'branches' => \App\Models\Branch::where('tenant_id', $user->getTenantId())->get()
+        // ]);
 
         return $query->whereHas('roles', fn($q) => $q->where('tenant_id', $user->getTenantId()));
     }
