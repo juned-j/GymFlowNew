@@ -53,7 +53,7 @@ class TrainerResource extends Resource
     {
         $user = auth()->user();
         $tenantId = $user->getTenantId();
-        dd($tenantId);
+        // dd($tenantId);
         return static::getModel()::query()
             ->whereHas('roles', function ($q) use ($tenantId) {
                 $q->where('tenant_id', $tenantId)
