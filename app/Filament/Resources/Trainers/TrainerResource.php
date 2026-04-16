@@ -92,24 +92,16 @@ class TrainerResource extends Resource
     //     return parent::getEloquentQuery()
     //         ->with(['trainerProfile']);
     // }
+
     public static function getEloquentQuery(): Builder
     {
-        $user = auth()->user();
-        $tenantId = $user->getTenantId();
+        $tenantId = auth()->user()->getTenantId();
 
         return parent::getEloquentQuery()
-            // Ensure 'trainerProfile' matches the method name in your User model
-            ->with(['trainerProfile', 'roles.branch', 'roles.role'])
+            ->with(['trainerProfile', 'roles.branch'])
             ->whereHas('roles', function ($q) use ($tenantId) {
-                // If you are testing as a Super Admin, you might not have a tenantId.
-                // This ensures we at least filter by the 'trainer' role.
-                if ($tenantId) {
-                    $q->where('tenant_id', $tenantId);
-                }
-
-                $q->whereHas('role', function ($rq) {
-                    $rq->where('name', 'trainer');
-                });
+                $q->where('tenant_id', $tenantId)
+                    ->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
             });
     }
 }
