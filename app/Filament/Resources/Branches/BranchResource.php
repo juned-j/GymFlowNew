@@ -49,13 +49,12 @@ class BranchResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $user = auth()->user();
+        $query = parent::getEloquentQuery();
 
-        $tenantId = $user->roles()
-            ->whereHas('role', fn($q) => $q->where('name', 'owner')) // or tenant roles
-            ->value('tenant_id');
+        if (auth()->user()->isSuperAdmin()) {
+            return $query;
+        }
 
-        return parent::getEloquentQuery()
-            ->where('tenant_id', $tenantId);
+        return $query->where('tenant_id', session('tenant_id'));
     }
 }

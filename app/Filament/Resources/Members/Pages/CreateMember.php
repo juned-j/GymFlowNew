@@ -35,8 +35,8 @@ class CreateMember extends CreateRecord
 
         UserTenantRole::create([
             'user_id' => $this->createdUser->id,
-            'tenant_id' => auth()->user()->roles()->first()?->tenant_id,
-            'role' => 'member',
+            'tenant_id' => session('tenant_id'),
+            'role_id' => \App\Models\Role::where('name', 'member')->value('id'),
             'branch_id' => $state['branch_id'] ?? null,
         ]);
     }

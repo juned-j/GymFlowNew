@@ -51,10 +51,13 @@ class TrainerResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
-        $tenantId = auth()->user()->getTenantId();
+        $query = parent::getEloquentQuery()
+            ->whereHas('roles.role', fn($q) => $q->where('name', 'trainer'));
 
-        return parent::getEloquentQuery()
-            ->whereHas('roles.role', fn($q) => $q->where('name', 'trainer'))
-            ->whereHas('roles', fn($q) => $q->where('tenant_id', $tenantId));
+        if (auth()->user()->isSuperAdmin()) {
+            return $query;
+        }
+
+        return $query->whereHas('roles', fn($q) => $q->where('tenant_id', session('tenant_id')));
     }
 }

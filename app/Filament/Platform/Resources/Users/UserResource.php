@@ -78,7 +78,7 @@ class UserResource extends Resource
                         ->default(function () {
                             $user = auth()->user();
                             if ($user->isTenantUser()) {
-                                return $user->roles()->first()?->tenant_id;
+                                return session('tenant_id');
                             }
                             return null;
                         })

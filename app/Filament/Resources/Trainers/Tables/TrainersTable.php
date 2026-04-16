@@ -40,7 +40,7 @@ class TrainersTable
                     ->options(function () {
                         return \App\Models\Branch::where(
                             'tenant_id',
-                            auth()->user()->getTenantId()
+                            session('tenant_id')
                         )->pluck('name', 'id');
                     })
                     ->query(function ($query, $value) {

@@ -35,11 +35,14 @@ class MemberResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $tenantId = auth()->user()->getTenantId();
+        $query = parent::getEloquentQuery()
+            ->whereHas('user.roles.role', fn($q) => $q->where('name', 'member'));
 
-        return parent::getEloquentQuery()
-            ->whereHas('user.roles.role', fn($q) => $q->where('name', 'member'))
-            ->whereHas('user.roles', fn($q) => $q->where('tenant_id', $tenantId));
+        if (auth()->user()->isSuperAdmin()) {
+            return $query;
+        }
+
+        return $query->whereHas('user.roles', fn($q) => $q->where('tenant_id', session('tenant_id')));
     }
 
     public static function getPages(): array
