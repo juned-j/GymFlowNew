@@ -51,19 +51,14 @@ class User extends Authenticatable
 
     public function isTenantUser(): bool
     {
-        return $this->roles()
-            ->whereHas('role', function ($q) {
-                $q->whereRaw('LOWER(name) IN (?, ?)', ['owner', 'trainer']);
-            })
-            ->exists();
+        // If they have any role linked to a tenant, they are a tenant user.
+        return $this->roles()->whereNotNull('tenant_id')->exists();
     }
     public function getTenantId(): ?int
     {
-        return $this->roles()
-            ->whereHas('role', function ($q) {
-                $q->whereIn('name', ['owner', 'trainer']);
-            })
-            ->value('tenant_id');
+        // Don't just look for owner/trainer. 
+        // Look for ANY tenant association this user has.
+        return $this->roles()->whereNotNull('tenant_id')->value('tenant_id');
     }
     public function getTenantIds()
     {
