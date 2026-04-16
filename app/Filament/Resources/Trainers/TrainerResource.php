@@ -51,10 +51,11 @@ class TrainerResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
-        $user = auth()->user();
-        $tenantId = $user->getTenantId();
-        // dd($tenantId);
-        return static::getModel()::query()
+        $tenantId = auth()->user()->getTenantId();
+
+        return parent::getEloquentQuery()
+            // Force eager loading so Filament doesn't drop null relationships
+            ->with(['trainerProfile', 'roles.role', 'roles.branch'])
             ->whereHas('roles', function ($q) use ($tenantId) {
                 $q->where('tenant_id', $tenantId)
                     ->whereHas('role', function ($rq) {
