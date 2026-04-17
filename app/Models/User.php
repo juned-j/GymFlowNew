@@ -17,6 +17,7 @@ use Illuminate\Notifications\Notifiable;
     'phone',
     'avatar',
     'is_super_admin',
+    'status',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -38,7 +39,7 @@ class User extends Authenticatable
     }
     public function roles()
     {
-        return $this->hasMany(\App\Models\UserTenantRole::class);
+        return $this->hasMany(UserTenantRole::class, 'user_id');
     }
     public function isSuperAdmin(): bool
     {

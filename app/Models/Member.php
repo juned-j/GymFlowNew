@@ -27,4 +27,8 @@ class Member extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function memberProfile()
+    {
+        return $this->hasOne(Member::class, 'user_id', 'id');
+    }
 }
