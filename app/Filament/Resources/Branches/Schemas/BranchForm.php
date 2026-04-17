@@ -1,97 +1,98 @@
 <?php
 
-
 namespace App\Filament\Resources\Branches\Schemas;
 
-use Filament\Forms\Schema;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Grid;
 
 class BranchForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components([
+        return $schema->schema([
+            Wizard::make([
+                // Step 1: Identity
+                Step::make('Branch Identity')
+                    ->description('Basic identification for this gym location')
+                    ->schema([
+                        // Automatically fetch and set Tenant ID
+                        Hidden::make('tenant_id')
+                            ->default(function () {
+                                $user = auth()->user();
+                                if (! $user) {
+                                    throw new \Exception('User not authenticated');
+                                }
+                                // Using your specific logic to find the tenant_id via the 'owner' role
+                                $tenantId = $user->roles()
+                                    ->whereHas('role', fn($q) => $q->where('name', 'owner'))
+                                    ->value('tenant_id');
 
-            // Hidden field to automatically associate the branch with the owner's tenant
-            Hidden::make('tenant_id')
-                ->default(fn() => auth()->user()?->getTenantId())
-                ->dehydrated(true),
+                                if (! $tenantId) {
+                                    // Fallback to your model's helper if the owner check fails
+                                    $tenantId = $user->getTenantId();
+                                }
 
-            // Section 1: Basic Info
-            Section::make('Branch Details')
-                ->description('Provide the basic identification for this gym location.')
-                ->icon('heroicon-o-building-storefront')
-                ->columns(2)
-                ->schema([
-                    TextInput::make('name')
-                        ->label('Branch Name')
-                        ->placeholder('e.g., Downtown Elite')
-                        ->required()
-                        ->maxLength(255),
+                                if (! $tenantId) {
+                                    throw new \Exception('Tenant ID not found for user');
+                                }
+                                return $tenantId;
+                            })
+                            ->dehydrated(true),
 
-                    Toggle::make('is_main')
-                        ->label('Set as Main Branch')
-                        ->helperText('Enable if this is the primary headquarters.')
-                        ->default(false)
-                        ->inline(false),
-                ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('Branch Name')
+                                    ->placeholder('e.g. Downtown Fitness')
+                                    ->required()
+                                    ->maxLength(255),
 
-            // Section 2: Address
-            Section::make('Location Address')
-                ->description('Physical address details for member navigation.')
-                ->icon('heroicon-o-map-pin')
-                ->columns(2)
-                ->schema([
-                    TextInput::make('address_line_1')
-                        ->label('Address Line 1')
-                        ->placeholder('Street address, P.O. box, etc.')
-                        ->required()
-                        ->columnSpanFull(),
+                                TextInput::make('email')
+                                    ->label('Contact Email')
+                                    ->email()
+                                    ->placeholder('branch@example.com'),
 
-                    TextInput::make('address_line_2')
-                        ->label('Address Line 2')
-                        ->placeholder('Apartment, suite, unit, etc.')
-                        ->columnSpanFull(),
+                                TextInput::make('phone')
+                                    ->label('Phone Number')
+                                    ->tel(),
 
-                    TextInput::make('city')
-                        ->required(),
+                                Toggle::make('is_active')
+                                    ->label('Operational Status')
+                                    ->default(true),
+                            ]),
+                    ]),
 
-                    TextInput::make('state')
-                        ->required(),
+                // Step 2: Location
+                Step::make('Location Details')
+                    ->description('Physical address')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('address')
+                                    ->columnSpan(2)
+                                    ->placeholder('Street address'),
 
-                    TextInput::make('postal_code')
-                        ->label('Postal Code')
-                        ->numeric(),
+                                TextInput::make('city')
+                                    ->required()
+                                    ->placeholder('City'),
 
-                    TextInput::make('country')
-                        ->required()
-                        ->default('India'),
-                ]),
+                                TextInput::make('state')
+                                    ->placeholder('State/Province'),
 
-            // Section 3: Tech & Maps
-            Section::make('Navigation & Coordinates')
-                ->description('Coordinates for precise map placement.')
-                ->icon('heroicon-o-globe-alt')
-                ->columns(2)
-                ->schema([
-                    TextInput::make('latitude')
-                        ->numeric()
-                        ->placeholder('19.0760'),
+                                TextInput::make('postal_code')
+                                    ->placeholder('Zip/Postal Code'),
 
-                    TextInput::make('longitude')
-                        ->numeric()
-                        ->placeholder('72.8777'),
-
-                    TextInput::make('map_link')
-                        ->label('Google Maps URL')
-                        ->url()
-                        ->placeholder('https://maps.google.com/...')
-                        ->columnSpanFull(),
-                ]),
+                                TextInput::make('country')
+                                    ->default('India')
+                                    ->required(),
+                            ]),
+                    ]),
+            ])
+                ->columnSpanFull() // Ensures the wizard takes up the full width
         ]);
     }
 }
