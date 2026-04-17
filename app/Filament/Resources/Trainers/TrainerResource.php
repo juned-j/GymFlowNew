@@ -13,16 +13,14 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class TrainerResource extends Resource
 {
-    protected static ?string $model = \App\Models\User::class;
-    protected static ?string $navigationLabel = 'Trainers';
-    protected static ?string $modelLabel = 'Trainer';
-    protected static ?string $pluralModelLabel = 'Trainers';
+    protected static ?string $model = Trainer::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?string $recordTitleAttribute = 'user.name';
 
     public static function form(Schema $schema): Schema
     {
@@ -48,61 +46,5 @@ class TrainerResource extends Resource
             'create' => CreateTrainer::route('/create'),
             'edit' => EditTrainer::route('/{record}/edit'),
         ];
-    }
-    // public static function getEloquentQuery(): Builder
-    // {
-    //     $user = auth()->user();
-
-    //     // 1. Get the base query and eager load profiles to prevent missing rows
-    //     $query = parent::getEloquentQuery()->with(['trainerProfile', 'roles.branch']);
-
-    //     // 2. If the user is a Super Admin, show ALL trainers across all tenants
-    //     if ($user->isSuperAdmin()) {
-    //         return $query->whereHas('roles', function ($q) {
-    //             $q->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
-    //         });
-    //     }
-
-    //     // 3. For gym owners, get their specific tenant context
-    //     $tenantId = $user->getTenantId();
-
-    //     return $query->whereHas('roles', function ($q) use ($tenantId) {
-    //         $q->where('tenant_id', $tenantId)
-    //             ->whereHas('role', function ($rq) {
-    //                 $rq->where('name', 'trainer');
-    //             });
-    //     });
-    // }
-    // public static function getEloquentQuery(): Builder
-    // {
-    //     $user = auth()->user();
-    //     $tenantId = $user->getTenantId();
-
-    //     // 1. You MUST add the 'return' keyword here
-    //     return parent::getEloquentQuery()
-    //         ->with(['trainerProfile', 'roles.branch', 'roles.role']) // Eager load for performance
-    //         ->whereHas('roles', function ($q) use ($tenantId) {
-    //             $q->where('tenant_id', $tenantId)
-    //                 ->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
-    //         });
-    // }
-    // public static function getEloquentQuery(): Builder
-    // {
-    //     // Try this to see if ANY users show up
-    //     return parent::getEloquentQuery()
-    //         ->with(['trainerProfile']);
-    // }
-
-    public static function getEloquentQuery(): Builder
-    {
-        $tenantId = auth()->user()->getTenantId();
-
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes() // Stops hidden tenant/admin logic from hiding rows
-            ->with(['trainerProfile', 'roles.branch', 'roles.role']) // Eager load for speed
-            ->whereHas('roles', function ($q) use ($tenantId) {
-                $q->where('tenant_id', $tenantId)
-                    ->whereHas('role', fn($rq) => $rq->where('name', 'trainer'));
-            });
     }
 }

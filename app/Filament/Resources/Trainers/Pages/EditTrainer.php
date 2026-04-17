@@ -16,13 +16,4 @@ class EditTrainer extends EditRecord
             DeleteAction::make(),
         ];
     }
-    protected function afterSave(): void
-    {
-        $data = $this->form->getState();
-
-        $this->record->trainerProfile()->updateOrCreate(
-            ['user_id' => $this->record->id],
-            $data['trainerProfile'] ?? []
-        );
-    }
 }
