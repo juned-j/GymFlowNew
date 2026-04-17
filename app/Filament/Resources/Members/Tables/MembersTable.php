@@ -31,11 +31,6 @@ class MembersTable
                     ->bulleted()
                     ->searchable(),
 
-                TextColumn::make('user.roles.role.name')
-                    ->label('Role')
-                    ->badge()
-                    ->formatStateUsing(fn(string $state): string => ucfirst($state)),
-
                 // Data from Member Table
                 TextColumn::make('goal')
                     ->toggleable(),
@@ -50,7 +45,7 @@ class MembersTable
 
                 // Status from User table
                 TextColumn::make('user.status')
-                    ->label('Account Status')
+                    ->label('Status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'active' => 'success',
