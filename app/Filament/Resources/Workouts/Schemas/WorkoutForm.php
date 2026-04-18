@@ -15,7 +15,7 @@ class WorkoutForm
 
             Select::make('workout_plan_id')
                 ->label('Workout Plan')
-                ->relationship('plan', 'name')
+                ->relationship('workoutPlan', 'name')
                 ->searchable()
                 ->preload()
                 ->required(),
