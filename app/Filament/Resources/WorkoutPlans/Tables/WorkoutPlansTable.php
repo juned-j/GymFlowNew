@@ -1,28 +1,35 @@
 <?php
 
-namespace App\Filament\Resources\Exercises\Tables;
+namespace App\Filament\Resources\WorkoutPlans\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 
-class ExercisesTable
+class WorkoutPlansTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable(isIndividual: true)->sortable(),
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
 
-                TextColumn::make('muscle_group')
+                TextColumn::make('goal_type')
                     ->badge()
                     ->color('success'),
 
-                TextColumn::make('equipment')
+                TextColumn::make('difficulty')
                     ->badge()
                     ->color('info'),
+
+                IconColumn::make('is_default')
+                    ->boolean()
+                    ->label('Default'),
             ])
             ->filters([
                 //
