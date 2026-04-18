@@ -12,6 +12,7 @@ class Member extends Model
         'user_id',
         'height',
         'weight',
+        'bmi',
         'goal',
         'gender',
         'dob',
