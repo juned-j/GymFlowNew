@@ -10,7 +10,7 @@ class CreateWorkoutPlan extends CreateRecord
     protected static string $resource = WorkoutPlanResource::class;
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['tenant_id'] = auth()->user()->tenant_id;
+        $data['tenant_id'] = auth()->user()->getTenantId();
         return $data;
     }
 }

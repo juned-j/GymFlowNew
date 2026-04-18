@@ -13,7 +13,12 @@ return new class extends Migration {
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
 
             $table->string('name');
-            $table->string('difficulty')->nullable();
+
+            $table->enum('goal_type', ['fat_loss', 'muscle_gain', 'strength']);
+
+            $table->enum('difficulty', ['beginner', 'intermediate', 'advanced'])->nullable();
+
+            $table->boolean('is_default')->default(false);
 
             $table->timestamps();
         });
