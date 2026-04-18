@@ -12,7 +12,7 @@ class CreateExercise extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Automatically set the tenant_id to the currently logged-in user's tenant
-        $data['tenant_id'] = Auth::user()->latest_tenant_id;
+        $data['tenant_id'] = auth()->user()->getTenantId();
 
         return $data;
     }
