@@ -18,7 +18,7 @@ class WorkoutExerciseResource extends Resource
 {
     protected static ?string $model = WorkoutExercise::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
     protected static ?string $recordTitleAttribute = 'exercise.name';
 
