@@ -27,13 +27,6 @@
                 PTBuddy
             </a>
 
-            <!-- Nav -->
-            <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600 font-medium">
-                <a class="hover:text-indigo-600" href="{{ route('features') }}">Features</a>
-                <a class="hover:text-indigo-600" href="{{ route('pricing') }}">Pricing</a>
-                <a class="hover:text-indigo-600" href="{{ route('contact') }}">Contact</a>
-            </nav>
-
             <!-- Actions -->
             <div class="flex items-center gap-3">
                 <a href="{{ url('/admin/login') }}"
