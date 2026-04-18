@@ -6,6 +6,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\Repeater;
 
 class WorkoutPlanForm
 {
@@ -41,6 +42,33 @@ class WorkoutPlanForm
                 ->label('Default Plan')
                 ->helperText('Auto-assign this plan after onboarding')
                 ->default(false),
+            Repeater::make('workouts')
+                ->relationship() // Plan → Workouts
+                ->schema([
+                    TextInput::make('name')
+                        ->label('Day Name')
+                        ->placeholder('e.g. Day 1 - Upper Body')
+                        ->required(),
+                    Repeater::make('exercises')
+                        ->relationship() // Workout → Exercises
+                        ->schema([
+                            TextInput::make('exercise_name')
+                                ->required(),
+                            TextInput::make('sets')
+                                ->numeric()
+                                ->required(),
+                            TextInput::make('reps')
+                                ->numeric()
+                                ->required(),
+                            TextInput::make('rest_seconds')
+                                ->numeric(),
+                        ])
+                        ->columns(4)
+                        ->defaultItems(1)
+                        ->collapsible()
+                ])
+                ->defaultItems(1)
+                ->collapsible()
 
         ]);
     }

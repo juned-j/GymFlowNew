@@ -18,6 +18,7 @@ use Illuminate\Notifications\Notifiable;
     'avatar',
     'is_super_admin',
     'status',
+    'email_verified_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
