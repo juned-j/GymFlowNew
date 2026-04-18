@@ -21,21 +21,16 @@
         <h1 class="text-2xl font-bold text-green-600">PTBuddy</h1>
 
         <nav class="space-x-4">
-            @auth
-                <a href="{{ url('/dashboard') }}" class="px-4 py-2 bg-green-600 text-white rounded">
-                    Dashboard
-                </a>
-            @else
-                <a href="{{ route('login') }}" class="text-gray-700 hover:text-green-600">
-                    Login
-                </a>
+            <a href="{{ route('features') }}" class="text-gray-700 hover:text-green-600">Features</a>
 
-                @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="px-4 py-2 bg-green-600 text-white rounded">
-                        Get Started
-                    </a>
-                @endif
-            @endauth
+            <a href="{{ route('pricing') }}" class="text-gray-700 hover:text-green-600">Pricing</a>
+
+            <a href="{{ route('contact') }}" class="text-gray-700 hover:text-green-600">Contact</a>
+
+            <a href="{{ url('/admin/login') }}"
+               class="px-4 py-2 bg-green-600 text-white rounded">
+                Login
+            </a>
         </nav>
     </header>
 
@@ -49,7 +44,7 @@
             PTBuddy helps trainers and clients manage workouts, track progress, and stay consistent.
         </p>
 
-        <a href="{{ route('register') }}"
+        <a href="{{ url('/admin/login') }}"
            class="px-6 py-3 bg-green-600 text-white rounded-lg text-lg">
             Start Training
         </a>
