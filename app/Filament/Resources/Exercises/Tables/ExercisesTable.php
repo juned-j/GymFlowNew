@@ -14,23 +14,15 @@ class ExercisesTable
     {
         return $table
             ->columns([
-                TextColumn::make('tenant_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('name')
-                    ->searchable(),
+                TextColumn::make('name')->searchable()->sortable(),
+
                 TextColumn::make('muscle_group')
-                    ->searchable(),
+                    ->badge()
+                    ->color('success'),
+
                 TextColumn::make('equipment')
-                    ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->badge()
+                    ->color('info'),
             ])
             ->filters([
                 //

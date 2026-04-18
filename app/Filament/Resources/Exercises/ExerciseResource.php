@@ -47,4 +47,9 @@ class ExerciseResource extends Resource
             'edit' => EditExercise::route('/{record}/edit'),
         ];
     }
+    public static function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['tenant_id'] = auth()->user()->getTenantId();
+        return $data;
+    }
 }
