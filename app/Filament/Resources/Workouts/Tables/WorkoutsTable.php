@@ -15,7 +15,7 @@ class WorkoutsTable
         return $table
             ->columns([
 
-                TextColumn::make('plan.name')
+                TextColumn::make('workoutPlan.name')
                     ->label('Workout Plan')
                     ->sortable()
                     ->searchable(),
