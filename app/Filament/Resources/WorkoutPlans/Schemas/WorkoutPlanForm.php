@@ -69,6 +69,7 @@ class WorkoutPlanForm
                 ])
                 ->defaultItems(1)
                 ->collapsible()
+                ->columnSpanFull()
 
         ]);
     }
