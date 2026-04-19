@@ -6,6 +6,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Hidden;
@@ -47,7 +48,8 @@ class WorkoutPlanForm
             Repeater::make('workouts')
                 ->relationship() // Plan → Workouts
                 ->schema([
-                    \Filament\Forms\Components\Grid::make(4)
+                    // Correctly using the Schema-based Grid
+                    Grid::make(4)
                         ->schema([
                             TextInput::make('name')
                                 ->label('Day Name')
@@ -55,12 +57,9 @@ class WorkoutPlanForm
                                 ->required()
                                 ->columnSpan(3),
 
-                            // 1. This displays the number to the user visually
                             Placeholder::make('day_number_view')
                                 ->label('Day #')
-                                ->content(function ($get, $statePath) {
-                                    // This parses the index from the repeater's state path
-                                    // e.g., "data.workouts.0.day_number_view" -> 1
+                                ->content(function ($statePath) {
                                     if (preg_match('/workouts\.([^\.]+)/', $statePath, $matches)) {
                                         return (int)$matches[1] + 1;
                                     }
@@ -68,10 +67,11 @@ class WorkoutPlanForm
                                 })
                                 ->columnSpan(1),
 
-                            // 2. This hidden field actually saves the value to the database
                             Hidden::make('day_number')
                                 ->default(fn($get) => count($get('../../workouts') ?? []) + 1)
+                                ->dehydrated(true),
                         ]),
+
                     Repeater::make('exercises')
                         ->relationship() // Workout → Exercises
                         ->schema([
