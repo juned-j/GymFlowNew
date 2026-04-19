@@ -48,15 +48,28 @@ class WorkoutPlanForm
                     TextInput::make('name')
                         ->label('Day Name')
                         ->placeholder('e.g. Day 1 - Upper Body')
-                        ->required()
-                        ->columnSpan(2), // Takes up 75% of the row
-
+                        ->required(),
                     TextInput::make('day_number')
                         ->label('Day #')
                         ->disabled()
                         ->dehydrated()
-                        ->default(fn($get) => count($get('../../workouts') ?? []) + 1)
-                        ->columnSpan(2), // Takes up 25% of the row
+                        // This closure automatically calculates the index based on the item's position
+                        ->afterStateHydrated(fn(TextInput $component, $state) => $component->state($state))
+                        ->default(function (Repeater $component): int {
+                            // Get the current items in the repeater
+                            $items = $component->getState();
+                            if (is_array($items)) {
+                                return count($items) + 1;
+                            }
+                            return 1;
+                        })
+                        // This ensures that if you reorder the items, the numbers stay 1, 2, 3...
+                        ->content(function ($get, $statePath) {
+                            // Extract the index from the state path (e.g., 'workouts.0.day_number' -> index 0)
+                            preg_match('/workouts\.([^\.]+)/', $statePath, $matches);
+                            $index = isset($matches[1]) ? (int)$matches[1] + 1 : 1;
+                            return $index;
+                        }),
                     Repeater::make('exercises')
                         ->relationship() // Workout → Exercises
                         ->schema([
