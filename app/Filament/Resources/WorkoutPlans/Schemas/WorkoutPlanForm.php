@@ -49,14 +49,14 @@ class WorkoutPlanForm
                         ->label('Day Name')
                         ->placeholder('e.g. Day 1 - Upper Body')
                         ->required()
-                        ->columnSpan(3), // Takes up 75% of the row
+                        ->columnSpan(2), // Takes up 75% of the row
 
                     TextInput::make('day_number')
                         ->label('Day #')
                         ->disabled()
                         ->dehydrated()
                         ->default(fn($get) => count($get('../../workouts') ?? []) + 1)
-                        ->columnSpan(1), // Takes up 25% of the row
+                        ->columnSpan(2), // Takes up 25% of the row
                     Repeater::make('exercises')
                         ->relationship() // Workout → Exercises
                         ->schema([
