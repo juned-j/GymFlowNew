@@ -7,6 +7,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Hidden;
 
 class WorkoutPlanForm
 {
@@ -45,31 +47,31 @@ class WorkoutPlanForm
             Repeater::make('workouts')
                 ->relationship() // Plan → Workouts
                 ->schema([
-                    TextInput::make('name')
-                        ->label('Day Name')
-                        ->placeholder('e.g. Day 1 - Upper Body')
-                        ->required(),
-                    TextInput::make('day_number')
-                        ->label('Day #')
-                        ->disabled()
-                        ->dehydrated()
-                        // This closure automatically calculates the index based on the item's position
-                        ->afterStateHydrated(fn(TextInput $component, $state) => $component->state($state))
-                        ->default(function (Repeater $component): int {
-                            // Get the current items in the repeater
-                            $items = $component->getState();
-                            if (is_array($items)) {
-                                return count($items) + 1;
-                            }
-                            return 1;
-                        })
-                        // This ensures that if you reorder the items, the numbers stay 1, 2, 3...
-                        ->content(function ($get, $statePath) {
-                            // Extract the index from the state path (e.g., 'workouts.0.day_number' -> index 0)
-                            preg_match('/workouts\.([^\.]+)/', $statePath, $matches);
-                            $index = isset($matches[1]) ? (int)$matches[1] + 1 : 1;
-                            return $index;
-                        }),
+                    \Filament\Forms\Components\Grid::make(4)
+                        ->schema([
+                            TextInput::make('name')
+                                ->label('Day Name')
+                                ->placeholder('e.g. Day 1 - Upper Body')
+                                ->required()
+                                ->columnSpan(3),
+
+                            // 1. This displays the number to the user visually
+                            Placeholder::make('day_number_view')
+                                ->label('Day #')
+                                ->content(function ($get, $statePath) {
+                                    // This parses the index from the repeater's state path
+                                    // e.g., "data.workouts.0.day_number_view" -> 1
+                                    if (preg_match('/workouts\.([^\.]+)/', $statePath, $matches)) {
+                                        return (int)$matches[1] + 1;
+                                    }
+                                    return 1;
+                                })
+                                ->columnSpan(1),
+
+                            // 2. This hidden field actually saves the value to the database
+                            Hidden::make('day_number')
+                                ->default(fn($get) => count($get('../../workouts') ?? []) + 1)
+                        ]),
                     Repeater::make('exercises')
                         ->relationship() // Workout → Exercises
                         ->schema([
