@@ -19,7 +19,7 @@ class WorkoutResource extends Resource
     protected static ?string $model = Workout::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFire;
-
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema

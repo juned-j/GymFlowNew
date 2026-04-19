@@ -17,7 +17,7 @@ use Filament\Tables\Table;
 class WorkoutExerciseResource extends Resource
 {
     protected static ?string $model = WorkoutExercise::class;
-
+    protected static bool $shouldRegisterNavigation = false;
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
     protected static ?string $recordTitleAttribute = 'exercise.name';
