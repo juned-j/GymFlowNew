@@ -45,10 +45,10 @@ class WorkoutPlanForm
                 ->label('Default Plan')
                 ->helperText('Auto-assign this plan after onboarding')
                 ->default(false),
+
             Repeater::make('workouts')
-                ->relationship() // Plan → Workouts
+                ->relationship()
                 ->schema([
-                    // Correctly using the Schema-based Grid
                     Grid::make(4)
                         ->schema([
                             TextInput::make('name')
@@ -57,36 +57,46 @@ class WorkoutPlanForm
                                 ->required()
                                 ->columnSpan(3),
 
-                            Placeholder::make('day_number_view')
+                            // This is now an editable text field that auto-increments
+                            TextInput::make('day_number')
                                 ->label('Day #')
-                                ->content(function ($statePath) {
-                                    if (preg_match('/workouts\.([^\.]+)/', $statePath, $matches)) {
-                                        return (int)$matches[1] + 1;
-                                    }
-                                    return 1;
+                                ->numeric()
+                                ->required()
+                                ->default(function ($get) {
+                                    // Counts existing items in the repeater and adds 1
+                                    $items = $get('../../workouts') ?? [];
+                                    return count($items) + 1;
                                 })
                                 ->columnSpan(1),
-
-                            Hidden::make('day_number')
-                                ->default(fn($get) => count($get('../../workouts') ?? []) + 1)
-                                ->dehydrated(true),
                         ]),
 
                     Repeater::make('exercises')
-                        ->relationship() // Workout → Exercises
+                        ->relationship()
                         ->schema([
-                            TextInput::make('exercise_name')
-                                ->required(),
-                            TextInput::make('sets')
+                            Select::make('exercise_id')
+                                ->label('Exercise')
+                                ->options(Exercise::all()->pluck('name', 'id'))
+                                ->searchable()
+                                ->required()
+                                ->preload()
+                                ->columnSpan(2),
+
+                            TextInput::make('sets_target')
+                                ->label('Sets')
                                 ->numeric()
                                 ->required(),
-                            TextInput::make('reps')
+
+                            TextInput::make('reps_target')
+                                ->label('Reps')
                                 ->numeric()
                                 ->required(),
+
                             TextInput::make('rest_seconds')
-                                ->numeric(),
+                                ->label('Rest (sec)')
+                                ->numeric()
+                                ->default(60),
                         ])
-                        ->columns(4)
+                        ->columns(5)
                         ->defaultItems(1)
                         ->collapsible()
                 ])
