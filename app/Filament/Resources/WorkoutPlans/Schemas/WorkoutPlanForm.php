@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\WorkoutPlans\Schemas;
 
+use App\Models\Exercise;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
