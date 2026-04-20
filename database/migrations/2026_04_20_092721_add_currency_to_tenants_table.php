@@ -9,7 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tenants', function (Blueprint $blueprint) {
-            $blueprint->string('currency', 3)->default('USD')->after('name');
             $blueprint->string('currency_symbol', 10)->default('$')->after('currency');
         });
     }
