@@ -81,4 +81,19 @@ class User extends Authenticatable
     {
         return $this->hasOne(\App\Models\Trainer::class, 'user_id', 'id');
     }
+    public function getTenantCurrencySymbol(): string
+    {
+        // Fetches the first available tenant role and gets the symbol
+        // Based on your UserTenantRole model
+        $role = $this->roles()->whereNotNull('tenant_id')->with('tenant')->first();
+
+        return $role?->tenant?->currency_symbol ?? '$';
+    }
+
+    public function getTenantCurrencyCode(): string
+    {
+        $role = $this->roles()->whereNotNull('tenant_id')->with('tenant')->first();
+
+        return $role?->tenant?->currency ?? 'USD';
+    }
 }

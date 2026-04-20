@@ -10,6 +10,7 @@ class Member extends Model
     protected $table = 'members';
     protected $fillable = [
         'user_id',
+        'tenant_id',
         'height',
         'weight',
         'bmi',

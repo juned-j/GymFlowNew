@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Member;
 
 class Branch extends Model
 {
@@ -56,14 +57,24 @@ class Branch extends Model
      */
     public function members(): HasMany
     {
-        return $this->hasMany(MemberProfile::class);
+        return $this->hasMany(Member::class);
     }
 
     /**
      * Get the classes scheduled at this branch.
      */
-    public function gymClasses(): HasMany
+    public function Classes(): HasMany
     {
-        return $this->hasMany(GymClass::class);
+        return $this->hasMany(Classes::class);
+    }
+    public function getEffectiveCurrencyAttribute(): string
+    {
+        // Returns branch currency if set, otherwise tenant currency
+        return $this->currency ?? $this->tenant->currency;
+    }
+
+    public function getEffectiveSymbolAttribute(): string
+    {
+        return $this->currency_symbol ?? $this->tenant->currency_symbol;
     }
 }

@@ -32,6 +32,7 @@ class Tenant extends Model
         // SaaS config
         'timezone',
         'currency',
+        'currency_symbol',
 
         // Status
         'status',
