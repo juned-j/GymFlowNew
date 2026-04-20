@@ -7,13 +7,16 @@ use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-
+use Filament\Forms\Components\Hidden;
 
 class MembershipPlanForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema->schema([
+            // Automatically inject the tenant_id here
+            Hidden::make('tenant_id')
+                ->default(fn() => auth()->user()->getTenantId()),
             Section::make('Plan Details')
                 ->description('Define the pricing and access for this membership.')
                 ->schema([
@@ -47,7 +50,8 @@ class MembershipPlanForm
                         ->label('Includes Trainer Support')
                         ->default(false)
                         ->inline(false),
-                ])->columns(2),
+                ])->columns(2)
+                ->columnSpanFull(),
         ]);
     }
 }
