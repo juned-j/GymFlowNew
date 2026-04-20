@@ -9,8 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('branches', function (Blueprint $blueprint) {
-            // Nullable allows the branch to inherit the tenant's currency
-            $blueprint->string('currency', 3)->nullable()->after('tenant_id');
             $blueprint->string('currency_symbol', 10)->nullable()->after('currency');
         });
     }
