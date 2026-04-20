@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
 
 class ClassesTable
 {
@@ -13,7 +14,28 @@ class ClassesTable
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable()
+                    ->description(fn($record) => $record->branch?->name),
+
+                TextColumn::make('trainer.name')
+                    ->label('Instructor')
+                    ->sortable(),
+
+                TextColumn::make('start_time')
+                    ->label('Date & Time')
+                    ->dateTime('M d, H:i')
+                    ->sortable(),
+
+                TextColumn::make('capacity')
+                    ->label('Spots')
+                    ->formatStateUsing(fn($state, $record) => $record->bookings_count . ' / ' . $state)
+                    ->badge()
+                    ->color(fn($state, $record) => $record->bookings_count >= $record->capacity ? 'danger' : 'success'),
+
+                TextColumn::make('location')
+                    ->toggleable(),
             ])
             ->filters([
                 //
