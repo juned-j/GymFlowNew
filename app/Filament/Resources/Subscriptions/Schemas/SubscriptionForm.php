@@ -46,7 +46,7 @@ class SubscriptionForm
                             return MembershipPlan::where('tenant_id', auth()->user()->getTenantId())
                                 ->pluck('name', 'id');
                         }),
-                ])->columns(2),
+                ])->columnSpanFull(),
 
             Section::make('Status & Timing')
                 ->schema([
@@ -72,7 +72,7 @@ class SubscriptionForm
                     DateTimePicker::make('ends_at')
                         ->label('Subscription Expiry')
                         ->helperText('Leave blank for lifetime or open-ended plans.'),
-                ])->columns(2),
+                ])->columnSpanFull(),
         ]);
     }
 }

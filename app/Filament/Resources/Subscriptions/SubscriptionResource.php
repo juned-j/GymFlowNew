@@ -53,4 +53,9 @@ class SubscriptionResource extends Resource
             'edit' => EditSubscription::route('/{record}/edit'),
         ];
     }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     return parent::getEloquentQuery()
+    //         ->where('tenant_id', auth()->user()->getTenantId());
+    // }
 }
