@@ -41,11 +41,11 @@ class ClassesForm
                         Select::make('trainer_id')
                             ->label('Trainer')
                             ->required()
-                            ->options(fn() => User::whereHas('roles', function ($q) {
-                                $q->where('tenant_id', auth()->user()->getTenantId())
-                                    ->whereIn('name', ['trainer', 'admin']); // Only show qualified users
-                            })->pluck('name', 'id'))
-                            ->searchable(),
+                            ->options(function () {
+                                return User::where('tenant_id', auth()->user()->getTenantId())
+                                    ->whereHas('roles', fn($q) => $q->whereIn('name', ['trainer', 'admin']))
+                                    ->pluck('name', 'id');
+                            }),
 
                         TextInput::make('capacity')
                             ->numeric()

@@ -26,14 +26,14 @@ class SubscriptionForm
                     Select::make('user_id')
                         ->label('Member')
                         ->relationship('user', 'name')
-                        ->searchable()
                         ->preload()
                         ->required()
-                        // Ensure we only see users associated with this tenant
                         ->options(function () {
                             $tenantId = auth()->user()->getTenantId();
+
                             return User::whereHas('roles', function ($query) use ($tenantId) {
-                                $query->where('tenant_id', $tenantId);
+                                $query->where('tenant_id', $tenantId)
+                                    ->where('name', 'member'); // Matches the 'member' role specifically
                             })->pluck('name', 'id');
                         }),
 
