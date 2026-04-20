@@ -42,10 +42,14 @@ class ClassesForm
                             ->label('Trainer')
                             ->required()
                             ->options(function () {
-                                return User::where('tenant_id', auth()->user()->getTenantId())
-                                    ->whereHas('roles', fn($q) => $q->whereIn('name', ['trainer', 'admin']))
-                                    ->pluck('name', 'id');
-                            }),
+                                $tenantId = auth()->user()->getTenantId();
+
+                                return User::whereHas('roles', function ($query) use ($tenantId) {
+                                    $query->where('tenant_id', $tenantId) // Column is here, not in users table
+                                        ->whereIn('name', ['trainer', 'admin']);
+                                })->pluck('name', 'id');
+                            })
+                            ->searchable(),
 
                         TextInput::make('capacity')
                             ->numeric()
