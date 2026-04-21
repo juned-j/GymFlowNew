@@ -17,6 +17,8 @@ use Illuminate\Notifications\Notifiable;
     'phone',
     'avatar',
     'is_super_admin',
+    'provider_name',
+    'provider_id',
     'status',
     'email_verified_at',
 ])]
