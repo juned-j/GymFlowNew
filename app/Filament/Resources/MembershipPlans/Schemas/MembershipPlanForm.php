@@ -62,7 +62,7 @@ class MembershipPlanForm
 
                     // The dynamic JSON features field
                     Repeater::make('features')
-                        ->grid(2)
+                        // ->grid(2)
                         ->schema([
                             TextInput::make('feature_name')
                                 ->label('Feature Label')
