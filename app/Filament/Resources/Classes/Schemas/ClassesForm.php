@@ -46,7 +46,9 @@ class ClassesForm
 
                                 return User::whereHas('roles', function ($query) use ($tenantId) {
                                     $query->where('tenant_id', $tenantId) // Column is here, not in users table
-                                        ->whereIn('name', ['trainer', 'admin']);
+                                        ->whereHas('role', function ($q) {
+                                            $q->whereIn('name', ['trainer', 'admin']);
+                                        });
                                 })->pluck('name', 'id');
                             })
                             ->searchable(),

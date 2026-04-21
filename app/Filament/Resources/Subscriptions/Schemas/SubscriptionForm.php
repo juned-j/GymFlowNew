@@ -33,7 +33,9 @@ class SubscriptionForm
 
                             return User::whereHas('roles', function ($query) use ($tenantId) {
                                 $query->where('tenant_id', $tenantId)
-                                    ->where('name', 'member'); // Matches the 'member' role specifically
+                                    ->whereHas('role', function ($q) {
+                                        $q->where('name', 'member');
+                                    }); // Matches the 'member' role specifically
                             })->pluck('name', 'id');
                         }),
 
