@@ -8,6 +8,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 
 class MembershipPlanForm
 {
@@ -52,6 +53,31 @@ class MembershipPlanForm
                         ->inline(false),
                 ])->columns(2)
                 ->columnSpanFull(),
+            Section::make('Feature Access')
+                ->description('Manage advanced plan capabilities.')
+                ->schema([
+                    Toggle::make('has_trainer_support')
+                        ->label('Includes Trainer Support')
+                        ->columnSpanFull(),
+
+                    // The dynamic JSON features field
+                    Repeater::make('features')
+                        ->grid(2)
+                        ->schema([
+                            TextInput::make('feature_name')
+                                ->label('Feature Label')
+                                ->placeholder('e.g. Diet Plan')
+                                ->required(),
+
+                            Toggle::make('is_enabled')
+                                ->label('Enabled')
+                                ->default(true),
+                        ])
+                        ->itemLabel(fn(array $state): ?string => $state['feature_name'] ?? null)
+                        ->collapsible()
+                        ->columnSpanFull()
+                        ->helperText('Add custom feature flags for your mobile app to check.'),
+                ]),
         ]);
     }
 }

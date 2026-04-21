@@ -12,6 +12,15 @@ class MembershipPlan extends Model
         'price',
         'billing_period',
         'workout_plan_limit',
+        'features',
         'has_trainer_support'
     ];
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:2',
+            'features' => 'array', // Crucial for the Repeater to work
+            'has_trainer_support' => 'boolean',
+        ];
+    }
 }
