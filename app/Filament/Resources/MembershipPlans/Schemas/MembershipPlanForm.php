@@ -77,7 +77,7 @@ class MembershipPlanForm
                         ->collapsible()
                         ->columnSpanFull()
                         ->helperText('Add custom feature flags for your mobile app to check.'),
-                ]),
+                ])->columnSpanFull(),
         ]);
     }
 }
