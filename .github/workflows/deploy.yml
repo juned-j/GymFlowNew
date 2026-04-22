@@ -10,20 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 👇 DEBUG STEP (add here)
+      - name: Debug key length
+        run: echo "${{ secrets.EC2_SSH_KEY }}" | wc -l
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /var/www/gymflow-admin
-             git fetch --all
+            git fetch --all
             git reset --hard origin/main
+
             # Install npm dependencies if missing
             if [ ! -d "node_modules" ]; then
               npm install
             fi
+
             # Build frontend assets
             npm run build
 
