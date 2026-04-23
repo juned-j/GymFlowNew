@@ -18,8 +18,7 @@ class DietPlanResource extends Resource
 {
     protected static ?string $model = DietPlan::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
+protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBeaker;
     public static function form(Schema $schema): Schema
     {
         return DietPlanForm::configure($schema);
