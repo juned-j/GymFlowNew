@@ -38,6 +38,11 @@ class DietPlanMeal extends Model
         return $this->belongsTo(DietPlan::class);
     }
 
+
+    public function meals()
+{
+    return $this->hasMany(\App\Models\DietPlanMeal::class);
+}
     /*
     |--------------------------------------------------------------------------
     | Constants (clean usage)
