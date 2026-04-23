@@ -18,8 +18,7 @@ class MembershipPlanResource extends Resource
 {
     protected static ?string $model = MembershipPlan::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
+protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema
