@@ -52,32 +52,5 @@ class DietPlan extends Model
         return $this->hasMany(MemberDietPlan::class);
     }
     
-protected static function booted()
-{
-    static::creating(function ($plan) {
 
-        $user = auth()->user();
-
-        if (! $user) {
-            throw new \Exception('Unauthenticated user');
-        }
-
-        // tenant_id
-        $plan->tenant_id = $user->roles()
-            ->whereHas('role', fn ($q) => $q->where('name', 'owner'))
-            ->whereNotNull('tenant_id')
-            ->value('tenant_id');
-
-        // trainer_id (AUTO FIX)
-        $plan->trainer_id = $user->trainerProfile?->id;
-
-        if (! $plan->tenant_id) {
-            throw new \Exception('Tenant not found');
-        }
-
-        if (! $plan->trainer_id) {
-            throw new \Exception('Trainer profile not found for user');
-        }
-    });
-}
 }
