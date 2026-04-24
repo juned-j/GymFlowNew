@@ -84,6 +84,8 @@ class BranchForm
 
                                 TextInput::make('country')
                                     ->default('India')
+                                              ->maxLength(50)
+                    ->rules(['max:50'])
                                     ->required(),
 
                                 TextInput::make('latitude')
