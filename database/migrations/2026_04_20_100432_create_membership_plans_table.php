@@ -17,6 +17,8 @@ return new class extends Migration
             $table->integer('workout_plan_limit')->default(1);
             $table->boolean('has_trainer_support')->default(false);
             $table->boolean('is_active')->default(true); // Toggle plan visibility
+              $table->string('stripe_product_id')->nullable()->after('is_active');
+        $table->string('stripe_price_id')->nullable()->after('stripe_product_id');
             $table->timestamps();
         });
     }
@@ -24,5 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('membership_plans');
+                $table->dropColumn(['stripe_product_id', 'stripe_price_id']);
+
     }
 };
