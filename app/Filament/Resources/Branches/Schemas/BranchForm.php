@@ -49,8 +49,7 @@ class BranchForm
                 // Step 2: Location (Mapping exactly to your Model's $fillable)
                 Step::make('Location Details')
                     ->description('Physical address and mapping')
-                      ->maxLength(50)
-                    ->rules(['max:50'])
+                    
                     ->icon('heroicon-o-map-pin')
                     ->schema([
                         Grid::make(2)
