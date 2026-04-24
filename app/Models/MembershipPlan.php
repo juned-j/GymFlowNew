@@ -14,7 +14,7 @@ class MembershipPlan extends Model
         'workout_plan_limit',
         'stripe_product_id',
         'stripe_price_id',
-      
+      'features',
         'has_trainer_support'
     ];
     protected function casts(): array
