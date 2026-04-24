@@ -99,7 +99,7 @@ class User extends Authenticatable
         return $role?->tenant?->currency ?? 'USD';
     }
     public function tenantRoles()
-{
-    return $this->hasMany(\App\Models\UserTenantRole::class);
-}
+    {
+        return $this->hasMany(\App\Models\UserTenantRole::class);
+    }
 }
