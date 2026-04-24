@@ -25,4 +25,14 @@ class MembershipPlan extends Model
             'has_trainer_support' => 'boolean',
         ];
     }
+    public function subscriptions()
+{
+    return $this->hasMany(\App\Models\Subscription::class, 'membership_plan_id');
+}
+    protected static function booted()
+{
+    static::deleting(function ($plan) {
+        $plan->subscriptions()->delete();
+    });
+}
 }
