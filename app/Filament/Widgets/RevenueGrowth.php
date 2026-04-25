@@ -11,7 +11,8 @@ class RevenueGrowth extends ChartWidget
 {
     protected ?string $heading = 'Revenue Overview';
     protected static ?int $sort = 2;
-    
+    protected int | string | array $columnSpan = 'full';
+
 
     protected function getData(): array
     {

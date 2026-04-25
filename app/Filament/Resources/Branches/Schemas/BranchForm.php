@@ -30,6 +30,8 @@ class BranchForm
                             ->schema([
                                 TextInput::make('name')
                                     ->label('Branch Name')
+                                      ->maxLength(50)
+                    ->rules(['max:50'])
                                     ->required()
                                     ->maxLength(255),
 
@@ -47,30 +49,43 @@ class BranchForm
                 // Step 2: Location (Mapping exactly to your Model's $fillable)
                 Step::make('Location Details')
                     ->description('Physical address and mapping')
+                    
                     ->icon('heroicon-o-map-pin')
                     ->schema([
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('address_line_1')
                                     ->label('Address Line 1')
+                                      ->maxLength(50)
+                    ->rules(['max:50'])
                                     ->required()
                                     ->columnSpanFull(),
 
                                 TextInput::make('address_line_2')
                                     ->label('Address Line 2')
+                                    ->maxLength(50)
+                    ->rules(['max:50'])
                                     ->columnSpanFull(),
 
                                 TextInput::make('city')
+                                  ->maxLength(50)
+                    ->rules(['max:50'])
                                     ->required(),
 
                                 TextInput::make('state')
+                                  ->maxLength(50)
+                    ->rules(['max:50'])
                                     ->required(),
 
                                 TextInput::make('postal_code')
+                                  ->maxLength(10)
+                    ->rules(['max:50'])
                                     ->label('Postal Code'),
 
                                 TextInput::make('country')
                                     ->default('India')
+                                              ->maxLength(50)
+                    ->rules(['max:50'])
                                     ->required(),
 
                                 TextInput::make('latitude')
@@ -80,7 +95,19 @@ class BranchForm
                                     ->numeric(),
                             ]),
                     ]),
-            ])->columnSpanFull()
+            ])
+            ->submitAction(
+    \Filament\Actions\Action::make('submit')
+        ->label(fn () => request()->routeIs('*edit*')
+            ? 'Save Changes'
+            : 'Create Branch'
+        )
+        ->submit('create')
+        ->color('primary')
+)
+                    ->skippable(str(request()->route()->getName())->endsWith('.edit'))
+
+            ->columnSpanFull()
         ]);
     }
 }

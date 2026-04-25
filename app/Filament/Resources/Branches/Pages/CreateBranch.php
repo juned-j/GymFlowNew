@@ -9,10 +9,16 @@ use App\Models\Branch;
 class CreateBranch extends CreateRecord
 {
     protected static string $resource = BranchResource::class;
+
+        protected static bool $canCreateAnother = false;
+    protected function getFormActions(): array
+{
+    return [];
+}
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // 1. Check if 'is_main' is present and true
-        // We use data['is_main'] ?? false to prevent the "Undefined key" error
+        
         if (isset($data['is_main']) && $data['is_main']) {
 
             // 2. Reset other branches for this tenant to false

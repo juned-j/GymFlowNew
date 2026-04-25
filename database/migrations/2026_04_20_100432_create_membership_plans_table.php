@@ -16,7 +16,12 @@ return new class extends Migration
             $table->enum('billing_period', ['month', 'year'])->default('month');
             $table->integer('workout_plan_limit')->default(1);
             $table->boolean('has_trainer_support')->default(false);
-            $table->boolean('is_active')->default(true); // Toggle plan visibility
+            $table->boolean('is_active')->default(true);
+
+            // ✅ Stripe fields
+            $table->string('stripe_product_id')->nullable();
+            $table->string('stripe_price_id')->nullable();
+
             $table->timestamps();
         });
     }

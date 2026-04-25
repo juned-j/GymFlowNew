@@ -12,7 +12,9 @@ class MembershipPlan extends Model
         'price',
         'billing_period',
         'workout_plan_limit',
-        'features',
+        'stripe_product_id',
+        'stripe_price_id',
+      'features',
         'has_trainer_support'
     ];
     protected function casts(): array
@@ -23,4 +25,14 @@ class MembershipPlan extends Model
             'has_trainer_support' => 'boolean',
         ];
     }
+    public function subscriptions()
+{
+    return $this->hasMany(\App\Models\Subscription::class, 'membership_plan_id');
+}
+    protected static function booted()
+{
+    static::deleting(function ($plan) {
+        $plan->subscriptions()->delete();
+    });
+}
 }
