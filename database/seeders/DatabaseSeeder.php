@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             TenantSeeder::class,
             MembershipPlanSeeder::class,
+            CountrySeeder::class,
         ]);
     }
 }
