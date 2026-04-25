@@ -46,14 +46,14 @@ class MembershipPlanSeeder extends Seeder
             [
                 'tenant_id' => 1,
                 'name' => 'Pro Monthly',
-                'price' => 499,
+                'price' => 100,
                 'billing_period' => 'month',
                 'workout_plan_limit' => 999,
                 'has_trainer_support' => false,
                 'is_active' => true,
 
-                'stripe_product_id' => null,
-                'stripe_price_id' => null,
+                'stripe_product_id' => 'prod_UO8Ga9f4JszvjD',
+                'stripe_price_id' => 'price_1TPLzhB7LtVZdEpmcumG0u8D',
 
                 'features' => json_encode([
                     'workout_plans' => 'unlimited',
@@ -79,8 +79,8 @@ class MembershipPlanSeeder extends Seeder
                 'has_trainer_support' => false,
                 'is_active' => true,
 
-                'stripe_product_id' => null,
-                'stripe_price_id' => null,
+                'stripe_product_id' => 'prod_UO9tfcuxxGinMZ',
+                'stripe_price_id' => 'price_1TPNZGB7LtVZdEpmfe2xYclb',
 
                 'features' => json_encode([
                     'workout_plans' => 'unlimited',
@@ -100,14 +100,14 @@ class MembershipPlanSeeder extends Seeder
             [
                 'tenant_id' => 1,
                 'name' => 'Elite Monthly',
-                'price' => 999,
+                'price' => 200,
                 'billing_period' => 'month',
                 'workout_plan_limit' => 999,
                 'has_trainer_support' => true,
                 'is_active' => true,
 
-                'stripe_product_id' => null,
-                'stripe_price_id' => null,
+                'stripe_product_id' => 'prod_UO8JFbXqSjkLr9',
+                'stripe_price_id' => 'price_1TPM2PB7LtVZdEpmej3tqPQZ',
 
                 'features' => json_encode([
                     'workout_plans' => 'unlimited',
@@ -135,8 +135,8 @@ class MembershipPlanSeeder extends Seeder
                 'has_trainer_support' => true,
                 'is_active' => true,
 
-                'stripe_product_id' => null,
-                'stripe_price_id' => null,
+                'stripe_product_id' => 'prod_UO9w2RN72vwXia',
+                'stripe_price_id' => 'price_1TPNchB7LtVZdEpmAXRE0gpN',
 
                 'features' => json_encode([
                     'workout_plans' => 'unlimited',

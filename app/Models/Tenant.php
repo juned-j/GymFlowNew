@@ -71,4 +71,7 @@ class Tenant extends Model
     {
         return (bool) $this->is_active;
     }
+    protected $casts = [
+        'app_settings' => 'array',
+    ];
 }
