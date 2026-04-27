@@ -74,4 +74,8 @@ class Tenant extends Model
     protected $casts = [
         'app_settings' => 'array',
     ];
+    public function subscription()
+    {
+        return $this->hasOne(TenantSubscription::class);
+    }
 }
