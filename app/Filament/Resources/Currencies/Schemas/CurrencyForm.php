@@ -16,12 +16,14 @@ class CurrencyForm
                 TextInput::make('currency_code')
                     ->label('Currency Code')
                     ->required()
-                    ->maxLength(10),
+                    ->maxLength(10)
+                    ->unique(ignoreRecord: true),
 
                 TextInput::make('currency_name')
                     ->label('Currency Name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->unique(ignoreRecord: true),
 
                 TextInput::make('exchange_rate')
                     ->label('Exchange Rate')
@@ -30,7 +32,8 @@ class CurrencyForm
 
                 TextInput::make('currency_symbol')
                     ->label('Currency Symbol')
-                    ->maxLength(10),
+                    ->maxLength(10)
+                    ->unique(ignoreRecord: true),
 
                 Toggle::make('is_default')
                     ->label('Default Currency')
