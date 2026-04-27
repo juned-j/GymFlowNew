@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class TenantSubscription extends Model
 {
     use HasFactory;
-
     protected $table = 'tenant_subscriptions';
 
     protected $fillable = [

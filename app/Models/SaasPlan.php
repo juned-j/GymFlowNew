@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class SaasPlan extends Model
 {
     use HasFactory;
-
     protected $table = 'saas_plans';
 
     protected $fillable = [
