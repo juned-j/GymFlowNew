@@ -8,7 +8,7 @@ use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Icons\Heroicon;
-use App\Models\AppSetting;
+use Filament\Notifications\Notification;
 
 class AppSettings extends Page implements Forms\Contracts\HasForms
 {
@@ -23,35 +23,44 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
     }
 
     public static function shouldRegisterNavigation(): bool
-{
-    return false;
-}
+    {
+        return false;
+    }
 
     public ?array $data = [];
 
+    public $tenant; // ✅ STORE TENANT HERE
+
     public function mount(): void
     {
-        $setting = AppSetting::first();
+        $tenant = app()->bound('tenant') ? app('tenant') : null;
 
-        if ($setting) {
-            $this->data = $setting->settings ?? [];
-        } else {
-            $this->data = [
-                'branding' => [
-                    'primary_color' => '#FF5733',
-                    'secondary_color' => '#222222',
-                    'accent_color' => '#FFC107',
-                ],
-                'app' => [
-                    'app_name' => 'GymFlow',
-                    'version' => '1.0.0',
-                ],
-                'ui' => [
-                    'default_language' => 'en',
-                    'supported_languages' => ['en'],
-                ],
-            ];
+        if (!$tenant) {
+            \Log::error('❌ Tenant not found in mount');
+            abort(404, 'Tenant not found');
         }
+
+        $this->tenant = $tenant; // ✅ IMPORTANT FIX
+
+        \Log::info('✅ Tenant loaded in mount', [
+            'tenant_id' => $tenant->id
+        ]);
+
+        $this->data = $tenant->app_settings ?? [
+            'branding' => [
+                'primary_color' => '#FF5733',
+                'secondary_color' => '#222222',
+                'accent_color' => '#FFC107',
+            ],
+            'app' => [
+                'app_name' => 'GymFlow',
+                'version' => '1.0.0',
+            ],
+            'ui' => [
+                'default_language' => 'en',
+                'supported_languages' => ['en'],
+            ],
+        ];
 
         $this->form->fill($this->data);
     }
@@ -127,16 +136,26 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
             ]);
     }
 
-  public function save(): void
-{
-    AppSetting::updateOrCreate(
-        ['id' => 1],
-        ['settings' => $this->data]
-    );
+    public function save(): void
+    {
+        if (!$this->tenant) {
+            \Log::error('❌ Tenant missing in component');
+            return;
+        }
 
-    \Filament\Notifications\Notification::make()
-        ->title('Settings saved successfully')
-        ->success()
-        ->send();
-}
+        $data = $this->form->getState(); // ✅ IMPORTANT FIX
+
+        \Log::info('💾 Saving app settings', [
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $this->tenant->update([
+            'app_settings' => $data
+        ]);
+
+        Notification::make()
+            ->title('Settings saved successfully')
+            ->success()
+            ->send();
+    }
 }
