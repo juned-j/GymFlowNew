@@ -20,7 +20,9 @@ class TrainerForm
                 Step::make('Trainer Account')
                     ->schema([
                         TextInput::make('user.name')->required(),
-                        TextInput::make('user.email')->email()->required(),
+                        TextInput::make('user.email')->email()
+                          ->unique('users', 'email')
+                        ->required(),
                         TextInput::make('user.phone')->tel(),
                     ]),
 
@@ -49,7 +51,18 @@ class TrainerForm
                             ->disabled()
                             ->dehydrated(),
                     ]),
-            ])->columnSpanFull()
+            ])
+                                    ->submitAction(
+    \Filament\Actions\Action::make('submit')
+        ->label(fn () => request()->routeIs('*edit*')
+            ? 'Save Changes'
+            : 'Create Trainer'
+        )
+        ->submit('create')
+        ->color('primary')
+)
+                    ->skippable(str(request()->route()->getName())->endsWith('.edit'))
+            ->columnSpanFull()
         ]);
     }
 }
