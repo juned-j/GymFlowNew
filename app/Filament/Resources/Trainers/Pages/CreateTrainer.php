@@ -12,6 +12,8 @@ class CreateTrainer extends CreateRecord
 {
     protected static string $resource = TrainerResource::class;
     protected ?User $trainerUser = null;
+                    protected static bool $canCreateAnother = false;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // 1. Create Trainer User account
@@ -45,4 +47,8 @@ class CreateTrainer extends CreateRecord
             'role_id' => $roleData['role_id'] ?? null,
         ]);
     }
+                protected function getFormActions(): array
+{
+    return [];
+}
 }
