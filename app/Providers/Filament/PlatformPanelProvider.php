@@ -34,13 +34,14 @@ class PlatformPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Platform/Resources'), for: 'App\Filament\Platform\Resources')
             ->discoverPages(in: app_path('Filament/Platform/Pages'), for: 'App\Filament\Platform\Pages')
             ->pages([
-                Dashboard::class,
+                // Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Platform/Widgets'), for: 'App\Filament\Platform\Widgets')
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
+            
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

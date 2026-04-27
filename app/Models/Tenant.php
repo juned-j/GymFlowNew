@@ -38,6 +38,7 @@ class Tenant extends Model
         'status',
         'is_active',
         'trial_ends_at',
+        'app_settings',
     ];
 
     /**

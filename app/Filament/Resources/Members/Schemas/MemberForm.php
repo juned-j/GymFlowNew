@@ -82,7 +82,19 @@ class MemberForm
                             ->default('active')
                             ->required(),
                     ]),
-            ])->columnSpanFull()
+                    
+            ])
+                        ->submitAction(
+    \Filament\Actions\Action::make('submit')
+        ->label(fn () => request()->routeIs('*edit*')
+            ? 'Save Changes'
+            : 'Create Member'
+        )
+        ->submit('create')
+        ->color('primary')
+)
+                    ->skippable(str(request()->route()->getName())->endsWith('.edit'))
+->columnSpanFull()
         ]);
     }
 }

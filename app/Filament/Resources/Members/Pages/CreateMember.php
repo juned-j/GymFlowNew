@@ -12,6 +12,8 @@ class CreateMember extends CreateRecord
 {
     protected static string $resource = MemberResource::class;
     protected ?User $memberUser = null;
+                protected static bool $canCreateAnother = false;
+
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -48,4 +50,8 @@ class CreateMember extends CreateRecord
             'role_id' => $roleData['role_id'] ?? null,
         ]);
     }
+            protected function getFormActions(): array
+{
+    return [];
+}
 }
