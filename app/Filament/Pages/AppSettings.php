@@ -76,8 +76,8 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         Forms\Components\ColorPicker::make('branding.primary_color'),
                         Forms\Components\ColorPicker::make('branding.secondary_color'),
                         Forms\Components\ColorPicker::make('branding.accent_color'),
-                     Forms\Components\TextInput::make('branding.logo_url')->image(),
-                 Forms\Components\TextInput::make('branding.splash_screen_url')->image(),
+                     Forms\Components\TextInput::make('branding.logo_url'),
+                 Forms\Components\TextInput::make('branding.splash_screen_url'),
                     ]),
 
                 Section::make('App')
