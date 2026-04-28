@@ -13,6 +13,7 @@ use Illuminate\Notifications\Notifiable;
 #[Fillable([
     'name',
     'email',
+    'stripe_customer_id',
     'password',
     'phone',
     'avatar',
