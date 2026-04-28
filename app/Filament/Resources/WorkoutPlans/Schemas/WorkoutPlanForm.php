@@ -59,16 +59,20 @@ class WorkoutPlanForm
                                 ->columnSpan(3),
 
                             // This is now an editable text field that auto-increments
-                            TextInput::make('day_number')
-                                ->label('Day #')
-                                ->numeric()
-                                ->required()
-                                ->default(function ($get) {
-                                    // Counts existing items in the repeater and adds 1
-                                    $items = $get('../../workouts') ?? [];
-                                    return count($items) + 1;
-                                })
-                                ->columnSpan(1),
+                           TextInput::make('day_number')
+    ->label('Day #')
+    ->numeric()
+    ->required()
+    ->default(function ($get) {
+
+        $items = $get('../../workouts') ?? [];
+
+        // subtract 1 because repeater always has current empty row
+        $count = count($items) - 1;
+
+        return max($count, 0) + 1;
+    })
+    ->columnSpan(1),
                         ]),
 
                     Repeater::make('exercises')
