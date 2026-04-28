@@ -13,11 +13,8 @@ class Country extends Model
 
     protected $fillable = [
         'name',
-        'iso2',
-        'iso3',
+        'iso_code',
         'phone_code',
-        'currency',
-        'currency_symbol',
         'flag',
         'is_active',
     ];
