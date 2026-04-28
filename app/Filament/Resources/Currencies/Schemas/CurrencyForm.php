@@ -33,6 +33,7 @@ class CurrencyForm
                 TextInput::make('currency_symbol')
                     ->label('Currency Symbol')
                     ->maxLength(10)
+                    ->required()
                     ->unique(ignoreRecord: true),
 
                 Toggle::make('is_default')
