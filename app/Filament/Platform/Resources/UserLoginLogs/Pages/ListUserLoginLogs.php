@@ -10,10 +10,5 @@ class ListUserLoginLogs extends ListRecords
 {
     protected static string $resource = UserLoginLogResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            CreateAction::make(),
-        ];
-    }
+   
 }
