@@ -6,8 +6,6 @@ use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Select;
-
 
 class CountryForm
 {
@@ -17,42 +15,21 @@ class CountryForm
             ->components([
 
                 TextInput::make('name')
+                    ->label('Country Name')
                     ->required()
                     ->maxLength(255),
 
-                TextInput::make('iso2')
-                    ->label('ISO2')
-                    ->maxLength(2),
-
-                TextInput::make('iso3')
-                    ->label('ISO3')
-                    ->maxLength(3),
+             TextInput::make('iso_code')
+    ->label('ISO Code')
+    ->maxLength(2)
+   
+    ->unique(ignoreRecord: true)
+    ->regex('/^[A-Za-z]{2}$/')
+    ->helperText('Enter 2-letter ISO code (e.g., IN, US)'),
 
                 TextInput::make('phone_code')
-                    ->label('Phone Code'),
-
-           Select::make('currency')
-    ->label('Currency')
-    ->options(
-        \App\Models\Currency::pluck('currency_name', 'currency_code')
-    )
-    ->searchable()
-    ->reactive()
-    ->afterStateUpdated(function ($state, callable $set) {
-        $currency = \App\Models\Currency::where('currency_code', $state)->first();
-
-        if ($currency) {
-            $set('currency_symbol', $currency->currency_symbol);
-        }
-    })
-    ->required(),
-
-Select::make('currency_symbol')
-    ->label('Currency Symbol')
-    ->options(
-        \App\Models\Currency::pluck('currency_symbol', 'currency_symbol')
-    )
-    ->disabled(),
+                    ->label('Phone Code')
+                    ->placeholder('+91'),
 
                 FileUpload::make('flag')
                     ->label('Flag')
