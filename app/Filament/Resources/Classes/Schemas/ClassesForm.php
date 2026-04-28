@@ -14,6 +14,9 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Components\Section;
 use App\Models\Branch;
 use App\Models\User;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Illuminate\Support\Carbon;
 
 class ClassesForm
 {
@@ -62,15 +65,42 @@ class ClassesForm
 
                 Section::make('Schedule & Location')
                     ->schema([
-                        DateTimePicker::make('start_time')
-                            ->required()
-                            ->native(false)
-                            ->after('now'),
+      DateTimePicker::make('start_time')
+    ->label('Start Time')
+    ->required()
+    ->native(false)
+    ->seconds(false)
+    ->minDate(now())
+    ->displayFormat('d M Y h:i A')
+    ->live()
+    ->afterStateUpdated(function (Get $get, Set $set, $state) {
+        if ($state) {
+            $set('end_time', Carbon::parse($state)->addHour());
+        }
+    })
+    ->default(now()->addHour()),
 
-                        DateTimePicker::make('end_time')
-                            ->required()
-                            ->native(false)
-                            ->after('start_time'),
+DateTimePicker::make('end_time')
+    ->label('End Time')
+    ->required()
+    ->native(false)
+    ->seconds(false)
+    ->displayFormat('d M Y h:i A')
+    ->live()
+    ->rules([
+        function (Get $get): \Closure {
+            return function ($attribute, $value, $fail) use ($get) {
+
+                if (!$get('start_time') || !$value) {
+                    return;
+                }
+
+                if (Carbon::parse($value)->lte(Carbon::parse($get('start_time')))) {
+                    $fail('End Time must be after Start Time.');
+                }
+            };
+        },
+    ]),
 
                         TextInput::make('location')
                             ->placeholder('e.g., Studio A or Online'),
