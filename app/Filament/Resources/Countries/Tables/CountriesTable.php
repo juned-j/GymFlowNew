@@ -17,25 +17,17 @@ class CountriesTable
         return $table
             ->columns([
 
+             
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('iso2')
-                    ->label('ISO2')
+                TextColumn::make('iso_code')
+                    ->label('ISO Code')
                     ->sortable(),
-
-                TextColumn::make('iso3')
-                    ->label('ISO3'),
 
                 TextColumn::make('phone_code')
                     ->label('Phone'),
-
-                TextColumn::make('currency'),
-
-                ImageColumn::make('flag')
-                    ->label('Flag')
-                    ->circular(),
 
                 IconColumn::make('is_active')
                     ->boolean()
