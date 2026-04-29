@@ -17,6 +17,10 @@ class WorkoutPlansTable
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
+                                  ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
                     ->sortable(),
 
                 TextColumn::make('goal_type')
