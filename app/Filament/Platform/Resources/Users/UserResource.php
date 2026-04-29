@@ -16,6 +16,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use App\Filament\Platform\Resources\Users\Tables\UsersTable;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Toggle;
 
 class UserResource extends Resource
 {
@@ -47,6 +48,11 @@ class UserResource extends Resource
                     ->password()
                     ->required(fn($context) => $context === 'create')
                     ->dehydrated(false),
+
+                    Toggle::make('status')
+    ->label('Active Status')
+    ->default(true)
+    ->required(),
             ])
                 ->columnSpanFull(),
             Repeater::make('roles')
