@@ -16,7 +16,7 @@ class ExerciseForm
             TextInput::make('name')
                 ->label('Exercise Name')
                 ->required()
-                ->maxLength(255),
+                ->maxLength(30),
 
             Select::make('muscle_group')
                 ->label('Muscle Group')
