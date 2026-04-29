@@ -14,7 +14,12 @@ class ExercisesTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable(isIndividual: true)->sortable(),
+                TextColumn::make('name')->searchable(isIndividual: true)
+                   ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
+                ->sortable(),
 
                 TextColumn::make('muscle_group')
                     ->badge()
