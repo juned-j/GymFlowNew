@@ -26,7 +26,7 @@ class DietPlanForm
 
                 TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
+                      ->maxLength(50),
 
                 Textarea::make('description'),
 
