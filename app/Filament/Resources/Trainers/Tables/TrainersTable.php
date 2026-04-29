@@ -17,6 +17,11 @@ class TrainersTable
                 // Pulling data via the 'user' relationship defined in Trainer model
                 TextColumn::make('user.name')
                     ->label('Trainer Name')
+                      ->searchable()
+                          ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
                     ->searchable()
                     ->sortable(),
 
