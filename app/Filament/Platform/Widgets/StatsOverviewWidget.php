@@ -2,7 +2,7 @@
 
 namespace App\Filament\Platform\Widgets;
 
-use App\Models\Branch;
+use App\Models\Tenant; // ✅ added
 use App\Models\Subscription;
 use Filament\Widgets\StatsOverviewWidget as BaseStatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -16,22 +16,18 @@ class StatsOverviewWidget extends BaseStatsOverviewWidget
         $user = auth()->user();
 
        
+        $totalGyms = Tenant::query()->count();
 
-        /**
-         * TOTAL GYMSRevenueOverview
-         */
-        $totalGyms = Branch::query()->count();
+ 
 
-        /**
-         * ACTIVE SUBSCRIPTIONS
-         */
+     
         $activeSubscriptions = Subscription::query()
             ->where('status', 'active')
             ->count();
 
         /**
-         * MONTHLY REVENUE (safe version)
-         * NOTE: since no amount column, we calculate by plan price
+         * MONTHLY REVENUE
+         * Calculated from active subscriptions in current month
          */
         $monthlyRevenue = Subscription::query()
             ->where('status', 'active')
@@ -42,7 +38,7 @@ class StatsOverviewWidget extends BaseStatsOverviewWidget
 
         return [
             Stat::make('Total Gyms', $totalGyms)
-                ->description('All gym branches in system')
+                ->description('Total tenants (gyms) in system') 
                 ->color('primary')
                 ->icon('heroicon-o-building-office'),
 
