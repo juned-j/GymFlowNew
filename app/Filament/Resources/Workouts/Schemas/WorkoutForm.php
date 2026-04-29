@@ -17,12 +17,15 @@ class WorkoutForm
                 ->label('Workout Plan')
                 ->relationship('workoutPlan', 'name')
                 ->searchable()
+                    ->maxLength(50)
                 ->preload()
                 ->required(),
 
             TextInput::make('name')
                 ->label('Workout Name')
                 ->placeholder('e.g. Day 1 - Upper Body')
+             ->maxLength(50)
+
                 ->required()
                 ->maxLength(255),
 
