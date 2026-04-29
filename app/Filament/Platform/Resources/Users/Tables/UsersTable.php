@@ -16,16 +16,20 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable()
+              ->searchable(isIndividual: true)
                     ->sortable(),
 
                 TextColumn::make('email')
+              ->searchable(isIndividual: true)
+                    ->searchable(),
+                       TextColumn::make('status')
+                  
                     ->searchable(),
 
-                TextColumn::make('roles.role')
-                    ->label('Role')
-                    ->badge()
-                    ->formatStateUsing(fn($state) => ucfirst($state)),
+           TextColumn::make('roles.role.name')
+    ->label('Role')
+    ->badge()
+    ->formatStateUsing(fn ($state) => ucfirst($state)),
 
                 TextColumn::make('roles.tenant.name')
                     ->label('Tenant')
