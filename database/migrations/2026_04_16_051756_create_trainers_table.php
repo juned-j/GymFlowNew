@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('specialization')->nullable();
             $table->text('bio')->nullable();
             $table->string('status')->nullable();
-
+      $table->bigInteger('branch_id')->nullable();
+            $table->bigInteger('role_id')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')
