@@ -12,6 +12,9 @@ class Trainer extends Model
         'specialization',
         'bio',
         'status',
+        'branch_id',
+        'role_id',
+
     ];
 
     public function user()
