@@ -49,9 +49,12 @@ class UserResource extends Resource
                     ->required(fn($context) => $context === 'create')
                     ->dehydrated(false),
 
-                    Toggle::make('status')
-    ->label('Active Status')
-    ->default(true)
+ Select::make('status')
+    ->options([
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+    ])
+    ->default('active')
     ->required(),
             ])
                 ->columnSpanFull(),
