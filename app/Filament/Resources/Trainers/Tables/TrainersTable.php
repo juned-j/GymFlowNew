@@ -34,6 +34,10 @@ class TrainersTable
                     ->searchable(),
 
                 TextColumn::make('specialization')
+                       ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
                     ->searchable(),
 
                 TextColumn::make('status')
