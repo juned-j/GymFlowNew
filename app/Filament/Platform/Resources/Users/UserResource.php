@@ -33,9 +33,10 @@ class UserResource extends Resource
                 TextInput::make('name')
                     ->required(),
 
-                TextInput::make('email')
-                    ->email()
-                    ->required(),
+             TextInput::make('email')
+    ->email()
+    ->unique(ignoreRecord: true)
+    ->required(),
 
                 TextInput::make('password')
                     ->password()
@@ -62,35 +63,33 @@ class UserResource extends Resource
                 ->relationship()
                 ->columnSpanFull()
                 ->schema([
-                   Select::make('role')
+      Select::make('role_id')
+      ->label('Role')
     ->options(function () {
         if (auth()->user()?->isSuperAdmin()) {
-            return [
-                'super_admin' => 'Super Admin',
-                'owner' => 'Owner',
-            ];
+            return \App\Models\Role::whereIn('name', ['super_admin', 'owner'])
+                ->pluck('name', 'id'); 
         }
 
-        return [
-            'trainer' => 'Trainer',
-            'member' => 'Member',
-        ];
+        return \App\Models\Role::whereIn('name', ['trainer', 'member'])
+            ->pluck('name', 'id'); 
     })
-    ->required()
-    ->live(),
+    ->required(),
                     Select::make('tenant_id')
-                        ->relationship('tenant', 'name')
-                        ->searchable()
-                        ->nullable()
-                        ->visible(fn($get) => $get('role') !== 'super_admin')
-                        ->default(function () {
-                            $user = auth()->user();
-                            if ($user->isTenantUser()) {
-                                return $user->getTenantId();
-                            }
-                            return null;
-                        })
-                        ->disabled(fn() => auth()->user()->isTenantUser()),
+    ->relationship('tenant', 'name')
+    ->searchable()
+    ->nullable()
+    ->visible(fn($get) => $get('role') !== 'super_admin')
+    ->default(function () {
+        $user = auth()->user();
+
+        if ($user && $user->isTenantUser()) {
+            return $user->getTenantId();
+        }
+
+        return null;
+    })
+    ->disabled(fn () => auth()->user()?->isTenantUser()),
                     Select::make('branch_id')
                         ->relationship('branch', 'name')
                         ->searchable()
