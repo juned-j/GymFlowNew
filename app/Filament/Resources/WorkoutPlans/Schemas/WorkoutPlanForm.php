@@ -22,7 +22,7 @@ class WorkoutPlanForm
                 ->label('Plan Name')
                 ->placeholder('e.g. Beginner Fat Loss')
                 ->required()
-                ->maxLength(255),
+                ->maxLength(50),
 
             Select::make('goal_type')
                 ->label('Goal')
@@ -56,6 +56,7 @@ class WorkoutPlanForm
                                 ->label('Day Name')
                                 ->placeholder('e.g. Day 1 - Upper Body')
                                 ->required()
+                                      ->maxLength(30)
                                 ->columnSpan(3),
 
                             // This is now an editable text field that auto-increments
