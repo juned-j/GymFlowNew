@@ -62,23 +62,22 @@ class UserResource extends Resource
                 ->relationship()
                 ->columnSpanFull()
                 ->schema([
-                    Select::make('role')
-                        ->options(function () {
-                            $user = auth()->user();
-                            if ($user->isSuperAdmin()) {
-                                return [
-                                    'super_admin' => 'Super Admin',
-                                    'owner' => 'Owner',
-                                ];
-                            }
-                            // Gym Owner
-                            return [
-                                'trainer' => 'Trainer',
-                                'member' => 'Member',
-                            ];
-                        })
-                        ->required()
-                        ->live(),
+                   Select::make('role')
+    ->options(function () {
+        if (auth()->user()?->isSuperAdmin()) {
+            return [
+                'super_admin' => 'Super Admin',
+                'owner' => 'Owner',
+            ];
+        }
+
+        return [
+            'trainer' => 'Trainer',
+            'member' => 'Member',
+        ];
+    })
+    ->required()
+    ->live(),
                     Select::make('tenant_id')
                         ->relationship('tenant', 'name')
                         ->searchable()
