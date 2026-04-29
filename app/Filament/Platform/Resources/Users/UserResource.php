@@ -16,6 +16,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use App\Filament\Platform\Resources\Users\Tables\UsersTable;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Toggle;
 
 class UserResource extends Resource
 {
@@ -47,29 +48,36 @@ class UserResource extends Resource
                     ->password()
                     ->required(fn($context) => $context === 'create')
                     ->dehydrated(false),
+
+ Select::make('status')
+    ->options([
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+    ])
+    ->default('active')
+    ->required(),
             ])
                 ->columnSpanFull(),
             Repeater::make('roles')
                 ->relationship()
                 ->columnSpanFull()
                 ->schema([
-                    Select::make('role')
-                        ->options(function () {
-                            $user = auth()->user();
-                            if ($user->isSuperAdmin()) {
-                                return [
-                                    'super_admin' => 'Super Admin',
-                                    'owner' => 'Owner',
-                                ];
-                            }
-                            // Gym Owner
-                            return [
-                                'trainer' => 'Trainer',
-                                'member' => 'Member',
-                            ];
-                        })
-                        ->required()
-                        ->live(),
+                   Select::make('role')
+    ->options(function () {
+        if (auth()->user()?->isSuperAdmin()) {
+            return [
+                'super_admin' => 'Super Admin',
+                'owner' => 'Owner',
+            ];
+        }
+
+        return [
+            'trainer' => 'Trainer',
+            'member' => 'Member',
+        ];
+    })
+    ->required()
+    ->live(),
                     Select::make('tenant_id')
                         ->relationship('tenant', 'name')
                         ->searchable()
