@@ -18,6 +18,10 @@ class MembersTable
                 TextColumn::make('user.name')
                     ->label('Name')
                     ->searchable()
+                          ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
                     ->sortable(),
 
                 TextColumn::make('user.email')
