@@ -17,11 +17,19 @@ class WorkoutsTable
 
                 TextColumn::make('workoutPlan.name')
                     ->label('Workout Plan')
+                             ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
                     ->sortable()
                     ->searchable(),
 
                 TextColumn::make('name')
                     ->label('Workout')
+                             ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
                     ->searchable()
                     ->sortable(),
 
