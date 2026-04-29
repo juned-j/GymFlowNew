@@ -40,6 +40,7 @@ class TrainerForm
                     ->schema([
                         TextInput::make('specialization')
                             ->required()
+                                ->maxlength(50)
                             ->placeholder('e.g. Strength Training, Yoga'),
                         Textarea::make('bio')
                             ->rows(3),
