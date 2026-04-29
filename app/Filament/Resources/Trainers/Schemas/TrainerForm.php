@@ -13,16 +13,26 @@ use Filament\Schemas\Schema;
 
 class TrainerForm
 {
+
+
     public static function configure(Schema $schema): Schema
     {
         return $schema->schema([
             Wizard::make([
                 Step::make('Trainer Account')
                     ->schema([
-                        TextInput::make('user.name')->required(),
-                        TextInput::make('user.email')->email()
-                          ->unique('users', 'email')
+                        TextInput::make('user.name')
+                        ->maxlength(50)
                         ->required(),
+
+                        TextInput::make('user.email')->email()
+                            ->unique(
+                                table: 'users',
+                                column: 'email',
+                                ignorable: fn ($record) => $record?->user // ✅ fix
+                            )
+                            ->required(),
+
                         TextInput::make('user.phone')->tel(),
                     ]),
 
@@ -40,29 +50,50 @@ class TrainerForm
 
                 Step::make('Assignment')
                     ->schema([
-                        Select::make('user.roles.branch_id')
-                            ->label('Primary Branch')
-                            ->options(Branch::where('tenant_id', auth()->user()->getTenantId())->pluck('name', 'id'))
-                            ->required(),
-                        Select::make('user.roles.role_id')
-                            ->label('Role')
-                            ->options(Role::where('name', 'trainer')->pluck('name', 'id'))
-                            ->default(fn() => Role::where('name', 'trainer')->first()?->id)
-                            ->disabled()
-                            ->dehydrated(),
+                     Select::make('branch_id')
+    ->label('Primary Branch')
+    ->options(Branch::where('tenant_id', auth()->user()->getTenantId())
+        ->pluck('name', 'id'))
+    ->required(),
+
+Select::make('role_id')
+    ->label('Role')
+    ->options(Role::where('name', 'trainer')->pluck('name', 'id'))
+    ->default(fn () => Role::where('name', 'trainer')->value('id'))
+    ->disabled()
+    ->dehydrated(true),
                     ]),
             ])
-                                    ->submitAction(
-    \Filament\Actions\Action::make('submit')
-        ->label(fn () => request()->routeIs('*edit*')
-            ? 'Save Changes'
-            : 'Create Trainer'
-        )
-        ->submit('create')
-        ->color('primary')
-)
-                    ->skippable(str(request()->route()->getName())->endsWith('.edit'))
+
+            // ✅ edit mode data show
+            ->afterStateHydrated(function ($state, $record, $set) {
+                if (!$record || !$record->user) return;
+
+                $set('user.name', $record->user->name);
+                $set('user.email', $record->user->email);
+                $set('user.phone', $record->user->phone);
+
+                $role = $record->user->roles()->first();
+                if ($role) {
+                    $set('user.roles.branch_id', $role->pivot->branch_id ?? null);
+                    $set('user.roles.role_id', $role->id);
+                }
+            })
+
+            ->submitAction(
+                \Filament\Actions\Action::make('submit')
+                    ->label(fn () => request()->routeIs('*edit*')
+                        ? 'Save Changes'
+                        : 'Create Trainer'
+                    )
+                    ->submit('create')
+                    ->color('primary')
+            )
+
+            ->skippable(str(request()->route()->getName())->endsWith('.edit'))
             ->columnSpanFull()
         ]);
     }
+
+    
 }
