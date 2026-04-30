@@ -77,4 +77,8 @@ class Branch extends Model
     {
         return $this->currency_symbol ?? $this->tenant->currency_symbol;
     }
+    public function country(): BelongsTo
+{
+    return $this->belongsTo(Country::class);
+}
 }
