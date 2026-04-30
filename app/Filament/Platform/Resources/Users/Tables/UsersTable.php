@@ -26,13 +26,15 @@ class UsersTable
                   
                     ->searchable(),
 
-    TextColumn::make('roles')
+ TextColumn::make('roles')
     ->label('Role')
     ->formatStateUsing(function ($record) {
         return $record->roles
             ->pluck('role.name')
+            ->unique()  
+            ->filter()
             ->map(fn ($name) => ucfirst($name))
-            ->implode("<br>");
+            ->implode('<br>');
     })
     ->html(),
 
