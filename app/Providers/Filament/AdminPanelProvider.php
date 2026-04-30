@@ -20,6 +20,8 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse as LoginResponseContract;
 use App\Http\Responses\LoginResponse;
+use App\Http\Middleware\CheckUserStatus;
+
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -58,6 +60,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                 CheckUserStatus::class,
             ])
             ->authMiddleware([
                 // Authenticate::class,
