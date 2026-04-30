@@ -30,10 +30,7 @@ class SaasPlansTable
             TextColumn::make('max_trainers'),
             TextColumn::make('max_members'),
 
-            TextColumn::make('features')
-                ->limit(30)
-                ->toggleable(),
-
+          
             TextColumn::make('stripe_product_id')
                 ->toggleable(isToggledHiddenByDefault: true),
 
