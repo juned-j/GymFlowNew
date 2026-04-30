@@ -20,16 +20,21 @@ class UsersTable
                     ->sortable(),
 
                 TextColumn::make('email')
-              ->searchable(isIndividual: true)
-                    ->searchable(),
+              ->searchable(isIndividual: true),
+                
                        TextColumn::make('status')
                   
                     ->searchable(),
 
-           TextColumn::make('roles.role.name')
+    TextColumn::make('roles')
     ->label('Role')
-    ->badge()
-    ->formatStateUsing(fn ($state) => ucfirst($state)),
+    ->formatStateUsing(function ($record) {
+        return $record->roles
+            ->pluck('role.name')
+            ->map(fn ($name) => ucfirst($name))
+            ->implode("<br>");
+    })
+    ->html(),
 
                 TextColumn::make('roles.tenant.name')
                     ->label('Tenant')
