@@ -9,6 +9,8 @@ use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Icons\Heroicon;
 use Filament\Notifications\Notification;
+use App\Models\Currency;
+use Filament\Forms\Components\Select;
 
 class AppSettings extends Page implements Forms\Contracts\HasForms
 {
@@ -109,8 +111,15 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                 Section::make('Payments')
                     ->schema([
                         Forms\Components\TextInput::make('payments.provider'),
-                        Forms\Components\TextInput::make('payments.currency'),
-                        Forms\Components\Toggle::make('payments.allow_subscriptions'),
+       Select::make('currency')
+    ->label('Currency')
+    ->options(
+        Currency::query()
+            ->pluck('currency_name', 'currency_name')
+            ->toArray()
+    )
+    ->searchable()
+    ->required(),                        Forms\Components\Toggle::make('payments.allow_subscriptions'),
                     ]),
 
                 Section::make('Notifications')
