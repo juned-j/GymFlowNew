@@ -19,6 +19,8 @@ class SaasPlanResource extends Resource
     protected static ?string $model = SaasPlan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $navigationLabel = 'Gym Membership plans';
+    protected static ?string $pluralModelLabel = 'Gym Membership plans';
 
     public static function form(Schema $schema): Schema
     {
