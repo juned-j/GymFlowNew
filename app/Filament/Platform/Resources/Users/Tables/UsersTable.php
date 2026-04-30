@@ -34,9 +34,13 @@ class UsersTable
     ->formatStateUsing(fn ($state) => ucfirst($state))
     ->color('primary') ,
 
-                TextColumn::make('roles.tenant.name')
-                    ->label('Tenant')
-                    ->placeholder('-'),
+               TextColumn::make('roles.tenant.name')
+    ->label('Tenant')
+    ->placeholder('-')
+    ->badge() 
+    ->listWithLineBreaks() 
+    ->separator(',')
+    ->formatStateUsing(fn ($state) => ucfirst($state)) ,
 
                 TextColumn::make('roles.branch.name')
                     ->label('Branch')
