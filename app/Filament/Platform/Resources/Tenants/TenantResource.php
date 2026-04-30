@@ -56,7 +56,7 @@ class TenantResource extends Resource
                     TextInput::make('owner_name')
                         ->required(),
 
-                   TextInput::make('owner_email')
+                   TextInput::make('email')
     ->email()
     ->required()
     ->unique(),
