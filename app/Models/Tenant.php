@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\SaasPlan;
+use App\Traits\HasPlanRestrictions;
+
 
 class Tenant extends Model
 {
     use HasFactory;
+    use HasPlanRestrictions;
 
     protected $table = 'tenants';
 
@@ -79,4 +83,27 @@ class Tenant extends Model
     {
         return $this->hasOne(TenantSubscription::class);
     }
+
+public function plan()
+{
+    return $this->belongsTo(\App\Models\SaasPlan::class, 'plan_id');
+}
+
+public function reachedLimit(string $type): bool
+{
+    $limit = $this->plan?->{"max_{$type}"} ?? null;
+
+    if (!$limit || $limit == 0) {
+        return false;
+    }
+
+    $count = match ($type) {
+        'members'  => \App\Models\Member::count(),
+        'trainers' => \App\Models\Trainer::count(),
+        'branches' => \App\Models\Branch::count(),
+        default => 0,
+    };
+
+    return $count >= $limit;
+}
 }
