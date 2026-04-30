@@ -10,6 +10,10 @@ use Filament\Forms\Components\Hidden;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Forms\Components\Section;
+use App\Models\Country;
+use Filament\Forms\Components\Select;
+
+
 
 class BranchForm
 {
@@ -82,11 +86,11 @@ class BranchForm
                     ->rules(['max:50'])
                                     ->label('Postal Code'),
 
-                                TextInput::make('country')
-                                    ->default('India')
-                                              ->maxLength(50)
-                    ->rules(['max:50'])
-                                    ->required(),
+   Select::make('country')
+    ->label('Country')
+    ->options(Country::query()->pluck('name', 'name'))
+    ->searchable()
+    ->required(),
 
                                 TextInput::make('latitude')
                                     ->numeric(),
