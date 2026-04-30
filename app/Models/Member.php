@@ -23,6 +23,7 @@ class Member extends Model
         'activity_level',
         'injuries',
         'program_match',
+        'branch_id',
 
     ];
     public function user()
