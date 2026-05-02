@@ -19,9 +19,17 @@ class TenantsTable
 
                 TextColumn::make('name')
                     ->searchable()
+                              ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
                     ->sortable(),
 
                 TextColumn::make('slug')
+                          ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
                     ->searchable(),
 
                 TextColumn::make('email')
@@ -29,7 +37,11 @@ class TenantsTable
 
                 TextColumn::make('phone'),
 
-                TextColumn::make('city'),
+                TextColumn::make('city') 
+                ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap(),
 
                 TextColumn::make('country'),
 
