@@ -2,57 +2,52 @@
 
 namespace App\Filament\Resources\Members\Pages;
 
-use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\Members\MemberResource;
-use Illuminate\Support\Facades\Log;
 use App\Models\Member;
 
 class ListMembers extends ListRecords
 {
     protected static string $resource = MemberResource::class;
 
-protected function getHeaderActions(): array
-{
-    $tenant = app('tenant');
+    protected function getHeaderActions(): array
+    {
+        $tenant = app('tenant');
 
-    if (! $tenant) {
+        $allowed = true;
+        $message = null;
+
+        // ✅ tenant exists
+        if ($tenant) {
+            $result = $tenant->checkLimit(
+                'members',
+                fn () => Member::where('tenant_id', $tenant->id)->count() // ✅ correct scoped count
+            );
+
+            $allowed = $result['allowed'];
+            $message = $result['message'];
+        }
+
         return [
-            CreateAction::make()->label('Add Member'),
+            CreateAction::make()
+                ->label('Add Member')
+                ->color(!$allowed ? 'danger' : 'primary')
+                ->disabled(!$allowed)
+                ->tooltip($message)
+                ->before(function () use ($allowed, $message) {
+
+                    if (!$allowed) {
+                        Notification::make()
+                            ->title('Action Blocked')
+                            ->body($message)
+                            ->warning()
+                            ->send();
+
+                        return false; // ⛔ stop cleanly
+                    }
+                }),
         ];
     }
-
-    $limitReached = $tenant->reachedLimit(
-        'members',
-        fn () => Member::where('tenant_id', $tenant->id)->count()
-    );
-
-    return [
-        CreateAction::make()
-            ->label('Add Member')
-            ->color($limitReached ? 'danger' : 'primary') // 🔥 red button
-            ->disabled($limitReached) // 🔥 disable click
-            ->tooltip(
-                $limitReached
-                    ? 'Member limit reached. Please upgrade your plan.'
-                    : null
-            )
-            ->action(function () use ($limitReached) {
-
-                if ($limitReached) {
-                    Notification::make()
-                        ->title('Limit Reached')
-                        ->body('You have reached your member limit.')
-                        ->danger()
-                        ->send();
-
-                    return; // ❌ no redirect
-                }
-
-                // normal Filament create flow
-            }),
-    ];
-}
 }
