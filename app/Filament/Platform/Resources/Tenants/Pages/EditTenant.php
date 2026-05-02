@@ -16,4 +16,13 @@ class EditTenant extends EditRecord
             DeleteAction::make(),
         ];
     }
+      protected function getFormActions(): array
+{
+    return [];
+}
+
+public function submit(): void
+{
+    $this->save();
+}
 }
