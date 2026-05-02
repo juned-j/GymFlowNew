@@ -21,6 +21,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use BackedEnum;
+use App\Models\Country;
 
 class TenantResource extends Resource
 {
@@ -33,18 +34,26 @@ class TenantResource extends Resource
         return $schema->schema([
             Wizard::make([
                 Step::make('Gym Identity')->schema([
-                    TextInput::make('name')->required(),
-                    TextInput::make('slug')->required()->unique(Tenant::class, 'slug'),
+                    TextInput::make('name')->required()
+                    ->maxLength(255),
+                    TextInput::make('slug')->required()
+                    ->maxLength(255)->unique(Tenant::class, 'slug'),
 
-                    TextInput::make('email')->email()->required(),
+                    TextInput::make('email')
+                    ->email()
+                    ->unique(Tenant::class, 'email')
+                    ->required(),
                     TextInput::make('phone')->tel(),
                 ]),
 
                 Step::make('Location')->schema([
                     TextInput::make('address'),
                     TextInput::make('city')->required(),
-                    TextInput::make('country')->required()->default('India'),
-                ]),
+  Select::make('country')
+    ->label('Country')
+    ->options(Country::query()->pluck('name', 'name'))
+    ->searchable()
+    ->required(),                ]),
 
                 Step::make('Settings')->schema([
                     TextInput::make('timezone')->default('Asia/Kolkata'),
@@ -70,7 +79,7 @@ class TenantResource extends Resource
                 \Filament\Actions\Action::make('submit')
                     ->label(fn () => request()->routeIs('*edit*')
                         ? 'Save Changes'
-                        : 'Create Trainer'
+                        : 'Create Tenant'
                     )
                     ->submit('create')
                     ->color('primary')
