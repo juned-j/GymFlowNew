@@ -12,7 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('members', function (Blueprint $table) {
-            $table->float('bmi')->nullable()->after('weight');
+
+            // Add BMI column
+            if (!Schema::hasColumn('members', 'bmi')) {
+                $table->float('bmi')->nullable()->after('weight');
+            }
+
+            // ✅ Add BMI Category column
+            if (!Schema::hasColumn('members', 'bmi_category')) {
+                $table->string('bmi_category', 20)
+                    ->nullable()
+                    ->after('bmi');
+            }
         });
     }
 
@@ -22,7 +33,14 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('members', function (Blueprint $table) {
-            $table->dropColumn('bmi');
+
+            if (Schema::hasColumn('members', 'bmi_category')) {
+                $table->dropColumn('bmi_category');
+            }
+
+            if (Schema::hasColumn('members', 'bmi')) {
+                $table->dropColumn('bmi');
+            }
         });
     }
 };
