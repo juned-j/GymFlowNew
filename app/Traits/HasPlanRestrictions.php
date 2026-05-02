@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Log;
 trait HasPlanRestrictions
 {
     /**
-     * Generic plan limit checker (GYM FLOW READY)
+     * Smart limit checker (returns status + message)
      */
-    public function reachedLimit(string $type, callable $countResolver): bool
+    public function checkLimit(string $type, callable $countResolver): array
     {
         $map = [
             'branches' => 'max_branches',
@@ -18,27 +18,43 @@ trait HasPlanRestrictions
         ];
 
         if (!isset($map[$type])) {
-            Log::warning("Invalid limit type: {$type}");
-            return false;
+            return [
+                'allowed' => true,
+                'message' => "Invalid limit type: {$type}",
+            ];
         }
 
         $plan = $this->plan ?? null;
 
         if (!$plan) {
-            Log::warning("❌ No plan found for tenant/company");
-            return false;
+            return [
+                'allowed' => false,
+                'message' => 'No plan assigned. Please contact admin.',
+            ];
         }
 
         $limitColumn = $map[$type];
-        $limit = $plan->{$limitColumn} ?? null;
+        $limit = $plan->{$limitColumn};
 
         Log::info("📊 Plan Limit Check", [
             'type' => $type,
             'limit' => $limit,
         ]);
 
-        if (!$limit || $limit == 0) {
-            return false; // unlimited
+        // 🚨 Missing config (IMPORTANT)
+        if ($limit === null) {
+            return [
+                'allowed' => false,
+                'message' => ucfirst($type) . ' limit is not configured in your plan.',
+            ];
+        }
+
+        // unlimited
+        if ($limit == 0) {
+            return [
+                'allowed' => true,
+                'message' => null,
+            ];
         }
 
         $count = $countResolver();
@@ -48,11 +64,21 @@ trait HasPlanRestrictions
             'limit' => $limit,
         ]);
 
-        return $count >= $limit;
+        if ($count >= $limit) {
+            return [
+                'allowed' => false,
+                'message' => ucfirst($type) . ' limit reached. Upgrade your plan.',
+            ];
+        }
+
+        return [
+            'allowed' => true,
+            'message' => null,
+        ];
     }
 
     /**
-     * Simple shortcut (NO closure needed)
+     * Simple relation count
      */
     public function usageCount(string $relation): int
     {
