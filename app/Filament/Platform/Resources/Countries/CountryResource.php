@@ -37,6 +37,10 @@ class CountryResource extends Resource
         ];
     }
 
+            public static function shouldRegisterNavigation(): bool
+{
+    return false;
+}
     public static function getPages(): array
     {
         return [
