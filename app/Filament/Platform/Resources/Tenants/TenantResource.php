@@ -66,6 +66,17 @@ class TenantResource extends Resource
                         ->required(),
                 ])
             ])
+              ->submitAction(
+                \Filament\Actions\Action::make('submit')
+                    ->label(fn () => request()->routeIs('*edit*')
+                        ? 'Save Changes'
+                        : 'Create Trainer'
+                    )
+                    ->submit('create')
+                    ->color('primary')
+            )
+
+            ->skippable(str(request()->route()->getName())->endsWith('.edit'))
                 ->columnSpanFull()
         ]);
     }
