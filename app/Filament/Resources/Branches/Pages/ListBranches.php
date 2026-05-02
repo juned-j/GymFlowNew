@@ -17,74 +17,65 @@ class ListBranches extends ListRecords
     {
         $tenant = app('tenant');
 
-        $allowed = true;
-        $message = null;
+        Log::info('🚀 BRANCH PAGE LOAD');
+
+        $limitReached = false;
 
         if ($tenant) {
 
-            // ✅ COUNT
+            Log::info('🏢 Tenant Found', [
+                'tenant_id' => $tenant->id,
+            ]);
+
+            // ✅ count
             $count = Branch::where('tenant_id', $tenant->id)->count();
 
-            // ✅ PLAN DATA
-            $plan = $tenant->plan ?? null;
-            $rawLimit = $plan?->max_branches ?? null;
+            // ✅ plan
+            $plan = $tenant->plan;
 
-            // 🔥 CLEAN LIMIT
-            $limit = null;
-
-            if ($rawLimit !== null) {
-                $limit = is_numeric($rawLimit)
-                    ? (int) $rawLimit
-                    : (int) preg_replace('/[^0-9]/', '', $rawLimit);
-            }
-
-            // 🔍 FULL DEBUG LOG
-            Log::info('BRANCH LIMIT CHECK', [
-                'tenant_id'   => $tenant->id,
-                'plan_id'     => $tenant->plan_id ?? null,
+            Log::info('📦 PLAN DATA', [
                 'plan_exists' => $plan ? true : false,
-                'raw_limit'   => $rawLimit,
-                'clean_limit' => $limit,
-                'count'       => $count,
+                'plan_id' => $plan->id ?? null,
+                'max_branches' => $plan->max_branches ?? null,
             ]);
 
-            // ✅ USE CENTRAL METHOD
-            $result = $tenant->checkLimit(
-                'branches',
-                fn () => $count
-            );
+            Log::info('📊 BRANCH COUNT', [
+                'count' => $count,
+            ]);
 
-            $allowed = $result['allowed'];
-            $message = $result['message'];
+            // ✅ limit check
+            $limitReached = $tenant->reachedLimit('branches');
 
-            // 🔍 RESULT LOG
-            Log::info('BRANCH LIMIT RESULT', [
-                'allowed' => $allowed,
-                'message' => $message,
+            Log::info('🚫 LIMIT RESULT', [
+                'limitReached' => $limitReached,
             ]);
         } else {
-
-            // 🔥 NO TENANT LOG
-            Log::warning('No tenant found in ListBranches');
+            Log::warning('❌ No tenant found in context');
         }
 
         return [
             CreateAction::make()
                 ->label('Add Branch')
-                ->color(!$allowed ? 'danger' : 'primary')
-                ->disabled(!$allowed)
-                ->tooltip($message)
-                ->before(function () use ($allowed, $message) {
+                ->color($limitReached ? 'danger' : 'primary')
+                ->disabled($limitReached)
+                ->tooltip(
+                    $limitReached
+                        ? 'Branch limit reached or plan missing.'
+                        : null
+                )
+                ->before(function () use ($limitReached) {
 
-                    if (!$allowed) {
+                    Log::info('⚡ CREATE ACTION TRIGGERED', [
+                        'blocked' => $limitReached,
+                    ]);
 
-                        Log::warning('Branch creation blocked', [
-                            'reason' => $message,
-                        ]);
+                    if ($limitReached) {
+
+                        Log::warning('⛔ ACTION BLOCKED');
 
                         Notification::make()
                             ->title('Action Blocked')
-                            ->body($message)
+                            ->body('Branch limit reached or no active plan.')
                             ->warning()
                             ->send();
 
