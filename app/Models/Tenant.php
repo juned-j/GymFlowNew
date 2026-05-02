@@ -43,6 +43,7 @@ class Tenant extends Model
         'is_active',
         'trial_ends_at',
         'app_settings',
+        'plan_id',
     ];
 
     /**
@@ -98,9 +99,9 @@ public function reachedLimit(string $type): bool
     }
 
     $count = match ($type) {
-        'members'  => \App\Models\Member::count(),
-        'trainers' => \App\Models\Trainer::count(),
-        'branches' => \App\Models\Branch::count(),
+        'members'  => \App\Models\Member::where('tenant_id', $this->id)->count(),
+        // 'trainers' => \App\Models\Trainer::where('tenant_id', $this->id)->count(),
+        'branches' => \App\Models\Branch::where('tenant_id', $this->id)->count(),
         default => 0,
     };
 
