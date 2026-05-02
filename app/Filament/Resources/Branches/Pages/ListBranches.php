@@ -35,7 +35,7 @@ class ListBranches extends ListRecords
 
             Log::info('📦 PLAN DATA', [
                 'plan_exists' => $plan ? true : false,
-                'plan_id' => $plan->id ?? null,
+                'saas_plan_id' => $plan->id ?? null,
                 'max_branches' => $plan->max_branches ?? null,
             ]);
 
