@@ -7,6 +7,7 @@ use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use App\Models\Trainer;
+use Illuminate\Support\Facades\Log;
 
 class ListTrainers extends ListRecords
 {
@@ -16,36 +17,70 @@ class ListTrainers extends ListRecords
     {
         $tenant = app('tenant');
 
-        $allowed = true;
-        $message = null;
+        Log::info('🚀 TRAINER PAGE LOAD');
 
-        // ✅ tenant exists
+        $limitReached = false;
+
         if ($tenant) {
-            $result = $tenant->checkLimit(
-                'trainers',
-                fn () => Trainer::where('tenant_id', $tenant->id)->count() // 🔥 FIXED
-            );
 
-            $allowed = $result['allowed'];
-            $message = $result['message'];
+            Log::info('🏢 Tenant Found', [
+                'tenant_id' => $tenant->id,
+            ]);
+
+            // ✅ SAFE COUNT (tenant scoped)
+            $count = Trainer::where('tenant_id', $tenant->id)->count();
+
+            // ✅ PLAN
+            $plan = $tenant->plan;
+
+            Log::info('📦 PLAN DATA', [
+                'plan_exists' => $plan ? true : false,
+                'saas_plan_id' => $plan->id ?? null,
+                'max_trainers' => $plan->max_trainers ?? null,
+            ]);
+
+            Log::info('📊 TRAINER COUNT', [
+                'count' => $count,
+            ]);
+
+            // ✅ LIMIT CHECK (centralized)
+            $limitReached = $tenant->reachedLimit('trainers');
+
+            Log::info('🚫 LIMIT RESULT', [
+                'limitReached' => $limitReached,
+            ]);
+
+        } else {
+            Log::warning('❌ No tenant found in context');
         }
 
         return [
             CreateAction::make()
                 ->label('Add Trainer')
-                ->color(!$allowed ? 'danger' : 'primary')
-                ->disabled(!$allowed)
-                ->tooltip($message)
-                ->before(function () use ($allowed, $message) {
+                ->color($limitReached ? 'danger' : 'primary')
+                ->disabled($limitReached)
+                ->tooltip(
+                    $limitReached
+                        ? 'Trainer limit reached or plan missing.'
+                        : null
+                )
+                ->before(function () use ($limitReached) {
 
-                    if (!$allowed) {
+                    Log::info('⚡ TRAINER CREATE CLICK', [
+                        'blocked' => $limitReached,
+                    ]);
+
+                    if ($limitReached) {
+
+                        Log::warning('⛔ TRAINER ACTION BLOCKED');
+
                         Notification::make()
                             ->title('Action Blocked')
-                            ->body($message)
+                            ->body('Trainer limit reached or no active plan.')
                             ->warning()
                             ->send();
 
-                        return false; // ⛔ stop execution cleanly
+                        return false;
                     }
                 }),
         ];
