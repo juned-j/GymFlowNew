@@ -50,7 +50,7 @@ class ListBranches extends ListRecords
 
             // 🚨 LOGIC
             if ($limit === null) {
-                $allowed = false;
+                $allowed = true;
                 $message = 'Branch limit is not configured in your plan.';
             } elseif ($limit === 0) {
                 $allowed = true; // unlimited
