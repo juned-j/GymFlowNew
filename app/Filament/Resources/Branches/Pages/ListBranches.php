@@ -16,34 +16,36 @@ class ListBranches extends ListRecords
     {
         $tenant = app('tenant');
 
-        // safety check
-        $limitReached = false;
+        $allowed = true;
+        $message = null;
 
         if ($tenant) {
-            $limitReached = $tenant->reachedLimit(
+            $result = $tenant->checkLimit(
                 'branches',
                 fn () => Branch::where('tenant_id', $tenant->id)->count()
             );
+
+            $allowed = $result['allowed'];
+            $message = $result['message'];
         }
 
         return [
             CreateAction::make()
                 ->label('Add Branch')
-                ->color($limitReached ? 'danger' : 'primary')
-                ->disabled($limitReached)
-                ->tooltip($limitReached ? 'Branch limit reached. Upgrade plan.' : null)
-                ->action(function () use ($limitReached) {
+                ->color(!$allowed ? 'danger' : 'primary')
+                ->disabled(!$allowed)
+                ->tooltip($message)
+                ->before(function () use ($allowed, $message) {
 
-                    if ($limitReached) {
+                    if (!$allowed) {
                         Notification::make()
-                            ->title('Limit Reached')
-                            ->body('You cannot create more branches under your plan.')
-                            ->danger()
+                            ->title('Action Blocked')
+                            ->body($message)
+                            ->warning()
                             ->send();
 
-                        return;
+                        return false; // ⛔ stop action cleanly
                     }
-
                 }),
         ];
     }
