@@ -4,82 +4,106 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\SaasPlan;
 use App\Traits\HasPlanRestrictions;
+
 
 class Tenant extends Model
 {
-    use HasFactory, HasPlanRestrictions;
+    use HasFactory;
+    use HasPlanRestrictions;
 
     protected $table = 'tenants';
 
     protected $fillable = [
+        // Identity
         'name',
         'slug',
         'logo_url',
+
+        // Ownership
         'owner_user_id',
+
+        // Contact
         'email',
         'phone',
+
+        // Location
         'address',
         'city',
         'country',
+
+        // SaaS config
         'timezone',
         'currency',
         'currency_symbol',
+
+        // Status
         'status',
         'is_active',
         'trial_ends_at',
         'app_settings',
     ];
 
-    protected $casts = [
-        'app_settings' => 'array',
-    ];
-
+    /**
+     * Owner of the tenant (gym owner)
+     */
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    /**
+     * Scope: Active tenants
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope: Suspended tenants
+     */
+    public function scopeSuspended($query)
+    {
+        return $query->where('is_active', false);
+    }
+
+    /**
+     * Check if tenant is active
+     */
+    public function isActive(): bool
+    {
+        return (bool) $this->is_active;
+    }
+    protected $casts = [
+        'app_settings' => 'array',
+    ];
     public function subscription()
     {
         return $this->hasOne(TenantSubscription::class);
     }
 
-    public function plan()
-    {
-        return $this->belongsTo(\App\Models\SaasPlan::class, 'plan_id');
+public function plan()
+{
+    return $this->belongsTo(\App\Models\SaasPlan::class, 'plan_id');
+}
+
+public function reachedLimit(string $type): bool
+{
+    $limit = $this->plan?->{"max_{$type}"} ?? null;
+
+    if (!$limit || $limit == 0) {
+        return false;
     }
 
-    /**
-     * FINAL SAFE LIMIT CHECK
-     */
-    public function reachedLimit(string $type): bool
-    {
-        $rawLimit = $this->plan?->{"max_{$type}"} ?? null;
+    $count = match ($type) {
+        'members'  => \App\Models\Member::count(),
+        'trainers' => \App\Models\Trainer::count(),
+        'branches' => \App\Models\Branch::count(),
+        default => 0,
+    };
 
-        // 🔥 CLEAN LIMIT (handles int + string + dirty values)
-        if ($rawLimit === null) {
-            return false;
-        } elseif (is_numeric($rawLimit)) {
-            $limit = (int) $rawLimit;
-        } else {
-            $clean = preg_replace('/[^0-9]/', '', $rawLimit);
-            $limit = $clean !== '' ? (int) $clean : 0;
-        }
-
-        // unlimited
-        if ($limit === 0) {
-            return false;
-        }
-
-        // 🔥 GLOBAL COUNT (since no tenant_id)
-        $count = match ($type) {
-            'members'  => \App\Models\Member::count(),
-            'trainers' => \App\Models\Trainer::count(),
-            'branches' => \App\Models\Branch::count(),
-            default => 0,
-        };
-
-        return $count >= $limit;
-    }
+    return $count >= $limit;
+}
 }
