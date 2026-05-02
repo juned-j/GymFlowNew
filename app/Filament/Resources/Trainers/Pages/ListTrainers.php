@@ -16,37 +16,40 @@ class ListTrainers extends ListRecords
     {
         $tenant = app('tenant');
 
-        $allowed = true;
-        $message = null;
-
-        // ✅ tenant exists
-        if ($tenant) {
-            $result = $tenant->checkLimit(
-                'trainers',
-                fn () => Trainer::where('tenant_id', $tenant->id)->count() // 🔥 FIXED
-            );
-
-            $allowed = $result['allowed'];
-            $message = $result['message'];
+        // safety fallback
+        if (! $tenant) {
+            return [
+                CreateAction::make()->label('Add Trainer'),
+            ];
         }
+
+        $limitReached = $tenant->reachedLimit(
+            'trainers',
+            fn () => Trainer::count()
+        );
 
         return [
             CreateAction::make()
                 ->label('Add Trainer')
-                ->color(!$allowed ? 'danger' : 'primary')
-                ->disabled(!$allowed)
-                ->tooltip($message)
-                ->before(function () use ($allowed, $message) {
+                ->color($limitReached ? 'danger' : 'primary')
+                ->disabled($limitReached)
+                ->tooltip(
+                    $limitReached
+                        ? 'Trainer limit reached. Upgrade your plan.'
+                        : null
+                )
+                ->action(function () use ($limitReached) {
 
-                    if (!$allowed) {
+                    if ($limitReached) {
                         Notification::make()
-                            ->title('Action Blocked')
-                            ->body($message)
-                            ->warning()
+                            ->title('Limit Reached')
+                            ->body('You cannot create more trainers under your current plan.')
+                            ->danger()
                             ->send();
 
-                        return false; // ⛔ stop execution cleanly
+                        return;
                     }
+
                 }),
         ];
     }
