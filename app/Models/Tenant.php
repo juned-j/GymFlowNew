@@ -43,7 +43,6 @@ class Tenant extends Model
         'is_active',
         'trial_ends_at',
         'app_settings',
-        'plan_id',
     ];
 
     /**
@@ -85,16 +84,36 @@ class Tenant extends Model
         return $this->hasOne(TenantSubscription::class);
     }
 
+
+
 public function plan()
 {
-    return $this->belongsTo(\App\Models\SaasPlan::class, 'plan_id');
+    return $this->hasOneThrough(
+        \App\Models\SaasPlan::class,
+        \App\Models\TenantSubscription::class,
+        'tenant_id',      // FK on tenant_subscriptions
+        'id',             // PK on saas_plans
+        'id',             // PK on tenants
+        'saas_plan_id'    // FK on tenant_subscriptions
+    );
 }
+
 
 public function reachedLimit(string $type): bool
 {
-    $limit = $this->plan?->{"max_{$type}"} ?? null;
+    $plan = $this->plan;
 
-    if (!$limit || $limit == 0) {
+    if (!$plan) {
+        return true; 
+    }
+
+    $limit = $plan->{"max_{$type}"} ?? null;
+
+    if ($limit === null) {
+        return true; 
+    }
+
+    if ($limit == 0) {
         return false;
     }
 
@@ -105,6 +124,6 @@ public function reachedLimit(string $type): bool
         default => 0,
     };
 
-    return $count >= $limit;
+    return $count >= (int) $limit;
 }
 }
