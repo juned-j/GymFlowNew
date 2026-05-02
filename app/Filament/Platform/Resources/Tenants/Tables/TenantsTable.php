@@ -33,6 +33,10 @@ class TenantsTable
                     ->searchable(),
 
                 TextColumn::make('email')
+                   ->extraAttributes([
+                        'style' => 'max-width: 100px; white-space: normal; word-wrap: break-word;'
+                    ])
+                    ->wrap()
                     ->searchable(),
 
                 TextColumn::make('phone'),
