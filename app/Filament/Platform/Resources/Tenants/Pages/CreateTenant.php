@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 class CreateTenant extends CreateRecord
 {
     protected static string $resource = TenantResource::class;
+                    protected static bool $canCreateAnother = false;
 
     protected ?User $ownerUser = null;
 
@@ -41,4 +42,8 @@ class CreateTenant extends CreateRecord
             'role_id' => 2,
         ]);
     }
+     protected function getFormActions(): array
+{
+    return [];
+}
 }
