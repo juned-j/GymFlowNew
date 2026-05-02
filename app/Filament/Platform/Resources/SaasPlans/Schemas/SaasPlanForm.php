@@ -47,14 +47,17 @@ class SaasPlanForm
 
                 TextInput::make('max_branches')
                     ->numeric()
+                       ->required()
                     ->default(1),
 
                 TextInput::make('max_trainers')
                     ->numeric()
+                       ->required()
                     ->default(1),
 
                 TextInput::make('max_members')
                     ->numeric()
+                       ->required()
                     ->default(10),
 
                 Textarea::make('features')
