@@ -59,17 +59,19 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
 
         <!-- Currencies -->
-        <a href="{{ route('filament.admin.resources.currencies.index') }}" 
-           class="card-link bg-yellow-500 p-3 rounded-lg shadow border hover:shadow-md transition">
-            <div class="flex items-center justify-center space-x-2 text-center">
-                <i class="fas fa-coins text-xl"></i>
-                <span class="text-lg font-semibold">Currencies</span>
-            </div>
-        </a>
+      <!-- Currencies -->
+<a href="{{ url('platform/currencies') }}" 
+   class="card-link bg-yellow-500 p-3 rounded-lg shadow border hover:shadow-md transition">
+    <div class="flex items-center justify-center space-x-2 text-center">
+        <i class="fas fa-coins text-xl"></i>
+        <span class="text-lg font-semibold">Currencies</span>
+    </div>
+</a>
 
         <!-- Country -->
-        <a href="{{ route('filament.admin.resources.countries.index') }}" 
-           class="card-link bg-indigo-500 p-3 rounded-lg shadow border hover:shadow-md transition">
+      <!-- Country -->
+<a href="{{ url('platform/countries') }}" 
+   class="card-link bg-indigo-500 p-3 rounded-lg shadow border hover:shadow-md transition">
             <div class="flex items-center justify-center space-x-2 text-center">
                 <i class="fas fa-list text-xl"></i>
                 <span class="text-lg font-semibold">Country</span>
