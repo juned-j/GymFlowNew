@@ -16,7 +16,12 @@ class MembershipPlansTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable()
+                    ->searchable()   ->searchable()
+                          ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
+
                     ->sortable(),
 
                 TextColumn::make('price')
