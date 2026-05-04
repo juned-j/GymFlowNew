@@ -35,9 +35,9 @@ class TenantResource extends Resource
             Wizard::make([
                 Step::make('Gym Identity')->schema([
                     TextInput::make('name')->required()
-                    ->maxLength(255),
+                    ->maxLength(50),
                     TextInput::make('slug')->required()
-                    ->maxLength(255)->unique(Tenant::class, 'slug'),
+                    ->maxLength(50)->unique(Tenant::class, 'slug'),
 
                     TextInput::make('email')
                     ->email()
