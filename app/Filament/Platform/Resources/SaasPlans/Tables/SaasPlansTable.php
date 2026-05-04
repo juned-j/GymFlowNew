@@ -15,7 +15,11 @@ class SaasPlansTable
 {
     return $table
         ->columns([
-            TextColumn::make('name')->searchable(),
+            TextColumn::make('name')
+                     ->extraAttributes([
+                        'style' => 'max-width: 250px; white-space: normal; word-wrap: break-word;',
+                    ])
+            ->searchable(),
 
             TextColumn::make('slug')->toggleable(),
 
