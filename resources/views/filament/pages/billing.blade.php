@@ -19,11 +19,11 @@
         </h2>
 
         <p class="text-gray-700 mt-2 text-lg font-medium">
-            {{ $tenant->plan->name ?? 'No Plan Assigned' }}
+            {{ $tenant->subscription->plan->name ?? 'No Plan Assigned' }}
         </p>
 
         <p class="text-gray-500 mt-1">
-            @if(optional($tenant->plan)->monthly_price == 0)
+            @if(optional($tenant->subscription?->plan)->monthly_price == 0)
                 Free Forever
             @else
                 Active Subscription
@@ -49,7 +49,7 @@
         @foreach ($plans as $plan)
 
         <div class="border rounded-2xl p-6 shadow-sm
-            @if(optional($tenant->plan)->id === $plan->id)
+            @if(optional($tenant->subscription?->plan)->id === $plan->id)
                 border-primary-500 ring-2 ring-primary-300
             @else
                 border-gray-200
@@ -62,10 +62,10 @@
 
             <!-- PRICE -->
             <p class="mt-2 text-3xl font-bold text-gray-800">
-                @if($plan->monthly_price == 0)
+                @if($plan->monthly_price == 0 && $plan->annual_price == 0)
                     Free
                 @else
-                    ${{ $plan->monthly_price }}
+                    ₹{{ $plan->monthly_price }}
                     <span class="text-sm text-gray-500">/mo</span>
                 @endif
             </p>
@@ -80,10 +80,10 @@
                 @endforeach
             </ul>
 
-            <!-- ACTION BUTTON -->
+            <!-- ACTION -->
             <div class="mt-6">
 
-                @if(optional($tenant->plan)->id === $plan->id)
+                @if(optional($tenant->subscription?->plan)->id === $plan->id)
 
                     <button disabled
                         class="w-full px-4 py-2 bg-gray-200 text-gray-600 rounded-lg">
@@ -95,13 +95,15 @@
                     <form method="POST" action="{{ route('billing.subscribe') }}">
                         @csrf
 
-                        <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                        <!-- SaaS PLAN ID FIX -->
+                        <input type="hidden" name="saas_plan_id" value="{{ $plan->id }}">
                         <input type="hidden" name="billing_cycle" value="monthly">
 
                         <button type="submit"
                             class="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">
                             Select Plan
                         </button>
+
                     </form>
 
                 @endif
