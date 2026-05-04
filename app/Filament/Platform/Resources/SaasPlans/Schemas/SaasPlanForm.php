@@ -24,9 +24,10 @@ class SaasPlanForm
                     ->required()
                     ->unique(ignoreRecord: true),
 
-                TextInput::make('price')
-                    ->numeric()
-                    ->required(),
+               TextInput::make('price')
+    ->numeric()
+    ->required()
+    ->rule('min:0'),
 
              Select::make('currency')
     ->label('Currency')
@@ -47,16 +48,19 @@ class SaasPlanForm
 
                 TextInput::make('max_branches')
                     ->numeric()
+                     ->rule('min:0')
                        ->required()
                     ->default(1),
 
                 TextInput::make('max_trainers')
                     ->numeric()
+                     ->rule('min:0')
                        ->required()
                     ->default(1),
 
                 TextInput::make('max_members')
                     ->numeric()
+                     ->rule('min:0')
                        ->required()
                     ->default(10),
 
