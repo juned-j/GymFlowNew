@@ -18,7 +18,7 @@ class SaasPlanForm
             ->components([
                 TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(50),
 
                 TextInput::make('slug')
                     ->required()
