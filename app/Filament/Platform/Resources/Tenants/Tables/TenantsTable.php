@@ -25,13 +25,7 @@ class TenantsTable
                     ->wrap()
                     ->sortable(),
 
-                TextColumn::make('slug')
-                          ->extraAttributes([
-                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
-                    ])
-                    ->wrap()
-                    ->searchable(),
-
+              
                 TextColumn::make('email')
                    ->extraAttributes([
                         'style' => 'max-width: 100px; white-space: normal; word-wrap: break-word;'
@@ -39,6 +33,18 @@ class TenantsTable
                     ->wrap()
                     ->searchable(),
 
+
+                    TextColumn::make('plan')
+    ->label('Membership Plan')
+    ->formatStateUsing(function ($state) {
+        return $state?->name ?? 'No Plan';
+    })
+    ->badge()
+    ->color(fn ($state) => match (true) {
+        $state?->name === 'Pro' => 'success',
+        $state?->name === 'Premium' => 'warning',
+        default => 'gray',
+    }),
                 TextColumn::make('phone'),
 
                 TextColumn::make('city') 
@@ -52,9 +58,7 @@ class TenantsTable
                 IconColumn::make('is_active')
                     ->boolean(),
 
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable(),
+               
             ])
             ->filters([])
             ->recordActions([
