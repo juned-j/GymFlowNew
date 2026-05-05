@@ -32,17 +32,31 @@ class Branch extends Model
     ];
 
     protected static function booted()
-    {
-        static::creating(function ($branch) {
-            if (! $branch->tenant_id) {
-                $user = auth()->user();
+{
+    static::creating(function ($branch) {
+        if (! $branch->tenant_id) {
+            $user = auth()->user();
 
-                $branch->tenant_id = $user?->roles()
-                    ->whereHas('role', fn($q) => $q->where('name', 'owner'))
-                    ->value('tenant_id');
+            $branch->tenant_id = $user?->roles()
+                ->whereHas('role', fn($q) => $q->where('name', 'owner'))
+                ->value('tenant_id');
+        }
+    });
+
+    static::addGlobalScope('tenant', function ($query) {
+        if (auth()->check()) {
+            $user = auth()->user();
+
+            $tenantId = $user?->roles()
+                ->whereHas('role', fn($q) => $q->where('name', 'owner'))
+                ->value('tenant_id');
+
+            if ($tenantId) {
+                $query->where('tenant_id', $tenantId);
             }
-        });
-    }
+        }
+    });
+}
     /**
      * Get the tenant that owns the branch.
      * * Essential for your multi-tenant scoping.
