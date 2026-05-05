@@ -31,6 +31,7 @@ class UserResource extends Resource
             Grid::make(2)->schema([
 
                 TextInput::make('name')
+                    ->maxLength(50)
                     ->required(),
 
              TextInput::make('email')
