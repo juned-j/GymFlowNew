@@ -194,62 +194,7 @@ public function showUserStep()
         return view('onboarding.plans', compact('plans'));
     }
 
-public function success(Request $request)
-{
-    \Log::info('🎯 SUCCESS METHOD HIT', $request->all());
 
-    $user = auth()->user();
-
-    if (!$user) {
-        \Log::error('❌ USER NOT AUTHENTICATED');
-        return redirect()->route('login');
-    }
-
-    $tenant = \App\Models\Tenant::find($user->getTenantId());
-
-    if (!$tenant) {
-        \Log::error('❌ TENANT NOT FOUND');
-        return redirect()->route('billing.plans');
-    }
-
-    // 🔥 FIX: session hatao
-    $planId = $request->plan_id;
-
-    \Log::info('📦 PLAN FROM URL', [
-        'plan_id' => $planId
-    ]);
-
-    if (!$planId) {
-        \Log::error('❌ PLAN ID MISSING');
-        return redirect()->route('billing.plans');
-    }
-
-    $plan = \App\Models\SaasPlan::find($planId);
-
-    if (!$plan) {
-        \Log::error('❌ PLAN NOT FOUND');
-        return redirect()->route('billing.plans');
-    }
-
-    $subscription = $tenant->subscription()->updateOrCreate(
-        ['tenant_id' => $tenant->id],
-        [
-            'saas_plan_id' => $plan->id,
-            'status' => 'active'
-        ]
-    );
-
-    \Log::info('✅ SUBSCRIPTION CREATED', [
-        'subscription_id' => $subscription->id
-    ]);
-
-    $tenant->update([
-        'is_active' => true,
-        'status' => 'active',
-    ]);
-
-    return redirect()->route('filament.admin.pages.dashboard');
-}
     public function storePlan(Request $request)
 {
     $request->validate([
