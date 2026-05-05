@@ -58,7 +58,7 @@ public function storeGym(Request $request)
         'address' => $validated['address'] ?? null,
         'city' => $validated['city'] ?? null,
         'country' => $validated['country'] ?? null,
-        'owner_user_id' => 1,
+'owner_user_id' => null,
         'timezone' => $validated['timezone'] ?? 'Asia/Kolkata',
         'currency' => 'INR',
         'currency_symbol' => '₹',
@@ -194,22 +194,41 @@ public function showUserStep()
         return view('onboarding.plans', compact('plans'));
     }
 
-    public function success()
-    {
-        $tenant = Tenant::find(Session::get('tenant_id'));
+  public function success()
+{
+    $user = auth()->user();
 
-        if ($tenant) {
-            $tenant->update([
-                'is_active' => true,
-                'status' => 'active',
-            ]);
-        }
+    $tenant = \App\Models\Tenant::find($user->getTenantId());
 
-        Session::forget(['tenant_id', 'user_id']);
+    $planId = session('selected_plan_id');
 
-        return redirect()->route('filament.admin.pages.dashboard')
-            ->with('success', 'Gym Activated Successfully!');
+    if (!$planId) {
+        return redirect()->route('billing.plans')
+            ->with('error', 'Plan missing');
     }
+
+    $plan = \App\Models\SaasPlan::find($planId);
+
+    // 🔥 THIS WAS MISSING
+    $tenant->subscription()->updateOrCreate(
+        ['tenant_id' => $tenant->id],
+        [
+            'saas_plan_id' => $plan->id,
+            'status' => 'active'
+        ]
+    );
+
+    // activate tenant
+    $tenant->update([
+        'is_active' => true,
+        'status' => 'active',
+    ]);
+
+    session()->forget('selected_plan_id');
+
+    return redirect()->route('filament.admin.pages.dashboard')
+        ->with('success', 'Subscription activated!');
+}
     public function storePlan(Request $request)
 {
     $request->validate([
