@@ -132,6 +132,5 @@ Route::get('/billing/plans', [BillingController::class, 'index'])
 Route::post('/billing/subscribe', [BillingController::class, 'subscribe'])
     ->name('billing.subscribe');
 
-Route::get('/billing/success', function () {
-    return redirect('/admin')->with('success', 'Subscription activated!');
-})->name('billing.success');
+Route::get('/billing/success', [BillingController::class, 'success'])
+    ->name('billing.success');
