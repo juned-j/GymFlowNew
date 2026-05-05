@@ -194,23 +194,44 @@ public function showUserStep()
         return view('onboarding.plans', compact('plans'));
     }
 
-  public function success()
+public function success(Request $request)
 {
+    \Log::info('🎯 SUCCESS METHOD HIT', $request->all());
+
     $user = auth()->user();
+
+    if (!$user) {
+        \Log::error('❌ USER NOT AUTHENTICATED');
+        return redirect()->route('login');
+    }
 
     $tenant = \App\Models\Tenant::find($user->getTenantId());
 
-    $planId = session('selected_plan_id');
+    if (!$tenant) {
+        \Log::error('❌ TENANT NOT FOUND');
+        return redirect()->route('billing.plans');
+    }
+
+    // 🔥 FIX: session hatao
+    $planId = $request->plan_id;
+
+    \Log::info('📦 PLAN FROM URL', [
+        'plan_id' => $planId
+    ]);
 
     if (!$planId) {
-        return redirect()->route('billing.plans')
-            ->with('error', 'Plan missing');
+        \Log::error('❌ PLAN ID MISSING');
+        return redirect()->route('billing.plans');
     }
 
     $plan = \App\Models\SaasPlan::find($planId);
 
-    // 🔥 THIS WAS MISSING
-    $tenant->subscription()->updateOrCreate(
+    if (!$plan) {
+        \Log::error('❌ PLAN NOT FOUND');
+        return redirect()->route('billing.plans');
+    }
+
+    $subscription = $tenant->subscription()->updateOrCreate(
         ['tenant_id' => $tenant->id],
         [
             'saas_plan_id' => $plan->id,
@@ -218,16 +239,16 @@ public function showUserStep()
         ]
     );
 
-    // activate tenant
+    \Log::info('✅ SUBSCRIPTION CREATED', [
+        'subscription_id' => $subscription->id
+    ]);
+
     $tenant->update([
         'is_active' => true,
         'status' => 'active',
     ]);
 
-    session()->forget('selected_plan_id');
-
-    return redirect()->route('filament.admin.pages.dashboard')
-        ->with('success', 'Subscription activated!');
+    return redirect()->route('filament.admin.pages.dashboard');
 }
     public function storePlan(Request $request)
 {
