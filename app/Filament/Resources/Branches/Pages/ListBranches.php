@@ -16,14 +16,25 @@ class ListBranches extends ListRecords
    // ListBranches.php
 protected function getHeaderActions(): array
 {
-    $tenant = app('tenant');
-    
+    $user = auth()->user();
+
+    $tenant = $user ? \App\Models\Tenant::find($user->getTenantId()) : null;
+
     $limitReached = $tenant ? $tenant->reachedLimit('branches') : true;
 
     return [
         CreateAction::make()
-            ->disabled($limitReached)
-            ->tooltip($limitReached ? 'Limit reached' : null),
+            ->disabled(fn () => $limitReached)
+            ->color(fn () => $limitReached ? 'danger' : 'primary')
+            ->tooltip(fn () => $this->getLimitMessage($limitReached)),
     ];
+}
+protected function getLimitMessage(bool $limitReached): string
+{
+    if (!$limitReached) {
+        return 'Create a new branch';
+    }
+
+    return 'Branch limit reached for your current plan. Please upgrade your subscription to add more branches.';
 }
 }
