@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class SaasPlan extends Model
 {
     use HasFactory;
+
     protected $table = 'saas_plans';
 
     protected $fillable = [
@@ -31,12 +32,6 @@ class SaasPlan extends Model
         'price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
-
-    /*
-    |-----------------------------------
-    | Relationships
-    |-----------------------------------
-    */
 
     public function tenantSubscriptions()
     {
