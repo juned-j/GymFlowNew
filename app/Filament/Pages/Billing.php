@@ -3,15 +3,15 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
-use App\Models\Plan;
+use App\Models\SaasPlan; // Use the correct model
 use App\Models\Tenant;
 
 class Billing extends Page
 {
-protected string $view = 'filament.pages.billing';
+    protected string $view = 'filament.pages.billing';
     protected static ?string $slug = 'billing';
 
-    public Tenant $tenant;
+    public $tenant;
     public $plans;
 
     public function mount(): void
@@ -22,8 +22,9 @@ protected string $view = 'filament.pages.billing';
             abort(403, 'Tenant not found');
         }
 
-        $this->plans = Plan::where('is_active', 1)
-            ->orderBy('monthly_price')
+        // Use SaasPlan:: class to ensure $casts['features'] = 'array' works
+        $this->plans = SaasPlan::where('is_active', 1)
+            ->orderBy('price')
             ->get();
     }
 
