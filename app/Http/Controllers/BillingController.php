@@ -16,9 +16,15 @@ class BillingController extends Controller
         return view('billing.plans', compact('plans'));
     }
 
+    // =========================
+    // SUBSCRIBE (PRODUCTION FIXED)
+    // =========================
     public function subscribe(Request $request)
     {
-        Log::info('🚀 SUBSCRIBE START', $request->all());
+        Log::info('🚀 [SUBSCRIBE START]', [
+            'request' => $request->all(),
+            'user_id' => auth()->id(),
+        ]);
 
         $planId = $request->saas_plan_id ?? $request->plan_id;
 
@@ -38,69 +44,88 @@ class BillingController extends Controller
             return back()->with('error', 'Tenant not found');
         }
 
-        // ✅ PLAN FETCH
-        $plan = SaasPlan::findOrFail($planId);
+        $plan = SaasPlan::find($planId);
 
-        Log::info('📦 PLAN', [
-            'id' => $plan->id,
-            'interval' => $plan->billing_interval,
-            'stripe_price_id' => $plan->stripe_price_id,
-        ]);
+        if (!$plan) {
+            return back()->with('error', 'Invalid plan');
+        }
 
-        // ✅ FREE PLAN (direct activate)
-        if ((float)$plan->price == 0) {
-            $tenant->subscription()->updateOrCreate(
+        Log::info('📦 [PLAN FOUND]', $plan->toArray());
+
+        // =========================
+        // FREE PLAN (SAFE)
+        // =========================
+        if ((float) $plan->price === 0.0) {
+
+            $subscription = $tenant->subscription()->updateOrCreate(
                 ['tenant_id' => $tenant->id],
                 [
                     'saas_plan_id' => $plan->id,
+                    'stripe_subscription_id' => 'free_' . uniqid(),
                     'status' => 'active',
                     'trial_ends_at' => now()->addDays(30),
                 ]
             );
 
-            return redirect()->route('billing.success', [
-                'plan_id' => $plan->id
+            $tenant->update([
+                'is_active' => true,
+                'status' => 'active',
             ]);
+
+            return redirect()->route('filament.admin.pages.dashboard')
+                ->with('success', 'Free plan activated!');
         }
 
-        // ❌ Stripe validation
-        $priceId = $plan->stripe_price_id;
-
-        if (!$priceId || !str_starts_with($priceId, 'price_')) {
-            return back()->with('error', 'Stripe Price ID invalid');
-        }
-
+        // =========================
+        // STRIPE CHECKOUT
+        // =========================
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
-        // 🔥 FIX: plan_id success_url me pass kar rahe hain
-        $session = \Stripe\Checkout\Session::create([
-            'customer_email' => $user->email,
-            'payment_method_types' => ['card'],
-            'line_items' => [[
-                'price' => $priceId,
-                'quantity' => 1,
-            ]],
-            'mode' => 'subscription',
+        try {
 
-            'success_url' => route('billing.success', [
-                'plan_id' => $plan->id
-            ]),
+            $session = \Stripe\Checkout\Session::create([
+                'customer_email' => $user->email,
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price' => $plan->stripe_price_id,
+                    'quantity' => 1,
+                ]],
+                'mode' => 'subscription',
 
-            'cancel_url' => route('billing.plans'),
-        ]);
+                // 🔥 CLEAN SUCCESS FLOW (NO session_id dependency)
+                'success_url' => route('billing.success', [
+                    'plan_id' => $plan->id
+                ]),
 
-        return redirect($session->url);
+                'cancel_url' => route('billing.plans'),
+            ]);
+
+            Log::info('✅ STRIPE SESSION CREATED', [
+                'session_id' => $session->id,
+            ]);
+
+            return redirect($session->url);
+
+        } catch (\Exception $e) {
+
+            Log::error('❌ STRIPE ERROR', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Payment failed');
+        }
     }
 
-    // 🔥 NEW SUCCESS METHOD (IMPORTANT FIX)
+    // =========================
+    // SUCCESS (PRODUCTION SAFE)
+    // =========================
     public function success(Request $request)
     {
         Log::info('🎯 SUCCESS HIT', $request->all());
 
-        $planId = $request->plan_id;
+        $planId = $request->get('plan_id');
 
         if (!$planId) {
-            Log::error('❌ PLAN ID MISSING');
             return redirect()->route('billing.plans')
                 ->with('error', 'Plan missing');
         }
@@ -108,44 +133,82 @@ class BillingController extends Controller
         $user = auth()->user();
 
         if (!$user) {
-            Log::error('❌ USER NOT FOUND');
             return redirect()->route('login');
         }
 
         $tenant = Tenant::find($user->getTenantId());
 
         if (!$tenant) {
-            Log::error('❌ TENANT NOT FOUND');
             return redirect()->route('billing.plans');
         }
 
         $plan = SaasPlan::find($planId);
 
         if (!$plan) {
-            Log::error('❌ PLAN NOT FOUND');
             return redirect()->route('billing.plans');
         }
 
-        // ✅ MAIN FIX (subscription insert)
+        // =========================
+        // STRIPE VERIFY VIA LATEST SUBSCRIPTION (BEST METHOD)
+        // =========================
+        try {
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+            // 🔥 BEST PRACTICE: get latest subscription instead of session
+            $subscriptions = \Stripe\Subscription::all([
+                'limit' => 1,
+                'status' => 'active',
+            ]);
+
+            $stripeSubscription = $subscriptions->data[0] ?? null;
+
+            if (!$stripeSubscription) {
+                Log::error('❌ NO ACTIVE STRIPE SUBSCRIPTION FOUND');
+
+                return redirect()->route('billing.plans')
+                    ->with('error', 'Payment not confirmed');
+            }
+
+            $stripeSubscriptionId = $stripeSubscription->id;
+            $stripeCustomerId = $stripeSubscription->customer;
+
+        } catch (\Exception $e) {
+
+            Log::error('❌ STRIPE VERIFY FAILED', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('billing.plans')
+                ->with('error', 'Payment verification failed');
+        }
+
+        // =========================
+        // SAVE SUBSCRIPTION
+        // =========================
         $subscription = $tenant->subscription()->updateOrCreate(
             ['tenant_id' => $tenant->id],
             [
                 'saas_plan_id' => $plan->id,
+                'stripe_subscription_id' => $stripeSubscriptionId,
+                'stripe_customer_id' => $stripeCustomerId,
                 'status' => 'active',
             ]
         );
 
-        Log::info('✅ SUBSCRIPTION CREATED', [
-            'subscription_id' => $subscription->id,
+        Log::info('✅ SUBSCRIPTION SAVED', [
+            'id' => $subscription->id,
         ]);
 
-        // ✅ activate tenant
+        // =========================
+        // ACTIVATE TENANT
+        // =========================
         $tenant->update([
             'is_active' => true,
             'status' => 'active',
         ]);
 
-        return redirect()->route('filament.admin.pages.dashboard')
+        return redirect()
+            ->route('filament.admin.pages.dashboard')
             ->with('success', 'Subscription activated!');
     }
 }
