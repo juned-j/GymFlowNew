@@ -16,197 +16,185 @@ use App\Models\SaasPlan;
 
 class GymOnboardingController extends Controller
 {
-
-  public function showGymStep()
-{
-    $countries = Country::orderBy('name')->get();
-
-    return view('onboarding.gym', compact('countries'));
-}
-
-public function storeGym(Request $request)
-{
-    Log::info('🚀 storeGym started', [
-        'input' => $request->all()
-    ]);
-
-    // ✅ Laravel will auto redirect back with errors
-    $validated = $request->validate([
-        'name' => 'required|string|max:100|min:3',
-        'email' => 'required|email|unique:tenants,email',
-        'phone' => 'nullable|string|max:20|regex:/^[0-9+\-\s]+$/',
-        'address' => 'nullable|string|max:255',
-        'city' => 'nullable|string|max:50',
-        'country' => 'nullable|string|max:50',
-        'timezone' => 'nullable|string|max:50',
-    ], [
-        'name.required' => 'Gym name is required',
-        'name.min' => 'Gym name must be at least 3 characters',
-
-        'email.required' => 'Email is required',
-        'email.email' => 'Enter a valid email address',
-        'email.unique' => 'This email is already registered',
-
-        'phone.regex' => 'Enter valid phone number',
-    ]);
-
-    $tenant = Tenant::create([
-        'name' => $validated['name'],
-        'slug' => Str::slug($validated['name']) . '-' . uniqid(),
-        'email' => $validated['email'],
-        'phone' => $validated['phone'] ?? null,
-        'address' => $validated['address'] ?? null,
-        'city' => $validated['city'] ?? null,
-        'country' => $validated['country'] ?? null,
-
-        'timezone' => $validated['timezone'] ?? 'Asia/Kolkata',
-        'currency' => 'INR',
-        'currency_symbol' => '₹',
-        'status' => 'active',
-        'is_active' => false,
-    ]);
-
-    Session::put('tenant_id', $tenant->id);
-
-    return redirect()->route('register.user')
-        ->with('success', 'Gym created successfully!');
-}
-
-public function storeUser(Request $request)
-{
-    Log::info('🚀 storeUser started', [
-        'input' => $request->all(),
-        'session' => session()->all(),
-    ]);
-
-    if (!Session::has('tenant_id')) {
-        return redirect()->route('register.gym')
-            ->with('error', 'Session expired. Please start again.');
+    public function showGymStep()
+    {
+        $countries = Country::orderBy('name')->get();
+        return view('onboarding.gym', compact('countries'));
     }
 
-    try {
+    // ==============================
+    // STEP 1: ONLY STORE IN SESSION
+    // ==============================
+    public function storeGym(Request $request)
+    {
+        Log::info('🚀 storeGym started', [
+            'input' => $request->all()
+        ]);
 
-        // ✅ VALIDATION WITH RULES + MESSAGES
         $validated = $request->validate([
-            'name' => 'required|string|max:50',
-
-            'email' => 'required|email|unique:users,email',
-
-            'password' => [
-                'required',
-                'confirmed',
-                'min:8',
-                'regex:/[A-Z]/',   // uppercase
-                'regex:/[a-z]/',   // lowercase
-                'regex:/[0-9]/',   // number
-            ],
-        ], [
-            'name.required' => 'Name is required',
-
-            'email.required' => 'Email is required',
-            'email.email' => 'Enter valid email address',
-            'email.unique' => 'This email is already registered',
-
-            'password.required' => 'Password is required',
-            'password.confirmed' => 'Password confirmation does not match',
-            'password.min' => 'Password must be at least 8 characters',
-            'password.regex' => 'Password must contain uppercase, lowercase and number',
+            'name' => 'required|string|max:100|min:3',
+            'email' => 'required|email',
+            'phone' => 'nullable|string|max:20|regex:/^[0-9+\-\s]+$/',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:50',
+            'country' => 'nullable|string|max:50',
+            'timezone' => 'nullable|string|max:50',
         ]);
 
-        Log::info('✅ Validation passed', $validated);
+        // 🔥 STORE TEMP DATA (NO DB INSERT YET)
+        Session::put('gym_data', $validated);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'status' => 'active',
+        return redirect()->route('register.user')
+            ->with('success', 'Gym details saved. Now create your account!');
+    }
+
+    // ==============================
+    // STEP 2: CREATE USER FIRST
+    // THEN CREATE TENANT
+    // ==============================
+    public function storeUser(Request $request)
+    {
+        Log::info('🚀 storeUser started', [
+            'input' => $request->all(),
+            'session' => session()->all(),
         ]);
 
-        Log::info('✅ User created', ['user_id' => $user->id]);
+        if (!Session::has('gym_data')) {
+            return redirect()->route('register.gym')
+                ->with('error', 'Session expired. Please start again.');
+        }
 
-        \App\Models\UserTenantRole::create([
-            'user_id' => $user->id,
-            'tenant_id' => Session::get('tenant_id'),
-            'role_id' => 1
-        ]);
+        try {
 
-        Tenant::where('id', Session::get('tenant_id'))
-            ->update(['owner_user_id' => $user->id]);
+            $validated = $request->validate([
+                'name' => 'required|string|max:50',
+                'email' => 'required|email|unique:users,email',
+                'password' => [
+                    'required',
+                    'confirmed',
+                    'min:8',
+                    'regex:/[A-Z]/',
+                    'regex:/[a-z]/',
+                    'regex:/[0-9]/',
+                ],
+            ]);
 
-        $user->sendEmailVerificationNotification();
+            Log::info('✅ Validation passed', $validated);
 
-        return redirect()->route('verification.notice')
-            ->with('success', 'Account created! Please verify your email.');
+            // 🔥 STEP 1: CREATE USER
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'status' => 'active',
+            ]);
 
-    } catch (\Exception $e) {
+            Log::info('✅ User created', ['user_id' => $user->id]);
 
-        Log::error('❌ storeUser failed', [
-            'message' => $e->getMessage(),
-            'line' => $e->getLine()
-        ]);
+            // 🔥 STEP 2: GET GYM DATA FROM SESSION
+            $gym = Session::get('gym_data');
 
-        return back()
-            ->withInput()
-            ->with('error', 'Something went wrong. Please try again.');
+            // 🔥 STEP 3: CREATE TENANT WITH OWNER USER ID
+            $tenant = Tenant::create([
+                'name' => $gym['name'],
+                'slug' => Str::slug($gym['name']) . '-' . uniqid(),
+                'email' => $gym['email'],
+
+                'owner_user_id' => $user->id, // ✅ FIXED
+
+                'phone' => $gym['phone'] ?? null,
+                'address' => $gym['address'] ?? null,
+                'city' => $gym['city'] ?? null,
+                'country' => $gym['country'] ?? null,
+
+                'timezone' => $gym['timezone'] ?? 'Asia/Kolkata',
+                'currency' => 'INR',
+                'currency_symbol' => '₹',
+                'status' => 'active',
+                'is_active' => false,
+            ]);
+
+            // 🔥 STEP 4: LINK USER ↔ TENANT
+            \App\Models\UserTenantRole::create([
+                'user_id' => $user->id,
+                'tenant_id' => $tenant->id,
+                'role_id' => 1
+            ]);
+
+            Session::put('tenant_id', $tenant->id);
+
+            // cleanup
+            Session::forget('gym_data');
+
+            $user->sendEmailVerificationNotification();
+
+            return redirect()->route('verification.notice')
+                ->with('success', 'Account created! Please verify your email.');
+
+        } catch (\Exception $e) {
+
+            Log::error('❌ storeUser failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Something went wrong. Please try again.');
+        }
     }
-}
-public function showUserStep()
-{
-    Log::info('👤 showUserStep opened', [
-        'tenant_id' => Session::get('tenant_id')
-    ]);
 
-    // safety check
-    if (!Session::has('tenant_id')) {
-        return redirect()->route('register.gym')
-            ->with('error', 'Please complete gym step first');
+    public function showUserStep()
+    {
+        if (!Session::has('gym_data')) {
+            return redirect()->route('register.gym')
+                ->with('error', 'Please complete gym step first');
+        }
+
+        return view('onboarding.user');
     }
 
-    return view('onboarding.user');
-}
-   public function verifyEmail(Request $request, $id, $hash)
-{
-    $user = User::findOrFail($id);
+    public function verifyEmail(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
 
-    if (! $request->hasValidSignature()) {
-        abort(403);
+        if (! $request->hasValidSignature()) {
+            abort(403);
+        }
+
+        if (! hash_equals($hash, sha1($user->getEmailForVerification()))) {
+            abort(403);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+            $user->update(['status' => 'active']);
+        }
+
+        Auth::login($user);
+
+        return redirect()->route('billing.plans');
     }
-
-    // OPTIONAL but recommended
-    if (! hash_equals($hash, sha1($user->getEmailForVerification()))) {
-        abort(403);
-    }
-
-    if (! $user->hasVerifiedEmail()) {
-        $user->markEmailAsVerified();
-        $user->update(['status' => 'active']);
-    }
-
-    Auth::login($user);
-
-   return redirect()->route('billing.plans');
-}
 
     public function showPlans()
     {
         $plans = SaasPlan::where('is_active', true)->get();
-
         return view('onboarding.plans', compact('plans'));
     }
 
-
     public function storePlan(Request $request)
-{
-    $request->validate([
-        'saas_plan_id' => 'required|exists:plans,id',
-    ]);
+    {
+        $request->validate([
+            'saas_plan_id' => 'required|exists:plans,id',
+        ]);
 
-    $user = auth()->user();
+        $user = auth()->user();
 
-    $user->update([
-        'saas_plan_id' => $request->saas_plan_id,
-    ]);
+        $user->update([
+            'saas_plan_id' => $request->saas_plan_id,
+        ]);
 
-    return redirect()->route('home')->with('success', 'Plan selected successfully!');
-}
+        return redirect()->route('home')
+            ->with('success', 'Plan selected successfully!');
+    }
 }
