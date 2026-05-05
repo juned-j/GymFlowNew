@@ -26,7 +26,7 @@ class Trainer extends Model
     }
 
     // -------------------
-    // 🔥 TENANT ISOLATION FIX
+    // 🔥 TENANT ISOLATION FIX  fx 
     // -------------------
     // protected static function booted()
     // {
