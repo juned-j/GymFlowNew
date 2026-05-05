@@ -46,6 +46,11 @@ class Tenant extends Model
         'app_settings',
     ];
 
+
+
+    protected $casts = [
+    'app_settings' => 'array',
+];
     /**
      * Owner of the tenant (gym owner)
      */
