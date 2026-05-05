@@ -154,35 +154,27 @@ class GymOnboardingController extends Controller
         return view('onboarding.user');
     }
 
-   public function verifyEmail(Request $request, $id, $hash)
-{
-    $user = User::findOrFail($id);
+    public function verifyEmail(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
 
-    // ✅ check signed URL validity
-    if (! $request->hasValidSignature()) {
-        abort(403, 'Invalid or expired verification link.');
+        if (! $request->hasValidSignature()) {
+            abort(403);
+        }
+
+        if (! hash_equals($hash, sha1($user->getEmailForVerification()))) {
+            abort(403);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+            $user->update(['status' => 'active']);
+        }
+
+        Auth::login($user);
+
+        return redirect()->route('billing.plans');
     }
-
-    // ❌ REMOVE manual sha1 check (Laravel already handles this internally)
-    // if (! hash_equals($hash, sha1($user->getEmailForVerification()))) {
-    //     abort(403);
-    // }
-
-    // ✅ verify email only if not already verified
-    if (! $user->hasVerifiedEmail()) {
-        $user->markEmailAsVerified();
-
-        $user->update([
-            'status' => 'active',
-            'email_verified_at' => now(), // 🔥 important for consistency
-        ]);
-    }
-
-    Auth::login($user);
-
-    return redirect()->route('billing.plans')
-        ->with('success', 'Email verified successfully!');
-}
 
     public function showPlans()
     {
