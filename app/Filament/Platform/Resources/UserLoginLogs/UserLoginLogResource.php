@@ -18,8 +18,7 @@ class UserLoginLogResource extends Resource
 {
     protected static ?string $model = UserLoginLog::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
+protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowRightOnRectangle;
  
 
     public static function table(Table $table): Table

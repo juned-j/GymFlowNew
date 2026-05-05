@@ -22,6 +22,7 @@ class EditWorkoutPlan extends EditRecord
         return $data;
     }
 
+    
     protected function getHeaderActions(): array
     {
         return [

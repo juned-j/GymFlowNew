@@ -1,6 +1,5 @@
 /* === FONT IMPORTS === */
-@import "/vendor/filament/filament/resources/css/theme.css";
-@config 'tailwind.config.js';
+@import "../../../../vendor/filament/filament/resources/css/theme.css";
 :root {
     --primary: 99 102 241; /* Indigo like Stripe */
 }
@@ -47,4 +46,16 @@ textarea {
     background-color: #0b1220 !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
     color: white !important;
+}
+
+
+.fi-chart-widget {
+    height: 280px !important;
+}
+
+.fi-chart-widget canvas {
+    height: 280px !important;
+}
+svg path {
+    stroke: var(--primary) !important;
 }

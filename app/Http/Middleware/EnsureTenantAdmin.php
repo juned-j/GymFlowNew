@@ -22,4 +22,10 @@ class EnsureTenantAdmin
 
         return $next($request);
     }
+
+
+//     public function handle($request, Closure $next)
+// {
+//     return $next($request); // ✅ TEMP disable
+// }
 }

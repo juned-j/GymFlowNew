@@ -110,5 +110,8 @@ class User extends Authenticatable implements MustVerifyEmail{
 {
     return $this->belongsTo(User::class);
 }
-
+public function subscription()
+{
+    return $this->hasOne(\App\Models\TenantSubscription::class, 'user_id');
+}
 }
