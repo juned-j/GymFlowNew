@@ -39,4 +39,9 @@ class TenantSubscription extends Model
     {
         return $this->belongsTo(SaasPlan::class, 'saas_plan_id');
     }
+    public function isActive(): bool
+    {
+        return in_array($this->status, ['active', 'trialing']) &&
+            (is_null($this->ends_at) || $this->ends_at->isFuture());
+    }
 }
