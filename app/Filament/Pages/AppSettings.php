@@ -33,39 +33,46 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
     public $tenant; // ✅ STORE TENANT HERE
 
-    public function mount(): void
-    {
-        $tenant = app()->bound('tenant') ? app('tenant') : null;
+  public function mount(): void
+{
+    $tenant = app()->bound('tenant') ? app('tenant') : null;
 
-        if (!$tenant) {
-            \Log::error('❌ Tenant not found in mount');
-            abort(404, 'Tenant not found');
-        }
-
-        $this->tenant = $tenant; // ✅ IMPORTANT FIX
-
-        \Log::info('✅ Tenant loaded in mount', [
-            'tenant_id' => $tenant->id
-        ]);
-
-        $this->data = $tenant->app_settings ?? [
-            'branding' => [
-                'primary_color' => '#FF5733',
-                'secondary_color' => '#222222',
-                'accent_color' => '#FFC107',
-            ],
-            'app' => [
-                'app_name' => 'GymFlow',
-                'version' => '1.0.0',
-            ],
-            'ui' => [
-                'default_language' => 'en',
-                'supported_languages' => ['en'],
-            ],
-        ];
-
-        $this->form->fill($this->data);
+    if (!$tenant) {
+        \Log::error('❌ Tenant not found in mount');
+        abort(404, 'Tenant not found');
     }
+
+    $this->tenant = $tenant; // ✅ IMPORTANT FIX
+
+    \Log::info('✅ Tenant loaded in mount', [
+        'tenant_id' => $tenant->id
+    ]);
+
+    // 🔥 SAFE FIX: ensure array (handles JSON string case)
+    $settings = $tenant->app_settings;
+
+    if (is_string($settings)) {
+        $settings = json_decode($settings, true) ?? [];
+    }
+
+    $this->data = $settings ?: [
+        'branding' => [
+            'primary_color' => '#FF5733',
+            'secondary_color' => '#222222',
+            'accent_color' => '#FFC107',
+        ],
+        'app' => [
+            'app_name' => 'GymFlow',
+            'version' => '1.0.0',
+        ],
+        'ui' => [
+            'default_language' => 'en',
+            'supported_languages' => ['en'],
+        ],
+    ];
+
+    $this->form->fill($this->data);
+}
 
     public function form(Schema $schema): Schema
     {
