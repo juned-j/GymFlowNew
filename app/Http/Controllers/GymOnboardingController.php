@@ -58,7 +58,7 @@ public function storeGym(Request $request)
         'address' => $validated['address'] ?? null,
         'city' => $validated['city'] ?? null,
         'country' => $validated['country'] ?? null,
-'owner_user_id' => null,
+
         'timezone' => $validated['timezone'] ?? 'Asia/Kolkata',
         'currency' => 'INR',
         'currency_symbol' => '₹',
