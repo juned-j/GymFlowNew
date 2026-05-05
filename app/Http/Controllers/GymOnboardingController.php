@@ -213,13 +213,13 @@ public function showUserStep()
     public function storePlan(Request $request)
 {
     $request->validate([
-        'plan_id' => 'required|exists:plans,id',
+        'saas_plan_id' => 'required|exists:plans,id',
     ]);
 
     $user = auth()->user();
 
     $user->update([
-        'plan_id' => $request->plan_id,
+        'saas_plan_id' => $request->saas_plan_id,
     ]);
 
     return redirect()->route('home')->with('success', 'Plan selected successfully!');
