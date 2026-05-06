@@ -18,23 +18,37 @@ public function handle($request, Closure $next)
         return redirect()->route('login');
     }
 
-    // Pehle DB check karein, phir session fallback
-    $hasDbAccess = $user->isTenantUser();
-    $hasSessionAccess = session()->has('tenant_id');
+    $tenantId = session('tenant_id');
 
-    if ($hasDbAccess || $hasSessionAccess) {
-        // Agar DB mein link nahi hai but session mein hai, toh link create kar dein (Self-healing)
-        if (!$hasDbAccess && $hasSessionAccess) {
-            \App\Models\UserTenantRole::firstOrCreate([
-                'user_id' => $user->id,
-                'tenant_id' => session('tenant_id'),
-                'role_id' => 1 // Admin role
-            ]);
-        }
+    if ($user->isTenantUser()) {
         return $next($request);
     }
 
-    \Illuminate\Support\Facades\Log::warning('403 Forbidden: User has no tenant access', ['user_id' => $user->id]);
+    if ($tenantId) {
+
+        \App\Models\UserTenantRole::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'tenant_id' => $tenantId,
+            ],
+            [
+                'role_id' => 1
+            ]
+        );
+
+        Log::info('🔧 Tenant access repaired from session', [
+            'user_id' => $user->id,
+            'tenant_id' => $tenantId
+        ]);
+
+        return $next($request);
+    }
+
+    // ❌ 3. Final block
+    Log::warning('403 Forbidden: User has no tenant access', [
+        'user_id' => $user->id
+    ]);
+
     abort(403, 'Tenant access only');
 }
 }
