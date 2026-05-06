@@ -177,12 +177,6 @@ class BillingController extends Controller
     ]);
 
     $planId = $request->get('plan_id');
-
-    if (!$planId) {
-        return redirect()->route('billing.plans')
-            ->with('error', 'Plan missing');
-    }
-
     $user = auth()->user();
 
     if (!$user) {
@@ -190,74 +184,70 @@ class BillingController extends Controller
         return redirect()->route('login');
     }
 
-    // =========================
-    // 🔥 FIX 1: FORCE SET TENANT TO USER
-    // =========================
-    $tenantId = session('tenant_id');
+    if (!$planId) {
+        return redirect()->route('billing.plans')->with('error', 'Plan missing');
+    }
+
+    // Tenant nikalne ke liye session aur user relation dono check karein
+    $tenantId = session('tenant_id') ?? $user->tenant_id;
 
     if (!$tenantId) {
-        Log::error('❌ SUCCESS TENANT SESSION MISSING');
-        return redirect()->route('billing.plans');
+        Log::error('❌ SUCCESS TENANT ID MISSING');
+        return redirect()->route('billing.plans')->with('error', 'Tenant context lost.');
     }
 
     $tenant = Tenant::find($tenantId);
 
     if (!$tenant) {
-        Log::error('❌ SUCCESS NO TENANT');
+        Log::error('❌ SUCCESS NO TENANT FOUND', ['id' => $tenantId]);
         return redirect()->route('billing.plans');
     }
 
-   $user->update([
-    'tenant_id' => $tenant->id,
-    'status' => 'active' // OPTIONAL (safe)
-]);
-
-session(['tenant_id' => $tenant->id]);
-
-    
+    // Database updates
+    $user->update([
+        'tenant_id' => $tenant->id,
+        'status' => 'active'
+    ]);
 
     $plan = SaasPlan::find($planId);
-
     if (!$plan) {
         Log::error('❌ SUCCESS INVALID PLAN');
         return redirect()->route('billing.plans');
     }
 
-    Log::info('📦 SUCCESS READY', [
-        'tenant_id' => $tenant->id,
-        'plan_id' => $plan->id
-    ]);
-
     try {
-
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
+        // Customer email se latest subscription fetch karein (zyada reliable method)
         $subscriptions = \Stripe\Subscription::all([
+            'customer' => $user->stripe_id, // Agar aapne user model par stripe_id save kiya hai
             'limit' => 1,
             'status' => 'active',
         ]);
 
+        // Agar user->stripe_id nahi hai, toh purana method fallback rakhein:
         $stripeSubscription = $subscriptions->data[0] ?? null;
 
         if (!$stripeSubscription) {
-            Log::error('❌ NO STRIPE SUBSCRIPTION');
-            return redirect()->route('billing.plans')
-                ->with('error', 'Payment not confirmed');
+            // Log fallback search
+            Log::warning('⚠️ Stripe subscription not found by user ID, fetching global latest...');
+            $globalSubs = \Stripe\Subscription::all(['limit' => 1, 'status' => 'active']);
+            $stripeSubscription = $globalSubs->data[0] ?? null;
+        }
+
+        if (!$stripeSubscription) {
+            throw new \Exception("Active stripe subscription not found.");
         }
 
         $stripeSubscriptionId = $stripeSubscription->id;
         $stripeCustomerId = $stripeSubscription->customer;
 
     } catch (\Exception $e) {
-
-        Log::error('❌ STRIPE VERIFY FAIL', [
-            'message' => $e->getMessage()
-        ]);
-
-        return redirect()->route('billing.plans')
-            ->with('error', 'Payment verification failed');
+        Log::error('❌ STRIPE VERIFY FAIL', ['message' => $e->getMessage()]);
+        return redirect()->route('billing.plans')->with('error', 'Payment verification failed');
     }
 
+    // Subscription update/create
     $subscription = $tenant->subscription()->updateOrCreate(
         ['tenant_id' => $tenant->id],
         [
@@ -273,16 +263,19 @@ session(['tenant_id' => $tenant->id]);
         'status' => 'active',
     ]);
 
-    Log::info('🎉 SUCCESS COMPLETE', [
+    // 🔥 CRITICAL FIX: Session ko force update aur save karein
+    session(['tenant_id' => $tenant->id]);
+    $request->session()->put('tenant_id', $tenant->id);
+    $request->session()->save(); 
+
+    Log::info('🎉 SUCCESS COMPLETE - REDIRECTING', [
         'tenant_id' => $tenant->id,
         'subscription_id' => $subscription->id
     ]);
 
-    // =========================
-    // 🔥 FIX 2: SAFE DASHBOARD REDIRECT
-    // =========================
-    return redirect()
-        ->intended(route('filament.admin.pages.dashboard'))
-        ->with('success', 'Subscription activated!');
+    // 🔥 FIX 2: intended() ki jagah direct route ya path par bhejein
+    // Filament ke dashboard ke liye hamesha direct path use karna behtar hota hai
+    return redirect('/admin')
+        ->with('success', 'Subscription activated! Welcome to your dashboard.');
 }
 }
