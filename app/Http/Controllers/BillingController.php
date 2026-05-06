@@ -174,39 +174,34 @@ public function success(Request $request)
     $planId = $request->get('plan_id');
     $tenantId = session('tenant_id') ?? $user?->tenant_id;
 
-    // 1. Validation & Safety Checks
     if (!$user) return redirect()->route('login');
     
     if (!$planId || !$tenantId) {
-        Log::error('❌ Billing Success Missing Data', ['plan' => $planId, 'tenant' => $tenantId]);
-        return redirect()->route('billing.plans')->with('error', 'Required session data missing.');
+        return redirect()->route('billing.plans')->with('error', 'Required data missing.');
     }
 
     $tenant = Tenant::find($tenantId);
     $plan = SaasPlan::find($planId);
 
     if (!$tenant || !$plan) {
-        return redirect()->route('billing.plans')->with('error', 'Invalid Tenant or Plan.');
+        return redirect()->route('billing.plans')->with('error', 'Invalid setup.');
     }
 
     try {
-        // 2. Stripe Verification
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
-        // Customer ya global search se latest subscription nikalein
+        // Subscription fetch
         $stripeSubs = \Stripe\Subscription::all([
-            'customer' => $user->stripe_id,
             'limit' => 1,
             'status' => 'active',
         ]);
-
-        $stripeSubscription = $stripeSubs->data[0] ?? \Stripe\Subscription::all(['limit' => 1, 'status' => 'active'])->data[0] ?? null;
+        $stripeSubscription = $stripeSubs->data[0] ?? null;
 
         if (!$stripeSubscription) {
-            throw new \Exception("No active Stripe subscription found.");
+            throw new \Exception("Active Stripe subscription not found.");
         }
 
-        // 3. Database Updates (Atomic Transactions use karna behtar hota hai)
+        // Database Updates
         $tenant->subscription()->updateOrCreate(
             ['tenant_id' => $tenant->id],
             [
@@ -218,24 +213,25 @@ public function success(Request $request)
         );
 
         $tenant->update(['is_active' => true, 'status' => 'active']);
-        $user->update(['tenant_id' => $tenant->id, 'status' => 'active']);
+        $user->update(['tenant_id' => $tenant->id]);
 
-        // 4. 🔥 Force Refresh for Middleware (Gatekeeper fix)
+        // 🔥 IMPORTANT: Refresh Auth User with relationship
+        // Ab error nahi aayega kyunki humne Model mein relationship add kar di hai
+        $user->refresh();
         $user->load('tenant'); 
         
-        // Session ko force save karein taaki redirect par data loss na ho
-        $request->session()->put('tenant_id', $tenant->id);
+        session(['tenant_id' => $tenant->id]);
         $request->session()->save();
 
-        Log::info('🎉 Subscription Activated', ['tenant_id' => $tenant->id]);
+        Log::info('🎉 Success Complete', ['tenant_id' => $tenant->id]);
 
-        // 5. Redirect directly to the tenant dashboard
+        // Filament Dashboard Redirect
         return redirect()->to("/admin/{$tenant->id}")
-            ->with('success', 'Subscription activated successfully!');
+            ->with('success', 'Welcome! Your gym is now active.');
 
     } catch (\Exception $e) {
         Log::error('❌ Stripe Error: ' . $e->getMessage());
-        return redirect()->route('billing.plans')->with('error', 'Could not verify payment.');
+        return redirect()->route('billing.plans')->with('error', 'Verification failed: ' . $e->getMessage());
     }
 }
 }
