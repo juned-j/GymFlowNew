@@ -207,13 +207,14 @@ class BillingController extends Controller
         return redirect()->route('billing.plans');
     }
 
-    // 🔥 IMPORTANT FIX (THIS WAS MISSING)
-    $user->update([
-        'tenant_id' => $tenant->id
-    ]);
+   $user->update([
+    'tenant_id' => $tenant->id,
+    'status' => 'active' // OPTIONAL (safe)
+]);
 
-    // session refresh (important for middleware)
-    session(['tenant_id' => $tenant->id]);
+session(['tenant_id' => $tenant->id]);
+
+    
 
     $plan = SaasPlan::find($planId);
 
