@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-
+use App\Models\Tenant;
 #[Fillable([
     'name',
     'email',
@@ -115,4 +115,8 @@ public function subscription()
 {
     return $this->hasOne(\App\Models\TenantSubscription::class, 'user_id');
 }
+public function tenant()
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
+    }
 }
