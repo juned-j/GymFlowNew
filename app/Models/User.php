@@ -56,20 +56,27 @@ class User extends Authenticatable implements MustVerifyEmail{
         ->exists();
 }
 
-    public function isTenantUser(): bool
-    {
-        // If they have any role linked to a tenant, they are a tenant user.
-        return $this->roles()->whereNotNull('tenant_id')->exists();
+  public function isTenantUser(): bool
+{
+    $tenantId = session('tenant_id');
+
+    return $this->roles()
+        ->where('tenant_id', $tenantId)
+        ->exists();
+}
+  public function getTenantId(): ?int
+{
+    $tenantId = session('tenant_id');
+
+    if ($tenantId) {
+        return $tenantId;
     }
-    public function getTenantId(): ?int
-    {
-        // We explicitly look for the first non-null tenant_id 
-        // to avoid Super Admin 'null' conflicts.
-        return $this->roles()
-            ->whereNotNull('tenant_id')
-            ->orderBy('id', 'asc')
-            ->value('tenant_id');
-    }
+
+    return $this->roles()
+        ->whereNotNull('tenant_id')
+        ->latest('id')
+        ->value('tenant_id');
+}
     public function getTenantIds()
     {
         return $this->roles()
@@ -77,6 +84,12 @@ class User extends Authenticatable implements MustVerifyEmail{
             ->unique()
             ->values();
     }
+    public function currentTenantRole()
+{
+    return $this->roles()
+        ->where('tenant_id', session('tenant_id'))
+        ->first();
+}
     public function memberProfile()
     {
         return $this->hasOne(Member::class);
