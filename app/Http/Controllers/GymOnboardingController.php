@@ -50,7 +50,7 @@ class GymOnboardingController extends Controller
     // ==============================
     // STEP 2
     // ==============================
-public function storeUser(Request $request)
+  public function storeUser(Request $request)
 {
     Log::info('🚀 storeUser started', [
         'input' => $request->all(),
@@ -66,7 +66,7 @@ public function storeUser(Request $request)
     // SESSION TOUCH
     session()->put('gym_data', session('gym_data'));
 
-    // ✅ VALIDATION
+    // ✅ VALIDATION OUTSIDE TRY (IMPORTANT FIX)
     $validated = $request->validate([
         'name' => 'required|string|max:50',
         'email' => 'required|email|unique:users,email',
@@ -82,9 +82,6 @@ public function storeUser(Request $request)
 
     try {
 
-        // =========================
-        // CREATE USER
-        // =========================
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -94,9 +91,6 @@ public function storeUser(Request $request)
 
         $gym = session('gym_data');
 
-        // =========================
-        // CREATE TENANT
-        // =========================
         $tenant = Tenant::create([
             'name' => $gym['name'],
             'slug' => Str::slug($gym['name']) . '-' . uniqid(),
@@ -113,38 +107,16 @@ public function storeUser(Request $request)
             'is_active' => false,
         ]);
 
-        // 🔥🔥🔥 MOST IMPORTANT FIX
-        // USER → TENANT LINK
-        $user->tenant_id = $tenant->id;
-        $user->save();
-
-        // =========================
-        // ROLE MAPPING
-        // =========================
         \App\Models\UserTenantRole::create([
             'user_id' => $user->id,
             'tenant_id' => $tenant->id,
             'role_id' => 1
         ]);
 
-        // =========================
-        // SESSION SET
-        // =========================
         session()->put('tenant_id', $tenant->id);
 
-        Log::info('✅ USER + TENANT LINKED', [
-            'user_id' => $user->id,
-            'tenant_id' => $tenant->id
-        ]);
-
-        // =========================
-        // CLEANUP
-        // =========================
         session()->forget('gym_data');
 
-        // =========================
-        // EMAIL VERIFY
-        // =========================
         $user->sendEmailVerificationNotification();
 
         return redirect()->route('verification.notice')
@@ -176,44 +148,27 @@ public function storeUser(Request $request)
         return view('onboarding.user');
     }
 
- public function verifyEmail(Request $request, $id, $hash)
-{
-    $user = User::findOrFail($id);
+    public function verifyEmail(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
 
-    if (! $request->hasValidSignature()) {
-        abort(403);
+        if (! $request->hasValidSignature()) {
+            abort(403);
+        }
+
+        if (! hash_equals($hash, sha1($user->getEmailForVerification()))) {
+            abort(403);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+            $user->update(['status' => 'active']);
+        }
+
+        Auth::login($user);
+
+        return redirect()->route('billing.plans');
     }
-
-    if (! hash_equals($hash, sha1($user->getEmailForVerification()))) {
-        abort(403);
-    }
-
-    if (! $user->hasVerifiedEmail()) {
-        $user->markEmailAsVerified();
-        $user->update(['status' => 'active']);
-    }
-
-    // =========================
-    // 🔥 LOGIN
-    // =========================
-    Auth::login($user);
-
-    // =========================
-    // 🔥🔥 MOST IMPORTANT FIX
-    // TENANT SESSION SET
-    // =========================
-    if ($user->tenant_id) {
-        session()->put('tenant_id', $user->tenant_id);
-    }
-
-    // Optional debug
-    \Log::info('✅ EMAIL VERIFIED LOGIN', [
-        'user_id' => $user->id,
-        'tenant_id' => $user->tenant_id
-    ]);
-
-    return redirect()->route('billing.plans');
-}
 
     public function showPlans()
     {
