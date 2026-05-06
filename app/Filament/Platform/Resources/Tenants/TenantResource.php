@@ -41,8 +41,8 @@ class TenantResource extends Resource
 
                     TextInput::make('email')
                     ->email()
-                    ->unique(Tenant::class, 'email')
-                    ->required(),
+ ->unique(ignoreRecord: true)
+                     ->required(),
                     TextInput::make('phone')->tel(),
                 ]),
 
@@ -65,10 +65,10 @@ class TenantResource extends Resource
                     TextInput::make('owner_name')
                         ->required(),
 
-     TextInput::make('email')
-    ->email()
-    ->required()
-    ->unique(ignoreRecord: true),
+     TextInput::make('owner_email')
+        ->email()
+        ->required()
+        ->unique(\App\Models\User::class, 'email'),
 
                     TextInput::make('owner_password')
                         ->password()
