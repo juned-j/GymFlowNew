@@ -14,7 +14,7 @@ class BillingController extends Controller
         Log::info('📄 [BILLING INDEX] START', [
             'auth_user' => auth()->id(),
             'session_id' => session()->getId(),
-            'tenant_id' => auth()->user()?->getTenantId(),
+            'tenant_id' => session('tenant_id'),
         ]);
 
         $plans = SaasPlan::where('is_active', true)->get();
@@ -36,7 +36,7 @@ class BillingController extends Controller
             'request_data' => $request->all(),
             'auth_user' => auth()->id(),
             'session_id' => $request->session()->getId(),
-            'tenant_id' => auth()->user()?->getTenantId(),
+            'tenant_id' => session('tenant_id'),
         ]);
 
         $planId = $request->saas_plan_id ?? $request->plan_id;
@@ -57,12 +57,18 @@ class BillingController extends Controller
             return redirect()->route('login');
         }
 
-        $tenantId = $user->getTenantId();
+        // ✅ FIX HERE
+        $tenantId = session('tenant_id');
 
         Log::info('🏢 TENANT FETCH', [
             'tenant_id' => $tenantId,
             'user_id' => $user->id
         ]);
+
+        if (!$tenantId) {
+            Log::error('❌ TENANT NOT FOUND IN SESSION');
+            return back()->with('error', 'Tenant session missing');
+        }
 
         $tenant = Tenant::find($tenantId);
 
@@ -188,7 +194,15 @@ class BillingController extends Controller
             return redirect()->route('login');
         }
 
-        $tenant = Tenant::find($user->getTenantId());
+        // ✅ FIX HERE
+        $tenantId = session('tenant_id');
+
+        if (!$tenantId) {
+            Log::error('❌ SUCCESS TENANT SESSION MISSING');
+            return redirect()->route('billing.plans');
+        }
+
+        $tenant = Tenant::find($tenantId);
 
         if (!$tenant) {
             Log::error('❌ SUCCESS NO TENANT');
