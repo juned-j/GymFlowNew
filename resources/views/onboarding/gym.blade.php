@@ -47,27 +47,6 @@
             <p class="text-indigo-100 text-center mt-2">Create your gym profile</p>
         </div>
 
-        <!-- GLOBAL ERRORS -->
-        <div class="px-8 pt-6">
-
-            @if(session('error'))
-                <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-lg">
-                    <ul class="space-y-1 text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>• {{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-        </div>
-
         <!-- Form -->
         <form method="POST" action="{{ route('register.gym.store') }}" class="px-8 pb-8">
             @csrf
@@ -82,11 +61,11 @@
 
                     <input type="text" name="name"
                         value="{{ old('name') }}"
-                        class="w-full px-4 py-3 border-2 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition {{ $errors->has('name') ? 'border-red-500' : 'border-gray-200' }}"
+                        class="w-full px-4 py-3 border-2 {{ $errors->has('name') ? 'border-red-500' : 'border-gray-200' }} rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition"
                         required>
 
                     @error('name')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -98,11 +77,11 @@
 
                     <input type="email" name="email"
                         value="{{ old('email') }}"
-                        class="w-full px-4 py-3 border-2 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition {{ $errors->has('email') ? 'border-red-500' : 'border-gray-200' }}"
+                        class="w-full px-4 py-3 border-2 {{ $errors->has('email') ? 'border-red-500' : 'border-gray-200' }} rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition"
                         required>
 
                     @error('email')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -112,10 +91,10 @@
 
                     <input type="text" name="phone"
                         value="{{ old('phone') }}"
-                        class="w-full px-4 py-3 border-2 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+                        class="w-full px-4 py-3 border-2 {{ $errors->has('phone') ? 'border-red-500' : 'border-gray-200' }} rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
 
                     @error('phone')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -125,10 +104,10 @@
 
                     <input type="text" name="address"
                         value="{{ old('address') }}"
-                        class="w-full px-4 py-3 border-2 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+                        class="w-full px-4 py-3 border-2 {{ $errors->has('address') ? 'border-red-500' : 'border-gray-200' }} rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
 
                     @error('address')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -138,40 +117,38 @@
 
                     <input type="text" name="city"
                         value="{{ old('city') }}"
-                        class="w-full px-4 py-3 border-2 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+                        class="w-full px-4 py-3 border-2 {{ $errors->has('city') ? 'border-red-500' : 'border-gray-200' }} rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
 
                     @error('city')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- Country -->
-               <div>
-    <label class="text-sm font-semibold text-slate-700">
-        Country <span class="text-red-500">*</span>
-    </label>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Country <span class="text-red-500">*</span>
+                    </label>
 
-    <select name="country"
-        class="mt-2 w-full px-4 py-3 rounded-xl border
-        @error('country') border-red-400 @else border-slate-200 @enderror
-        focus:outline-none focus:ring-2 focus:ring-indigo-200"
-        required>
+                    <select name="country"
+                        class="w-full px-4 py-3 border-2 {{ $errors->has('country') ? 'border-red-500' : 'border-gray-200' }} rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                        required>
 
-        <option value="">Select Country</option>
+                        <option value="">Select Country</option>
 
-        @foreach($countries as $country)
-            <option value="{{ $country->name }}"
-                {{ old('country') == $country->name ? 'selected' : '' }}>
-                {{ $country->name }}
-            </option>
-        @endforeach
+                        @foreach($countries as $country)
+                            <option value="{{ $country->name }}"
+                                {{ old('country') == $country->name ? 'selected' : '' }}>
+                                {{ $country->name }}
+                            </option>
+                        @endforeach
 
-    </select>
+                    </select>
 
-    @error('country')
-        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-    @enderror
-</div>
+                    @error('country')
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
 
                 <!-- Timezone -->
                 <div>
@@ -179,10 +156,10 @@
 
                     <input type="text" name="timezone"
                         value="{{ old('timezone', 'Asia/Kolkata') }}"
-                        class="w-full px-4 py-3 border-2 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+                        class="w-full px-4 py-3 border-2 {{ $errors->has('timezone') ? 'border-red-500' : 'border-gray-200' }} rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
 
                     @error('timezone')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                     @enderror
                 </div>
 
