@@ -8,34 +8,22 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureTenantAdmin
 {
-    public function handle($request, Closure $next)
+
+public function handle($request, Closure $next)
 {
     $user = auth()->user();
 
-    // ❌ Not logged in
-    if (! $user) {
+    if (!$user) {
         return redirect()->route('login');
     }
 
-    // =========================
-    // 🔥 AUTO FIX TENANT CONTEXT
-    // =========================
-    if (!session()->has('tenant_id') && $user->tenant_id) {
-        session()->put('tenant_id', $user->tenant_id);
+    // Check 1: User has tenant roles in DB OR Session has a valid tenant_id
+    if ($user->isTenantUser() || session()->has('tenant_id')) {
+        return $next($request);
     }
 
-    if (! $user->tenant_id && !session('tenant_id')) {
-        abort(403, 'Tenant access only');
-    }
-
-    \Log::info('🔐 TENANT ACCESS OK', [
-        'user_id' => $user->id,
-        'tenant_id' => session('tenant_id'),
-    ]);
-
-    return $next($request);
+    // Agar dono fail ho jayein
+    Log::warning('403 Forbidden: User has no tenant access', ['user_id' => $user->id]);
+    abort(403, 'Tenant access only');
 }
-
-
-//ss
 }
