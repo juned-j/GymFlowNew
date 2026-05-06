@@ -175,30 +175,24 @@ public function success(Request $request)
     $tenantId = session('tenant_id') ?? $user?->tenant_id;
 
     if (!$user) return redirect()->route('login');
-    
+
     if (!$planId || !$tenantId) {
-        return redirect()->route('billing.plans')->with('error', 'Required data missing.');
+        Log::error('❌ Success Missing Data', ['plan' => $planId, 'tenant' => $tenantId]);
+        return redirect()->route('billing.plans')->with('error', 'Session expired. Please try again.');
     }
 
     $tenant = Tenant::find($tenantId);
     $plan = SaasPlan::find($planId);
 
-    if (!$tenant || !$plan) {
-        return redirect()->route('billing.plans')->with('error', 'Invalid setup.');
-    }
-
     try {
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
-        // Subscription fetch
-        $stripeSubs = \Stripe\Subscription::all([
-            'limit' => 1,
-            'status' => 'active',
-        ]);
+        // Stripe verification
+        $stripeSubs = \Stripe\Subscription::all(['limit' => 1, 'status' => 'active']);
         $stripeSubscription = $stripeSubs->data[0] ?? null;
 
         if (!$stripeSubscription) {
-            throw new \Exception("Active Stripe subscription not found.");
+            throw new \Exception("Active subscription not found on Stripe.");
         }
 
         // Database Updates
@@ -215,23 +209,23 @@ public function success(Request $request)
         $tenant->update(['is_active' => true, 'status' => 'active']);
         $user->update(['tenant_id' => $tenant->id]);
 
-        // 🔥 IMPORTANT: Refresh Auth User with relationship
-        // Ab error nahi aayega kyunki humne Model mein relationship add kar di hai
-        $user->refresh();
-        $user->load('tenant'); 
+        // 🔥 Force Sync: Isse middleware bypass hoga
+        if (method_exists($user, 'tenant')) {
+            $user->load('tenant');
+        }
         
         session(['tenant_id' => $tenant->id]);
         $request->session()->save();
 
-        Log::info('🎉 Success Complete', ['tenant_id' => $tenant->id]);
+        Log::info('🎉 Success Complete. Redirecting to Dashboard.', ['tenant_id' => $tenant->id]);
 
-        // Filament Dashboard Redirect
-        return redirect()->to("/admin/{$tenant->id}")
-            ->with('success', 'Welcome! Your gym is now active.');
+        // 🔥 REDIRECT FIX: 404 se bachne ke liye direct dashboard route
+        return redirect()->to('/admin')
+            ->with('success', 'Subscription activated!');
 
     } catch (\Exception $e) {
         Log::error('❌ Stripe Error: ' . $e->getMessage());
-        return redirect()->route('billing.plans')->with('error', 'Verification failed: ' . $e->getMessage());
+        return redirect()->route('billing.plans')->with('error', 'Payment verification failed.');
     }
 }
 }
