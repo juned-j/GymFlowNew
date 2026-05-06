@@ -167,112 +167,121 @@ class BillingController extends Controller
         }
     }
 
+
+   public function success(Request $request)
+{
+    Log::info('🎯 [SUCCESS HIT]', [
+        'request' => $request->all(),
+        'auth_user' => auth()->id(),
+        'session_id' => $request->session()->getId(),
+    ]);
+
+    $planId = $request->get('plan_id');
+
+    if (!$planId) {
+        return redirect()->route('billing.plans')
+            ->with('error', 'Plan missing');
+    }
+
+    $user = auth()->user();
+
+    if (!$user) {
+        Log::error('❌ SUCCESS NO USER');
+        return redirect()->route('login');
+    }
+
     // =========================
-    // SUCCESS
+    // 🔥 FIX 1: FORCE SET TENANT TO USER
     // =========================
-    public function success(Request $request)
-    {
-        Log::info('🎯 [SUCCESS HIT]', [
-            'request' => $request->all(),
-            'auth_user' => auth()->id(),
-            'session_id' => $request->session()->getId(),
-        ]);
+    $tenantId = session('tenant_id');
 
-        $planId = $request->get('plan_id');
+    if (!$tenantId) {
+        Log::error('❌ SUCCESS TENANT SESSION MISSING');
+        return redirect()->route('billing.plans');
+    }
 
-        Log::info('🔎 SUCCESS PLAN', ['plan_id' => $planId]);
+    $tenant = Tenant::find($tenantId);
 
-        if (!$planId) {
-            return redirect()->route('billing.plans')
-                ->with('error', 'Plan missing');
-        }
+    if (!$tenant) {
+        Log::error('❌ SUCCESS NO TENANT');
+        return redirect()->route('billing.plans');
+    }
 
-        $user = auth()->user();
+    // 🔥 IMPORTANT FIX (THIS WAS MISSING)
+    $user->update([
+        'tenant_id' => $tenant->id
+    ]);
 
-        if (!$user) {
-            Log::error('❌ SUCCESS NO USER');
-            return redirect()->route('login');
-        }
+    // session refresh (important for middleware)
+    session(['tenant_id' => $tenant->id]);
 
-        // ✅ FIX HERE
-        $tenantId = session('tenant_id');
+    $plan = SaasPlan::find($planId);
 
-        if (!$tenantId) {
-            Log::error('❌ SUCCESS TENANT SESSION MISSING');
-            return redirect()->route('billing.plans');
-        }
+    if (!$plan) {
+        Log::error('❌ SUCCESS INVALID PLAN');
+        return redirect()->route('billing.plans');
+    }
 
-        $tenant = Tenant::find($tenantId);
+    Log::info('📦 SUCCESS READY', [
+        'tenant_id' => $tenant->id,
+        'plan_id' => $plan->id
+    ]);
 
-        if (!$tenant) {
-            Log::error('❌ SUCCESS NO TENANT');
-            return redirect()->route('billing.plans');
-        }
+    try {
 
-        $plan = SaasPlan::find($planId);
+        \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
-        if (!$plan) {
-            Log::error('❌ SUCCESS INVALID PLAN');
-            return redirect()->route('billing.plans');
-        }
-
-        Log::info('📦 SUCCESS READY', [
-            'tenant_id' => $tenant->id,
-            'plan_id' => $plan->id
-        ]);
-
-        try {
-
-            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
-
-            $subscriptions = \Stripe\Subscription::all([
-                'limit' => 1,
-                'status' => 'active',
-            ]);
-
-            $stripeSubscription = $subscriptions->data[0] ?? null;
-
-            if (!$stripeSubscription) {
-                Log::error('❌ NO STRIPE SUBSCRIPTION');
-                return redirect()->route('billing.plans')
-                    ->with('error', 'Payment not confirmed');
-            }
-
-            $stripeSubscriptionId = $stripeSubscription->id;
-            $stripeCustomerId = $stripeSubscription->customer;
-
-        } catch (\Exception $e) {
-
-            Log::error('❌ STRIPE VERIFY FAIL', [
-                'message' => $e->getMessage()
-            ]);
-
-            return redirect()->route('billing.plans')
-                ->with('error', 'Payment verification failed');
-        }
-
-        $subscription = $tenant->subscription()->updateOrCreate(
-            ['tenant_id' => $tenant->id],
-            [
-                'saas_plan_id' => $plan->id,
-                'stripe_subscription_id' => $stripeSubscriptionId,
-                'stripe_customer_id' => $stripeCustomerId,
-                'status' => 'active',
-            ]
-        );
-
-        $tenant->update([
-            'is_active' => true,
+        $subscriptions = \Stripe\Subscription::all([
+            'limit' => 1,
             'status' => 'active',
         ]);
 
-        Log::info('🎉 SUCCESS COMPLETE', [
-            'tenant_id' => $tenant->id,
-            'subscription_id' => $subscription->id
+        $stripeSubscription = $subscriptions->data[0] ?? null;
+
+        if (!$stripeSubscription) {
+            Log::error('❌ NO STRIPE SUBSCRIPTION');
+            return redirect()->route('billing.plans')
+                ->with('error', 'Payment not confirmed');
+        }
+
+        $stripeSubscriptionId = $stripeSubscription->id;
+        $stripeCustomerId = $stripeSubscription->customer;
+
+    } catch (\Exception $e) {
+
+        Log::error('❌ STRIPE VERIFY FAIL', [
+            'message' => $e->getMessage()
         ]);
 
-        return redirect()
-            ->route('filament.admin.pages.dashboard')
-            ->with('success', 'Subscription activated!');
+        return redirect()->route('billing.plans')
+            ->with('error', 'Payment verification failed');
     }
+
+    $subscription = $tenant->subscription()->updateOrCreate(
+        ['tenant_id' => $tenant->id],
+        [
+            'saas_plan_id' => $plan->id,
+            'stripe_subscription_id' => $stripeSubscriptionId,
+            'stripe_customer_id' => $stripeCustomerId,
+            'status' => 'active',
+        ]
+    );
+
+    $tenant->update([
+        'is_active' => true,
+        'status' => 'active',
+    ]);
+
+    Log::info('🎉 SUCCESS COMPLETE', [
+        'tenant_id' => $tenant->id,
+        'subscription_id' => $subscription->id
+    ]);
+
+    // =========================
+    // 🔥 FIX 2: SAFE DASHBOARD REDIRECT
+    // =========================
+    return redirect()
+        ->intended(route('filament.admin.pages.dashboard'))
+        ->with('success', 'Subscription activated!');
+}
 }
