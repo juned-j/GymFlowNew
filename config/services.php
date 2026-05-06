@@ -38,5 +38,7 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
     ],
-
+'resend' => [
+    'key' => env('RESEND_KEY'),
+],
 ];
