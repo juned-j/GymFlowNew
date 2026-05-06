@@ -123,75 +123,60 @@ public function subscribe(Request $request)
     // =========================
 public function success(Request $request)
 {
-    // 1. Initial Log: Request check
     Log::info('🎯 [STRIPE SUCCESS] Method started', [
         'url' => $request->fullUrl(),
         'all_params' => $request->all(),
         'has_session_id' => $request->has('session_id'),
-        'current_auth_id' => auth()->id() // Ye production par null ho sakta hai agar session lose hua ho
+        'current_auth_id' => auth()->id()
     ]);
 
     $sessionId = $request->get('session_id');
     $planId = $request->get('plan_id');
 
-    // Check 1: Session ID check
     if (!$sessionId) {
-        Log::error('❌ [STRIPE SUCCESS] Missing session_id in URL');
-        return redirect()->route('billing.plans')->with('error', 'Invalid session data.');
+        Log::error('❌ Missing session_id');
+        return redirect()->route('billing.plans')->with('error', 'Invalid session');
     }
 
-    // 2. Auth Check (The most common production failure)
     $user = auth()->user();
-    if (!$user) {
-        Log::warning('⚠️ [STRIPE SUCCESS] Auth session lost. Attempting to recover from session data.');
-        // Agar auth lost hai, toh stripe ke retrieve ke baad hum dubara login karayenge
-    }
 
     try {
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
-        
-        Log::info('🔍 [STRIPE SUCCESS] Retrieving session from Stripe...', ['session_id' => $sessionId]);
+
         $session = \Stripe\Checkout\Session::retrieve($sessionId);
 
-        Log::info('📊 [STRIPE SUCCESS] Stripe Response Details', [
+        Log::info('📊 Stripe Data', [
             'payment_status' => $session->payment_status,
-            'customer_email' => $session->customer_details?->email,
-            'subscription_id' => $session->subscription
+            'email' => $session->customer_details?->email,
+            'subscription' => $session->subscription
         ]);
 
         if ($session->payment_status !== 'paid') {
-            Log::warning('⛔ [STRIPE SUCCESS] Payment status is not PAID', ['status' => $session->payment_status]);
-            return redirect()->route('billing.plans')->with('error', 'Payment was not completed.');
+            return redirect()->route('billing.plans')->with('error', 'Payment not completed');
         }
 
-        // Recovery: Agar Auth user null tha, toh email se user dhoondo
+        // 🔁 Recover user if lost
         if (!$user) {
             $user = \App\Models\User::where('email', $session->customer_details->email)->first();
-            if ($user) {
-                Log::info('🔄 [STRIPE SUCCESS] User recovered by email', ['user_id' => $user->id]);
-                auth()->login($user, true); // Force login
-            } else {
-                Log::error('❌ [STRIPE SUCCESS] Could not recover user by email');
-                return redirect()->route('login')->with('error', 'Session expired. Please login again.');
+
+            if (!$user) {
+                return redirect()->route('login')->with('error', 'Login required');
             }
+
+            auth()->login($user, true);
         }
 
-        // 3. Tenant Resolve with Deep Logs
+        // 🏢 Tenant resolve
         $tenantId = $user->getTenantId() ?? session('tenant_id');
-        Log::info('🏢 [STRIPE SUCCESS] Resolving Tenant', ['id_from_user' => $user->getTenantId(), 'id_from_session' => session('tenant_id')]);
-        
         $tenant = \App\Models\Tenant::find($tenantId);
 
         if (!$tenant) {
-            Log::error('❌ [STRIPE SUCCESS] Tenant not found in DB', ['resolved_id' => $tenantId]);
-            return redirect()->route('billing.plans')->with('error', 'Tenant profile not found.');
+            return redirect()->route('billing.plans')->with('error', 'Tenant not found');
         }
 
         $plan = \App\Models\SaasPlan::find($planId);
 
-        // 4. Update Database
-        Log::info('💾 [STRIPE SUCCESS] Updating Tenant & Subscription...', ['tenant_id' => $tenant->id]);
-        
+        // 💾 Subscription update
         $tenant->subscription()->updateOrCreate(
             ['tenant_id' => $tenant->id],
             [
@@ -208,28 +193,36 @@ public function success(Request $request)
             'status' => 'active',
         ]);
 
-        // 5. Final Step: Session Persistence Fix
-        auth()->login($user, true); // Login forcefully with remember-me
+        // 🔥🔥🔥 MOST IMPORTANT FIX (ACCESS ISSUE SOLVED HERE)
+        \App\Models\UserTenantRole::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'tenant_id' => $tenant->id,
+            ],
+            [
+                'role_id' => 1 // admin
+            ]
+        );
+
+        // 🔐 Session fix
+        auth()->login($user, true);
         session()->put('tenant_id', $tenant->id);
         session()->flash('success', '🎉 Subscription activated!');
-        
-        // 🔥 SABSE CRITICAL: Production par manual save zaroori hai
-        session()->save(); 
+        session()->save();
 
-        Log::info('✅ [STRIPE SUCCESS] Process completed. Redirecting to dashboard.', [
-            'final_user_id' => auth()->id(),
-            'final_tenant_id' => session('tenant_id')
+        Log::info('✅ SUCCESS DONE', [
+            'user_id' => auth()->id(),
+            'tenant_id' => $tenant->id
         ]);
 
         return redirect()->route('filament.admin.pages.dashboard');
 
     } catch (\Exception $e) {
-        Log::error('🔥 [STRIPE SUCCESS] CRITICAL ERROR', [
-            'msg' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+        Log::error('🔥 ERROR', [
+            'msg' => $e->getMessage()
         ]);
 
-        return redirect()->route('billing.plans')->with('error', 'Verification failed: ' . $e->getMessage());
+        return redirect()->route('billing.plans')->with('error', $e->getMessage());
     }
 }
 }
