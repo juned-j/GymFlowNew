@@ -138,8 +138,6 @@ public function success(Request $request)
         return redirect()->route('billing.plans')->with('error', 'Invalid session');
     }
 
-    $user = auth()->user();
-
     try {
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
@@ -155,22 +153,37 @@ public function success(Request $request)
             return redirect()->route('billing.plans')->with('error', 'Payment not completed');
         }
 
-        // 🔁 Recover user if lost
+        // 🔥 ALWAYS recover user from Stripe email (SESSION PE DEPEND NAHI)
+        $email = $session->customer_details?->email;
+
+        $user = \App\Models\User::where('email', $email)->first();
+
         if (!$user) {
-            $user = \App\Models\User::where('email', $session->customer_details->email)->first();
-
-            if (!$user) {
-                return redirect()->route('login')->with('error', 'Login required');
-            }
-
-            auth()->login($user, true);
+            Log::error('❌ User not found from Stripe email', ['email' => $email]);
+            return redirect()->route('login')->with('error', 'User not found');
         }
 
-        // 🏢 Tenant resolve
-        $tenantId = $user->getTenantId() ?? session('tenant_id');
+        // 🔐 FORCE LOGIN + SESSION REGENERATE (MOST IMPORTANT FIX)
+        auth()->login($user);
+        request()->session()->regenerate();
+
+        Log::info('🔐 User force logged in', [
+            'user_id' => $user->id
+        ]);
+
+        // 🏢 Tenant resolve (session unreliable → fallback safe)
+        $tenantId = session('tenant_id') ?? $user->getTenantId();
+
+        Log::info('🧪 Tenant Debug', [
+            'session_tenant_id' => session('tenant_id'),
+            'user_getTenantId' => $user->getTenantId(),
+            'final_tenant_id' => $tenantId
+        ]);
+
         $tenant = \App\Models\Tenant::find($tenantId);
 
         if (!$tenant) {
+            Log::error('❌ Tenant not found', ['tenant_id' => $tenantId]);
             return redirect()->route('billing.plans')->with('error', 'Tenant not found');
         }
 
@@ -193,19 +206,18 @@ public function success(Request $request)
             'status' => 'active',
         ]);
 
-        // 🔥🔥🔥 MOST IMPORTANT FIX (ACCESS ISSUE SOLVED HERE)
+        // 🔥 ACCESS FIX (CRITICAL)
         \App\Models\UserTenantRole::updateOrCreate(
             [
                 'user_id' => $user->id,
                 'tenant_id' => $tenant->id,
             ],
             [
-                'role_id' => 1 // admin
+                'role_id' => 1
             ]
         );
 
-        // 🔐 Session fix
-        auth()->login($user, true);
+        // 🔐 FINAL SESSION SET
         session()->put('tenant_id', $tenant->id);
         session()->flash('success', '🎉 Subscription activated!');
         session()->save();
@@ -219,7 +231,8 @@ public function success(Request $request)
 
     } catch (\Exception $e) {
         Log::error('🔥 ERROR', [
-            'msg' => $e->getMessage()
+            'msg' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
         ]);
 
         return redirect()->route('billing.plans')->with('error', $e->getMessage());
