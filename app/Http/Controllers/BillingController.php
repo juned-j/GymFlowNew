@@ -18,46 +18,81 @@ class BillingController extends Controller
         return view('billing.plans', compact('plans'));
     }
 
-    // =========================
-    // SUBSCRIBE (PRODUCTION FIXED)
-    // =========================
-    public function subscribe(Request $request)
-    {
-        Log::info('🚀 [SUBSCRIBE START]', [
-            'request' => $request->all(),
-            'user_id' => auth()->id(),
-        ]);
 
+   public function subscribe(Request $request)
+{
+    Log::info('🚀 [SUBSCRIBE START]', [
+        'request' => $request->all(),
+        'user_id' => auth()->id(),
+        'session' => session()->all(),
+    ]);
+
+    try {
+
+        // =========================
+        // PLAN ID
+        // =========================
         $planId = $request->saas_plan_id ?? $request->plan_id;
 
+        Log::info('🔍 [PLAN ID]', ['plan_id' => $planId]);
+
         if (!$planId) {
+            Log::warning('⚠️ PLAN ID MISSING');
             return back()->with('error', 'Plan not selected');
         }
 
+        // =========================
+        // USER
+        // =========================
         $user = auth()->user();
 
+        Log::info('👤 [USER]', [
+            'user' => $user?->toArray()
+        ]);
+
         if (!$user) {
+            Log::warning('⚠️ USER NOT AUTHENTICATED');
             return redirect()->route('login');
         }
 
-        $tenant = Tenant::find($user->getTenantId());
+        // =========================
+        // TENANT
+        // =========================
+        $tenantId = $user->getTenantId();
+
+        Log::info('🏢 [TENANT ID]', ['tenant_id' => $tenantId]);
+
+        $tenant = Tenant::find($tenantId);
+
+        Log::info('🏢 [TENANT]', [
+            'tenant' => $tenant?->toArray()
+        ]);
 
         if (!$tenant) {
+            Log::error('❌ TENANT NOT FOUND');
             return back()->with('error', 'Tenant not found');
         }
 
+        // =========================
+        // PLAN
+        // =========================
         $plan = SaasPlan::find($planId);
 
+        Log::info('📦 [PLAN DATA]', [
+            'plan' => $plan?->toArray()
+        ]);
+
         if (!$plan) {
+            Log::error('❌ PLAN NOT FOUND');
             return back()->with('error', 'Invalid plan');
         }
 
-        Log::info('📦 [PLAN FOUND]', $plan->toArray());
-
         // =========================
-        // FREE PLAN (SAFE)
+        // FREE PLAN
         // =========================
         if ((float) $plan->price === 0.0) {
+
+            Log::info('🆓 FREE PLAN FLOW START');
 
             $subscription = $tenant->subscription()->updateOrCreate(
                 ['tenant_id' => $tenant->id],
@@ -69,6 +104,10 @@ class BillingController extends Controller
                 ]
             );
 
+            Log::info('✅ FREE SUBSCRIPTION CREATED', [
+                'subscription' => $subscription->toArray()
+            ]);
+
             $tenant->update([
                 'is_active' => true,
                 'status' => 'active',
@@ -79,44 +118,58 @@ class BillingController extends Controller
         }
 
         // =========================
-        // STRIPE CHECKOUT
+        // STRIPE CONFIG
         // =========================
-        \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+        $stripeKey = config('services.stripe.secret');
 
-        try {
+        Log::info('🔑 STRIPE KEY CHECK', [
+            'key_exists' => !empty($stripeKey),
+            'key_prefix' => substr($stripeKey ?? 'NULL', 0, 10),
+        ]);
 
-            $session = \Stripe\Checkout\Session::create([
-                'customer_email' => $user->email,
-                'payment_method_types' => ['card'],
-                'line_items' => [[
-                    'price' => $plan->stripe_price_id,
-                    'quantity' => 1,
-                ]],
-                'mode' => 'subscription',
+        \Stripe\Stripe::setApiKey($stripeKey);
 
-                // 🔥 CLEAN SUCCESS FLOW (NO session_id dependency)
-                'success_url' => route('billing.success', [
-                    'plan_id' => $plan->id
-                ]),
+        // =========================
+        // STRIPE SESSION CREATE
+        // =========================
+        Log::info('💳 CREATING STRIPE SESSION', [
+            'email' => $user->email,
+            'price_id' => $plan->stripe_price_id,
+        ]);
 
-                'cancel_url' => route('billing.plans'),
-            ]);
+        $session = \Stripe\Checkout\Session::create([
+            'customer_email' => $user->email,
+            'payment_method_types' => ['card'],
+            'line_items' => [[
+                'price' => $plan->stripe_price_id,
+                'quantity' => 1,
+            ]],
+            'mode' => 'subscription',
+            'success_url' => route('billing.success', [
+                'plan_id' => $plan->id
+            ]),
+            'cancel_url' => route('billing.plans'),
+        ]);
 
-            Log::info('✅ STRIPE SESSION CREATED', [
-                'session_id' => $session->id,
-            ]);
+        Log::info('✅ STRIPE SESSION CREATED', [
+            'session_id' => $session->id,
+            'url' => $session->url,
+        ]);
 
-            return redirect($session->url);
+        return redirect($session->url);
 
-        } catch (\Exception $e) {
+    } catch (\Throwable $e) {
 
-            Log::error('❌ STRIPE ERROR', [
-                'error' => $e->getMessage(),
-            ]);
+        Log::error('❌ STRIPE FATAL ERROR', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => substr($e->getTraceAsString(), 0, 1000), // avoid huge logs
+        ]);
 
-            return back()->with('error', 'Payment failed');
-        }
+        return back()->with('error', $e->getMessage()); // 🔥 real error show
     }
+}
 
     // =========================
     // SUCCESS (PRODUCTION SAFE)
