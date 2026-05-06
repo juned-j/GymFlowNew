@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\SaasPlan;
 use App\Models\Tenant;
+use Stripe\Stripe;
+use Stripe\Checkout\Session;
 
 class BillingController extends Controller
 {
