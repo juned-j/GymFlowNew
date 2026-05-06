@@ -24,7 +24,7 @@ class CreateTenant extends CreateRecord
     {
         $this->ownerUser = User::create([
             'name' => $data['owner_name'],
-            'email' => $data['email'],
+          'email' => $data['owner_email'],
             'password' => Hash::make($data['owner_password']),
         ]);
 
