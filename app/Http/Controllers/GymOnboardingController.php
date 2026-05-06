@@ -22,9 +22,7 @@ class GymOnboardingController extends Controller
         return view('onboarding.gym', compact('countries'));
     }
 
-    // ==============================
-    // STEP 1: ONLY STORE IN SESSION
-    // ==============================
+   
     public function storeGym(Request $request)
     {
         Log::info('🚀 storeGym started', [
@@ -33,7 +31,7 @@ class GymOnboardingController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:100|min:3',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:tenants,email',
             'phone' => 'nullable|string|max:20|regex:/^[0-9+\-\s]+$/',
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:50',
@@ -48,10 +46,6 @@ class GymOnboardingController extends Controller
             ->with('success', 'Gym details saved. Now create your account!');
     }
 
-    // ==============================
-    // STEP 2: CREATE USER FIRST
-    // THEN CREATE TENANT
-    // ==============================
     public function storeUser(Request $request)
     {
         Log::info('🚀 storeUser started', [
@@ -64,20 +58,21 @@ class GymOnboardingController extends Controller
                 ->with('error', 'Session expired. Please start again.');
         }
 
-        try {
+        // 🔥 VALIDATE FIRST (OUTSIDE TRY-CATCH FOR PROPER ERROR HANDLING)
+        $validated = $request->validate([
+            'name' => 'required|string|max:50',
+            'email' => 'required|email|unique:users,email',
+            'password' => [
+                'required',
+                'confirmed',
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[0-9]/',
+            ],
+        ]);
 
-            $validated = $request->validate([
-                'name' => 'required|string|max:50',
-                'email' => 'required|email|unique:users,email',
-                'password' => [
-                    'required',
-                    'confirmed',
-                    'min:8',
-                    'regex:/[A-Z]/',
-                    'regex:/[a-z]/',
-                    'regex:/[0-9]/',
-                ],
-            ]);
+        try {
 
             Log::info('✅ Validation passed', $validated);
 
