@@ -25,125 +25,131 @@ class GymOnboardingController extends Controller
     // ==============================
     // STEP 1: ONLY STORE IN SESSION
     // ==============================
- public function storeGym(Request $request)
-{
-    Log::info('🚀 storeGym started', [
-        'input' => $request->all()
-    ]);
+    public function storeGym(Request $request)
+    {
+        Log::info('🚀 storeGym started', [
+            'input' => $request->all()
+        ]);
 
-    $validated = $request->validate([
-        'name' => 'required|string|max:100|min:3',
-        'email' => 'required|email|unique:tenants,email', // 🔥 UNIQUE FIX
-        'phone' => 'nullable|string|max:20|regex:/^[0-9+\-\s]+$/',
-        'address' => 'nullable|string|max:255',
-        'city' => 'nullable|string|max:50',
-        'country' => 'required|string|max:50', // 🔥 REQUIRED FIX (UI match)
-        'timezone' => 'nullable|string|max:50',
-    ]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:100|min:3',
+            'email' => 'required|email',
+            'phone' => 'nullable|string|max:20|regex:/^[0-9+\-\s]+$/',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:50',
+            'country' => 'nullable|string|max:50',
+            'timezone' => 'nullable|string|max:50',
+        ]);
 
-    session()->put('gym_data', $validated);
+        // 🔥 STORE TEMP DATA (NO DB INSERT YET)
+        Session::put('gym_data', $validated);
 
-    return redirect()->route('register.user')
-        ->with('success', 'Gym details saved. Now create your account!');
-}
-
-    // ==============================
-    // STEP 2
-    // ==============================
-  public function storeUser(Request $request)
-{
-    Log::info('🚀 storeUser started', [
-        'input' => $request->all(),
-    ]);
-
-    // SESSION CHECK
-    if (!session()->has('gym_data')) {
-        return back()
-            ->withInput()
-            ->with('error', 'Session expired. Please refill gym details.');
+        return redirect()->route('register.user')
+            ->with('success', 'Gym details saved. Now create your account!');
     }
 
-    // SESSION TOUCH
-    session()->put('gym_data', session('gym_data'));
-
-    // ✅ VALIDATION OUTSIDE TRY (IMPORTANT FIX)
-    $validated = $request->validate([
-        'name' => 'required|string|max:50',
-        'email' => 'required|email|unique:users,email',
-        'password' => [
-            'required',
-            'confirmed',
-            'min:8',
-            'regex:/[A-Z]/',
-            'regex:/[a-z]/',
-            'regex:/[0-9]/',
-        ],
-    ]);
-
-    try {
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'status' => 'active',
+    // ==============================
+    // STEP 2: CREATE USER FIRST
+    // THEN CREATE TENANT
+    // ==============================
+    public function storeUser(Request $request)
+    {
+        Log::info('🚀 storeUser started', [
+            'input' => $request->all(),
+            'session' => session()->all(),
         ]);
 
-        $gym = session('gym_data');
+        if (!Session::has('gym_data')) {
+            return redirect()->route('register.gym')
+                ->with('error', 'Session expired. Please start again.');
+        }
 
-        $tenant = Tenant::create([
-            'name' => $gym['name'],
-            'slug' => Str::slug($gym['name']) . '-' . uniqid(),
-            'email' => $gym['email'],
-            'owner_user_id' => $user->id,
-            'phone' => $gym['phone'] ?? null,
-            'address' => $gym['address'] ?? null,
-            'city' => $gym['city'] ?? null,
-            'country' => $gym['country'] ?? null,
-            'timezone' => $gym['timezone'] ?? 'Asia/Kolkata',
-            'currency' => 'INR',
-            'currency_symbol' => '₹',
-            'status' => 'active',
-            'is_active' => false,
-        ]);
+        try {
 
-        \App\Models\UserTenantRole::create([
-            'user_id' => $user->id,
-            'tenant_id' => $tenant->id,
-            'role_id' => 1
-        ]);
+            $validated = $request->validate([
+                'name' => 'required|string|max:50',
+                'email' => 'required|email|unique:users,email',
+                'password' => [
+                    'required',
+                    'confirmed',
+                    'min:8',
+                    'regex:/[A-Z]/',
+                    'regex:/[a-z]/',
+                    'regex:/[0-9]/',
+                ],
+            ]);
 
-        session()->put('tenant_id', $tenant->id);
+            Log::info('✅ Validation passed', $validated);
 
-        session()->forget('gym_data');
+            // 🔥 STEP 1: CREATE USER
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'status' => 'active',
+            ]);
 
-        $user->sendEmailVerificationNotification();
+            Log::info('✅ User created', ['user_id' => $user->id]);
 
-        return redirect()->route('verification.notice')
-            ->with('success', 'Account created! Please verify your email.');
+            // 🔥 STEP 2: GET GYM DATA FROM SESSION
+            $gym = Session::get('gym_data');
 
-    } catch (\Exception $e) {
+            // 🔥 STEP 3: CREATE TENANT WITH OWNER USER ID
+            $tenant = Tenant::create([
+                'name' => $gym['name'],
+                'slug' => Str::slug($gym['name']) . '-' . uniqid(),
+                'email' => $gym['email'],
 
-        Log::error('❌ storeUser failed', [
-            'message' => $e->getMessage(),
-            'line' => $e->getLine()
-        ]);
+                'owner_user_id' => $user->id, // ✅ FIXED
 
-        return back()
-            ->withInput()
-            ->with('error', 'Something went wrong. Please try again.');
+                'phone' => $gym['phone'] ?? null,
+                'address' => $gym['address'] ?? null,
+                'city' => $gym['city'] ?? null,
+                'country' => $gym['country'] ?? null,
+
+                'timezone' => $gym['timezone'] ?? 'Asia/Kolkata',
+                'currency' => 'INR',
+                'currency_symbol' => '₹',
+                'status' => 'active',
+                'is_active' => false,
+            ]);
+
+            // 🔥 STEP 4: LINK USER ↔ TENANT
+            \App\Models\UserTenantRole::create([
+                'user_id' => $user->id,
+                'tenant_id' => $tenant->id,
+                'role_id' => 1
+            ]);
+
+            Session::put('tenant_id', $tenant->id);
+
+            // cleanup
+            Session::forget('gym_data');
+
+            $user->sendEmailVerificationNotification();
+
+            return redirect()->route('verification.notice')
+                ->with('success', 'Account created! Please verify your email.');
+
+        } catch (\Exception $e) {
+
+            Log::error('❌ storeUser failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Something went wrong. Please try again.');
+        }
     }
-}
 
     public function showUserStep()
     {
-        if (!session()->has('gym_data')) {
+        if (!Session::has('gym_data')) {
             return redirect()->route('register.gym')
                 ->with('error', 'Please complete gym step first');
         }
-
-        // 🔥 SESSION TOUCH
-        session()->put('gym_data', session('gym_data'));
 
         return view('onboarding.user');
     }
