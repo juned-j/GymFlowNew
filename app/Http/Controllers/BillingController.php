@@ -82,6 +82,10 @@ public function subscribe(Request $request)
         // =========================
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
+        // 🔥 IMPORTANT: route() use nahi karna
+        $successUrl = url('/billing/success')
+            . '?session_id={CHECKOUT_SESSION_ID}&plan_id=' . $plan->id;
+
         $session = \Stripe\Checkout\Session::create([
             'customer_email' => $user->email,
             'payment_method_types' => ['card'],
@@ -91,17 +95,15 @@ public function subscribe(Request $request)
             ]],
             'mode' => 'subscription',
 
-            // 🔥 FINAL FIX (IMPORTANT)
-            'success_url' => route('billing.success', [
-                'session_id' => '{CHECKOUT_SESSION_ID}',
-                'plan_id' => $plan->id,
-            ]),
+            // ✅ FIXED URL
+            'success_url' => $successUrl,
 
             'cancel_url' => route('billing.plans'),
         ]);
 
         Log::info('✅ STRIPE SESSION CREATED', [
             'session_id' => $session->id,
+            'success_url' => $successUrl,
         ]);
 
         return redirect($session->url);
