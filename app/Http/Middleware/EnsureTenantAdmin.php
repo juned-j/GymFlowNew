@@ -20,12 +20,9 @@ public function handle($request, Closure $next)
 
     $tenantId = session('tenant_id');
 
-    if ($user->isTenantUser()) {
-        return $next($request);
-    }
-
     if ($tenantId) {
 
+        // 🔥 FORCE FIX हर request पर
         \App\Models\UserTenantRole::updateOrCreate(
             [
                 'user_id' => $user->id,
@@ -36,18 +33,8 @@ public function handle($request, Closure $next)
             ]
         );
 
-        Log::info('🔧 Tenant access repaired from session', [
-            'user_id' => $user->id,
-            'tenant_id' => $tenantId
-        ]);
-
         return $next($request);
     }
-
-    // ❌ 3. Final block
-    Log::warning('403 Forbidden: User has no tenant access', [
-        'user_id' => $user->id
-    ]);
 
     abort(403, 'Tenant access only');
 }
