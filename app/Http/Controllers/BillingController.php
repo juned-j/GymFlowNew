@@ -11,7 +11,11 @@ class BillingController extends Controller
 {
     public function index()
     {
-        Log::info('📄 [BILLING INDEX] loading plans');
+        Log::info('📄 [BILLING INDEX] START', [
+            'auth_user' => auth()->id(),
+            'session_id' => session()->getId(),
+            'tenant_id' => auth()->user()?->getTenantId(),
+        ]);
 
         $plans = SaasPlan::where('is_active', true)->get();
 
@@ -29,15 +33,15 @@ class BillingController extends Controller
     public function subscribe(Request $request)
     {
         Log::info('🚀 [SUBSCRIBE START]', [
-            'request' => $request->all(),
-            'user_id' => auth()->id(),
+            'request_data' => $request->all(),
+            'auth_user' => auth()->id(),
+            'session_id' => $request->session()->getId(),
+            'tenant_id' => auth()->user()?->getTenantId(),
         ]);
 
         $planId = $request->saas_plan_id ?? $request->plan_id;
 
-        Log::info('🔎 PLAN ID CHECK', [
-            'plan_id' => $planId
-        ]);
+        Log::info('🔎 PLAN CHECK', ['plan_id' => $planId]);
 
         if (!$planId) {
             Log::warning('⚠️ PLAN NOT SELECTED');
@@ -46,26 +50,26 @@ class BillingController extends Controller
 
         $user = auth()->user();
 
-        Log::info('👤 AUTH USER CHECK', [
-            'user' => $user ? $user->id : null
-        ]);
-
         if (!$user) {
-            Log::error('❌ USER NOT AUTHENTICATED');
+            Log::error('❌ USER NOT AUTH', [
+                'session' => $request->session()->all()
+            ]);
             return redirect()->route('login');
         }
 
         $tenantId = $user->getTenantId();
 
-        Log::info('🏢 TENANT ID FETCHED', [
-            'tenant_id' => $tenantId
+        Log::info('🏢 TENANT FETCH', [
+            'tenant_id' => $tenantId,
+            'user_id' => $user->id
         ]);
 
         $tenant = Tenant::find($tenantId);
 
         if (!$tenant) {
             Log::error('❌ TENANT NOT FOUND', [
-                'tenant_id' => $tenantId
+                'tenant_id' => $tenantId,
+                'user_id' => $user->id
             ]);
             return back()->with('error', 'Tenant not found');
         }
@@ -73,20 +77,19 @@ class BillingController extends Controller
         $plan = SaasPlan::find($planId);
 
         if (!$plan) {
-            Log::error('❌ INVALID PLAN', [
-                'plan_id' => $planId
-            ]);
+            Log::error('❌ PLAN INVALID', ['plan_id' => $planId]);
             return back()->with('error', 'Invalid plan');
         }
 
         Log::info('📦 PLAN LOADED', $plan->toArray());
 
-        // =========================
-        // FREE PLAN FLOW
-        // =========================
+        // FREE PLAN
         if ((float) $plan->price === 0.0) {
 
-            Log::info('🆓 FREE PLAN ACTIVATION START');
+            Log::info('🆓 FREE PLAN START', [
+                'tenant_id' => $tenant->id,
+                'plan_id' => $plan->id
+            ]);
 
             $subscription = $tenant->subscription()->updateOrCreate(
                 ['tenant_id' => $tenant->id],
@@ -98,16 +101,13 @@ class BillingController extends Controller
                 ]
             );
 
-            Log::info('✅ FREE PLAN ACTIVATED', [
-                'subscription_id' => $subscription->id
-            ]);
-
             $tenant->update([
                 'is_active' => true,
                 'status' => 'active',
             ]);
 
-            Log::info('🏢 TENANT ACTIVATED (FREE PLAN)', [
+            Log::info('✅ FREE PLAN DONE', [
+                'subscription_id' => $subscription->id,
                 'tenant_id' => $tenant->id
             ]);
 
@@ -115,16 +115,15 @@ class BillingController extends Controller
                 ->with('success', 'Free plan activated!');
         }
 
-        // =========================
-        // STRIPE CHECKOUT
-        // =========================
-        Log::info('💳 STRIPE CHECKOUT INIT');
+        // STRIPE
+        Log::info('💳 STRIPE INIT', [
+            'user_email' => $user->email,
+            'tenant_id' => $tenant->id
+        ]);
 
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
         try {
-
-            Log::info('🔐 STRIPE KEY SET');
 
             $session = \Stripe\Checkout\Session::create([
                 'customer_email' => $user->email,
@@ -144,16 +143,18 @@ class BillingController extends Controller
 
             Log::info('✅ STRIPE SESSION CREATED', [
                 'session_id' => $session->id,
-                'url' => $session->url
+                'url' => $session->url,
+                'tenant_id' => $tenant->id
             ]);
 
             return redirect($session->url);
 
         } catch (\Exception $e) {
 
-            Log::error('❌ STRIPE SESSION ERROR', [
+            Log::error('❌ STRIPE ERROR', [
                 'message' => $e->getMessage(),
-                'line' => $e->getLine()
+                'tenant_id' => $tenant->id,
+                'user_id' => $user->id ?? null
             ]);
 
             return back()->with('error', 'Payment failed');
@@ -165,16 +166,17 @@ class BillingController extends Controller
     // =========================
     public function success(Request $request)
     {
-        Log::info('🎯 [SUCCESS HIT]', $request->all());
+        Log::info('🎯 [SUCCESS HIT]', [
+            'request' => $request->all(),
+            'auth_user' => auth()->id(),
+            'session_id' => $request->session()->getId(),
+        ]);
 
         $planId = $request->get('plan_id');
 
-        Log::info('🔎 SUCCESS PLAN CHECK', [
-            'plan_id' => $planId
-        ]);
+        Log::info('🔎 SUCCESS PLAN', ['plan_id' => $planId]);
 
         if (!$planId) {
-            Log::warning('⚠️ PLAN MISSING IN SUCCESS');
             return redirect()->route('billing.plans')
                 ->with('error', 'Plan missing');
         }
@@ -182,25 +184,25 @@ class BillingController extends Controller
         $user = auth()->user();
 
         if (!$user) {
-            Log::error('❌ SUCCESS USER NOT FOUND');
+            Log::error('❌ SUCCESS NO USER');
             return redirect()->route('login');
         }
 
         $tenant = Tenant::find($user->getTenantId());
 
         if (!$tenant) {
-            Log::error('❌ SUCCESS TENANT NOT FOUND');
+            Log::error('❌ SUCCESS NO TENANT');
             return redirect()->route('billing.plans');
         }
 
         $plan = SaasPlan::find($planId);
 
         if (!$plan) {
-            Log::error('❌ SUCCESS PLAN INVALID');
+            Log::error('❌ SUCCESS INVALID PLAN');
             return redirect()->route('billing.plans');
         }
 
-        Log::info('📦 SUCCESS FLOW DATA READY', [
+        Log::info('📦 SUCCESS READY', [
             'tenant_id' => $tenant->id,
             'plan_id' => $plan->id
         ]);
@@ -208,8 +210,6 @@ class BillingController extends Controller
         try {
 
             \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
-
-            Log::info('🔐 VERIFYING STRIPE SUBSCRIPTION');
 
             $subscriptions = \Stripe\Subscription::all([
                 'limit' => 1,
@@ -219,22 +219,17 @@ class BillingController extends Controller
             $stripeSubscription = $subscriptions->data[0] ?? null;
 
             if (!$stripeSubscription) {
-                Log::error('❌ NO ACTIVE STRIPE SUBSCRIPTION');
-
+                Log::error('❌ NO STRIPE SUBSCRIPTION');
                 return redirect()->route('billing.plans')
                     ->with('error', 'Payment not confirmed');
             }
-
-            Log::info('✅ STRIPE SUBSCRIPTION FOUND', [
-                'id' => $stripeSubscription->id
-            ]);
 
             $stripeSubscriptionId = $stripeSubscription->id;
             $stripeCustomerId = $stripeSubscription->customer;
 
         } catch (\Exception $e) {
 
-            Log::error('❌ STRIPE VERIFY ERROR', [
+            Log::error('❌ STRIPE VERIFY FAIL', [
                 'message' => $e->getMessage()
             ]);
 
@@ -242,9 +237,6 @@ class BillingController extends Controller
                 ->with('error', 'Payment verification failed');
         }
 
-        // =========================
-        // SAVE
-        // =========================
         $subscription = $tenant->subscription()->updateOrCreate(
             ['tenant_id' => $tenant->id],
             [
@@ -255,20 +247,15 @@ class BillingController extends Controller
             ]
         );
 
-        Log::info('💾 SUBSCRIPTION SAVED', [
-            'subscription_id' => $subscription->id
-        ]);
-
         $tenant->update([
             'is_active' => true,
             'status' => 'active',
         ]);
 
-        Log::info('🏢 TENANT ACTIVATED (PAID PLAN)', [
-            'tenant_id' => $tenant->id
+        Log::info('🎉 SUCCESS COMPLETE', [
+            'tenant_id' => $tenant->id,
+            'subscription_id' => $subscription->id
         ]);
-
-        Log::info('🎉 BILLING SUCCESS COMPLETE');
 
         return redirect()
             ->route('filament.admin.pages.dashboard')
