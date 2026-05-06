@@ -174,44 +174,79 @@ public function subscribe(Request $request)
     // =========================
     // SUCCESS (PRODUCTION SAFE)
     // =========================
-  public function success(Request $request)
+public function success(Request $request)
 {
     Log::info('🎯 SUCCESS HIT', $request->all());
 
+    $sessionId = $request->get('session_id');
     $planId = $request->get('plan_id');
 
-    if (!$planId) {
+    if (!$sessionId || !$planId) {
         return redirect()->route('billing.plans')
-            ->with('error', 'Plan missing');
+            ->with('error', 'Invalid payment response');
     }
 
     $user = auth()->user();
-
     if (!$user) {
         return redirect()->route('login');
     }
 
-    // 🔥 FIX: SESSION BASED TENANT
-    $tenant = Tenant::find(session('tenant_id'));
+    // 🔥 FIX: TENANT RESOLVE (USER + SESSION FALLBACK)
+    $tenantId = $user->getTenantId() ?? session('tenant_id');
+    $tenant = Tenant::find($tenantId);
 
     if (!$tenant) {
-        return redirect()->route('billing.plans');
+        return redirect()->route('billing.plans')
+            ->with('error', 'Tenant not found');
     }
 
     $plan = SaasPlan::find($planId);
-
     if (!$plan) {
         return redirect()->route('billing.plans');
     }
 
+    try {
+
+        \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+        // ✅ FETCH CHECKOUT SESSION
+        $session = \Stripe\Checkout\Session::retrieve($sessionId);
+
+        Log::info('🔍 STRIPE SESSION', [
+            'id' => $session->id,
+            'subscription' => $session->subscription,
+            'customer' => $session->customer,
+            'payment_status' => $session->payment_status,
+        ]);
+
+        // ❌ PAYMENT NOT COMPLETE
+        if ($session->payment_status !== 'paid') {
+            return redirect()->route('billing.plans')
+                ->with('error', 'Payment not completed');
+        }
+
+        $stripeSubscriptionId = $session->subscription;
+        $stripeCustomerId = $session->customer;
+
+    } catch (\Exception $e) {
+
+        Log::error('❌ STRIPE VERIFY FAILED', [
+            'error' => $e->getMessage(),
+        ]);
+
+        return redirect()->route('billing.plans')
+            ->with('error', 'Payment verification failed');
+    }
+
     // =========================
-    // 🔥 DIRECT SAVE (NO STRIPE VERIFY)
+    // SAVE SUBSCRIPTION
     // =========================
     $subscription = $tenant->subscription()->updateOrCreate(
         ['tenant_id' => $tenant->id],
         [
             'saas_plan_id' => $plan->id,
-            'stripe_subscription_id' => 'sub_' . uniqid(), // temp
+            'stripe_subscription_id' => $stripeSubscriptionId,
+            'stripe_customer_id' => $stripeCustomerId,
             'status' => 'active',
         ]
     );
@@ -227,6 +262,10 @@ public function subscribe(Request $request)
         'is_active' => true,
         'status' => 'active',
     ]);
+
+    // 🔥 FIX: SESSION + LOGIN RESTORE (VERY IMPORTANT)
+    Auth::login($user);
+    session()->put('tenant_id', $tenant->id);
 
     return redirect()
         ->route('filament.admin.pages.dashboard')
