@@ -24,66 +24,32 @@ public function subscribe(Request $request)
     Log::info('🚀 [SUBSCRIBE START]', [
         'request' => $request->all(),
         'user_id' => auth()->id(),
-        'session' => session()->all(),
     ]);
 
     try {
 
-        // =========================
-        // PLAN ID
-        // =========================
         $planId = $request->saas_plan_id ?? $request->plan_id;
 
-        Log::info('🔍 [PLAN ID]', ['plan_id' => $planId]);
-
         if (!$planId) {
-            Log::warning('⚠️ PLAN ID MISSING');
             return back()->with('error', 'Plan not selected');
         }
 
-        // =========================
-        // USER
-        // =========================
         $user = auth()->user();
-
-        Log::info('👤 [USER]', [
-            'user' => $user?->toArray()
-        ]);
-
         if (!$user) {
-            Log::warning('⚠️ USER NOT AUTHENTICATED');
             return redirect()->route('login');
         }
 
-        // =========================
-        // 🔥 TENANT FIX (IMPORTANT)
-        // =========================
+        // ✅ Tenant resolve
         $tenantId = session('tenant_id') ?? $user->getTenantId();
-
-        Log::info('🏢 [TENANT ID FINAL]', ['tenant_id' => $tenantId]);
-
         $tenant = Tenant::find($tenantId);
 
-        Log::info('🏢 [TENANT]', [
-            'tenant' => $tenant?->toArray()
-        ]);
-
         if (!$tenant) {
-            Log::error('❌ TENANT NOT FOUND');
             return back()->with('error', 'Tenant not found');
         }
 
-        // =========================
-        // PLAN
-        // =========================
+        // ✅ Plan
         $plan = SaasPlan::find($planId);
-
-        Log::info('📦 [PLAN DATA]', [
-            'plan' => $plan?->toArray()
-        ]);
-
         if (!$plan) {
-            Log::error('❌ PLAN NOT FOUND');
             return back()->with('error', 'Invalid plan');
         }
 
@@ -92,9 +58,7 @@ public function subscribe(Request $request)
         // =========================
         if ((float) $plan->price === 0.0) {
 
-            Log::info('🆓 FREE PLAN FLOW START');
-
-            $subscription = $tenant->subscription()->updateOrCreate(
+            $tenant->subscription()->updateOrCreate(
                 ['tenant_id' => $tenant->id],
                 [
                     'saas_plan_id' => $plan->id,
@@ -103,10 +67,6 @@ public function subscribe(Request $request)
                     'trial_ends_at' => now()->addDays(30),
                 ]
             );
-
-            Log::info('✅ FREE SUBSCRIPTION CREATED', [
-                'subscription' => $subscription->toArray()
-            ]);
 
             $tenant->update([
                 'is_active' => true,
@@ -118,24 +78,9 @@ public function subscribe(Request $request)
         }
 
         // =========================
-        // STRIPE CONFIG
+        // STRIPE
         // =========================
-        $stripeKey = config('services.stripe.secret');
-
-        Log::info('🔑 STRIPE KEY CHECK', [
-            'key_exists' => !empty($stripeKey),
-            'key_prefix' => substr($stripeKey ?? 'NULL', 0, 10),
-        ]);
-
-        \Stripe\Stripe::setApiKey($stripeKey);
-
-        // =========================
-        // STRIPE SESSION CREATE
-        // =========================
-        Log::info('💳 CREATING STRIPE SESSION', [
-            'email' => $user->email,
-            'price_id' => $plan->stripe_price_id,
-        ]);
+        \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
         $session = \Stripe\Checkout\Session::create([
             'customer_email' => $user->email,
@@ -145,26 +90,26 @@ public function subscribe(Request $request)
                 'quantity' => 1,
             ]],
             'mode' => 'subscription',
+
+            // 🔥 FINAL FIX (IMPORTANT)
             'success_url' => route('billing.success', [
-                'plan_id' => $plan->id
+                'session_id' => '{CHECKOUT_SESSION_ID}',
+                'plan_id' => $plan->id,
             ]),
+
             'cancel_url' => route('billing.plans'),
         ]);
 
         Log::info('✅ STRIPE SESSION CREATED', [
             'session_id' => $session->id,
-            'url' => $session->url,
         ]);
 
         return redirect($session->url);
 
     } catch (\Throwable $e) {
 
-        Log::error('❌ STRIPE FATAL ERROR', [
+        Log::error('❌ STRIPE ERROR', [
             'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => substr($e->getTraceAsString(), 0, 1000),
         ]);
 
         return back()->with('error', $e->getMessage());
@@ -181,35 +126,27 @@ public function success(Request $request)
     $sessionId = $request->get('session_id');
     $planId = $request->get('plan_id');
 
-    // ❌ अगर session_id missing
+    // ❌ session_id missing
     if (!$sessionId) {
-        Log::warning('⚠️ Missing session_id in success URL');
+        Log::warning('⚠️ Missing session_id');
         return redirect()->route('billing.plans')
-            ->with('error', 'Session expired, please try again');
+            ->with('error', 'Session expired, try again');
     }
 
-    if (!$planId) {
-        return redirect()->route('billing.plans')
-            ->with('error', 'Invalid plan selected');
-    }
-
-    // ✅ Auth check
     $user = auth()->user();
     if (!$user) {
         return redirect()->route('login');
     }
 
-    // 🔥 Tenant resolve (user + session fallback)
     $tenantId = $user->getTenantId() ?? session('tenant_id');
-    $tenant = \App\Models\Tenant::find($tenantId);
+    $tenant = Tenant::find($tenantId);
 
     if (!$tenant) {
         return redirect()->route('billing.plans')
             ->with('error', 'Tenant not found');
     }
 
-    // ✅ Plan fetch
-    $plan = \App\Models\SaasPlan::find($planId);
+    $plan = SaasPlan::find($planId);
     if (!$plan) {
         return redirect()->route('billing.plans')
             ->with('error', 'Plan not found');
@@ -218,37 +155,43 @@ public function success(Request $request)
     try {
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
-        // ✅ Fetch checkout session
         $session = \Stripe\Checkout\Session::retrieve($sessionId);
 
         Log::info('🔍 STRIPE SESSION', [
             'id' => $session->id,
-            'subscription' => $session->subscription,
-            'customer' => $session->customer,
             'payment_status' => $session->payment_status,
         ]);
 
-        // ❌ Payment not completed
         if ($session->payment_status !== 'paid') {
             return redirect()->route('billing.plans')
                 ->with('error', 'Payment not completed');
         }
 
-        // ❌ Safety check
         if (!$session->subscription || !$session->customer) {
-            Log::error('❌ Missing subscription or customer ID', [
-                'session' => $session,
-            ]);
-
             return redirect()->route('billing.plans')
-                ->with('error', 'Invalid Stripe session');
+                ->with('error', 'Invalid session');
         }
 
-        $stripeSubscriptionId = $session->subscription;
-        $stripeCustomerId = $session->customer;
+        // ✅ SAVE
+        $tenant->subscription()->updateOrCreate(
+            ['tenant_id' => $tenant->id],
+            [
+                'saas_plan_id' => $plan->id,
+                'stripe_subscription_id' => $session->subscription,
+                'stripe_customer_id' => $session->customer,
+                'status' => 'active',
+            ]
+        );
+
+        // ✅ Activate tenant
+        $tenant->update([
+            'is_active' => true,
+            'status' => 'active',
+        ]);
 
     } catch (\Exception $e) {
-        Log::error('❌ STRIPE VERIFY FAILED', [
+
+        Log::error('❌ VERIFY FAILED', [
             'error' => $e->getMessage(),
         ]);
 
@@ -256,37 +199,12 @@ public function success(Request $request)
             ->with('error', 'Payment verification failed');
     }
 
-    // =========================
-    // SAVE SUBSCRIPTION
-    // =========================
-    $subscription = $tenant->subscription()->updateOrCreate(
-        ['tenant_id' => $tenant->id],
-        [
-            'saas_plan_id' => $plan->id,
-            'stripe_subscription_id' => $stripeSubscriptionId,
-            'stripe_customer_id' => $stripeCustomerId,
-            'status' => 'active',
-        ]
-    );
-
-    Log::info('✅ SUBSCRIPTION SAVED', [
-        'id' => $subscription->id,
-    ]);
-
-    // =========================
-    // ACTIVATE TENANT
-    // =========================
-    $tenant->update([
-        'is_active' => true,
-        'status' => 'active',
-    ]);
-
-    // 🔥 Session restore (important for Filament)
+    // ✅ Session restore
     auth()->login($user);
     session()->put('tenant_id', $tenant->id);
 
     return redirect()
         ->route('filament.admin.pages.dashboard')
-        ->with('success', '🎉 Subscription activated successfully!');
+        ->with('success', '🎉 Subscription activated!');
 }
 }
