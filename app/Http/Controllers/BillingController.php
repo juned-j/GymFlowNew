@@ -19,7 +19,7 @@ class BillingController extends Controller
     }
 
 
-   public function subscribe(Request $request)
+public function subscribe(Request $request)
 {
     Log::info('🚀 [SUBSCRIBE START]', [
         'request' => $request->all(),
@@ -56,11 +56,11 @@ class BillingController extends Controller
         }
 
         // =========================
-        // TENANT
+        // 🔥 TENANT FIX (IMPORTANT)
         // =========================
-        $tenantId = $user->getTenantId();
+        $tenantId = session('tenant_id') ?? $user->getTenantId();
 
-        Log::info('🏢 [TENANT ID]', ['tenant_id' => $tenantId]);
+        Log::info('🏢 [TENANT ID FINAL]', ['tenant_id' => $tenantId]);
 
         $tenant = Tenant::find($tenantId);
 
@@ -164,10 +164,10 @@ class BillingController extends Controller
             'message' => $e->getMessage(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
-            'trace' => substr($e->getTraceAsString(), 0, 1000), // avoid huge logs
+            'trace' => substr($e->getTraceAsString(), 0, 1000),
         ]);
 
-        return back()->with('error', $e->getMessage()); // 🔥 real error show
+        return back()->with('error', $e->getMessage());
     }
 }
 
