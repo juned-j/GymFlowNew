@@ -56,11 +56,11 @@ class User extends Authenticatable implements MustVerifyEmail{
         ->exists();
 }
 
-    public function isTenantUser(): bool
-    {
-        // If they have any role linked to a tenant, they are a tenant user.
-        return $this->roles()->whereNotNull('tenant_id')->exists();
-    }
+  public function isTenantUser(): bool
+{
+    return $this->tenant_id !== null
+        && $this->status === 'active';
+}
     public function getTenantId(): ?int
     {
         // We explicitly look for the first non-null tenant_id 
