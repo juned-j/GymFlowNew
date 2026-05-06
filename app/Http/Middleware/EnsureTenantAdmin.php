@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class EnsureTenantAdmin
 {
@@ -12,20 +11,17 @@ class EnsureTenantAdmin
     {
         $user = auth()->user();
 
-        if (! $user) {
-            abort(403, 'Unauthorized'); // or redirect to login
+        if (!$user) {
+            return redirect()->route('login');
         }
 
-        if (! $user->isTenantUser()) {
-            abort(403, 'Tenant access only');
+        if (!$user->isTenantUser()) {
+
+            return redirect()
+                ->route('billing.plans')
+                ->with('error', 'Please activate your subscription first.');
         }
 
         return $next($request);
     }
-
-
-//     public function handle($request, Closure $next)
-// {
-//     return $next($request); // ✅ TEMP disable
-// }
 }
