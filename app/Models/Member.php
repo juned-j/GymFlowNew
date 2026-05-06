@@ -41,35 +41,19 @@ class Member extends Model
         return $this->hasOne(Member::class, 'user_id', 'id');
     }
 
-    // -------------------
-    // 🔥 TENANT SAFETY FIX
-    // -------------------
-    protected static function booted()
-    {
-        // ✅ AUTO SET tenant_id on create (safe fallback)
-        static::creating(function ($member) {
-            if (! $member->tenant_id) {
-                $user = auth()->user();
+  
+  protected static function booted()
+{
+    static::creating(function ($member) {
+        if (! $member->tenant_id) {
+            $member->tenant_id = session('tenant_id');
+        }
+    });
 
-                $member->tenant_id = $user?->roles()
-                    ->whereHas('role', fn($q) => $q->where('name', 'owner'))
-                    ->value('tenant_id');
-            }
-        });
-
-        // 🔥 GLOBAL SCOPE (IMPORTANT FIX)
-        static::addGlobalScope('tenant', function ($query) {
-            if (auth()->check()) {
-                $user = auth()->user();
-
-                $tenantId = $user?->roles()
-                    ->whereHas('role', fn($q) => $q->where('name', 'owner'))
-                    ->value('tenant_id');
-
-                if ($tenantId) {
-                    $query->where('tenant_id', $tenantId);
-                }
-            }
-        });
-    }
+    static::addGlobalScope('tenant', function ($query) {
+        if (session()->has('tenant_id')) {
+            $query->where('tenant_id', session('tenant_id'));
+        }
+    });
+}
 }
