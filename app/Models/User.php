@@ -56,9 +56,11 @@ class User extends Authenticatable implements MustVerifyEmail{
         ->exists();
 }
 
-public function isTenantUser(): bool
+// User.php Model mein
+public function isTenantUser()
 {
-    return $this->tenant_id !== null;
+    
+    return $this->tenant && $this->tenant->is_active === true && $this->tenant->status === 'active';
 }
     public function getTenantId(): ?int
     {
