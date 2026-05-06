@@ -181,35 +181,44 @@ public function success(Request $request)
     $sessionId = $request->get('session_id');
     $planId = $request->get('plan_id');
 
-    if (!$sessionId || !$planId) {
+    // ❌ अगर session_id missing
+    if (!$sessionId) {
+        Log::warning('⚠️ Missing session_id in success URL');
         return redirect()->route('billing.plans')
-            ->with('error', 'Invalid payment response');
+            ->with('error', 'Session expired, please try again');
     }
 
+    if (!$planId) {
+        return redirect()->route('billing.plans')
+            ->with('error', 'Invalid plan selected');
+    }
+
+    // ✅ Auth check
     $user = auth()->user();
     if (!$user) {
         return redirect()->route('login');
     }
 
-    // 🔥 FIX: TENANT RESOLVE (USER + SESSION FALLBACK)
+    // 🔥 Tenant resolve (user + session fallback)
     $tenantId = $user->getTenantId() ?? session('tenant_id');
-    $tenant = Tenant::find($tenantId);
+    $tenant = \App\Models\Tenant::find($tenantId);
 
     if (!$tenant) {
         return redirect()->route('billing.plans')
             ->with('error', 'Tenant not found');
     }
 
-    $plan = SaasPlan::find($planId);
+    // ✅ Plan fetch
+    $plan = \App\Models\SaasPlan::find($planId);
     if (!$plan) {
-        return redirect()->route('billing.plans');
+        return redirect()->route('billing.plans')
+            ->with('error', 'Plan not found');
     }
 
     try {
-
         \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
-        // ✅ FETCH CHECKOUT SESSION
+        // ✅ Fetch checkout session
         $session = \Stripe\Checkout\Session::retrieve($sessionId);
 
         Log::info('🔍 STRIPE SESSION', [
@@ -219,17 +228,26 @@ public function success(Request $request)
             'payment_status' => $session->payment_status,
         ]);
 
-        // ❌ PAYMENT NOT COMPLETE
+        // ❌ Payment not completed
         if ($session->payment_status !== 'paid') {
             return redirect()->route('billing.plans')
                 ->with('error', 'Payment not completed');
+        }
+
+        // ❌ Safety check
+        if (!$session->subscription || !$session->customer) {
+            Log::error('❌ Missing subscription or customer ID', [
+                'session' => $session,
+            ]);
+
+            return redirect()->route('billing.plans')
+                ->with('error', 'Invalid Stripe session');
         }
 
         $stripeSubscriptionId = $session->subscription;
         $stripeCustomerId = $session->customer;
 
     } catch (\Exception $e) {
-
         Log::error('❌ STRIPE VERIFY FAILED', [
             'error' => $e->getMessage(),
         ]);
@@ -263,12 +281,12 @@ public function success(Request $request)
         'status' => 'active',
     ]);
 
-    // 🔥 FIX: SESSION + LOGIN RESTORE (VERY IMPORTANT)
-    Auth::login($user);
+    // 🔥 Session restore (important for Filament)
+    auth()->login($user);
     session()->put('tenant_id', $tenant->id);
 
     return redirect()
         ->route('filament.admin.pages.dashboard')
-        ->with('success', 'Subscription activated!');
+        ->with('success', '🎉 Subscription activated successfully!');
 }
 }
