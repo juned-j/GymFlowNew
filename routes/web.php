@@ -68,63 +68,55 @@ Route::get('/view-logs', function () {
 });
 
 
-/*
-|--------------------------------------------------------------------------
-| GYM ONBOARDING FLOW
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/register', [GymOnboardingController::class, 'showGymStep'])
-    ->name('register.gym');
-
-Route::post('/register/gym', [GymOnboardingController::class, 'storeGym'])
-    ->name('register.gym.store');
-
-Route::get('/register/user', [GymOnboardingController::class, 'showUserStep'])
-    ->name('register.user');
-
-Route::post('/register/user', [GymOnboardingController::class, 'storeUser'])
-    ->name('register.user.store');
-
-Route::get('/register/plan', [GymOnboardingController::class, 'showPlans'])
-    ->name('register.plan');
-
-Route::post('/register/plan', [GymOnboardingController::class, 'storePlan'])
-    ->name('register.plan.store');
-
-Route::post('/register/checkout', [GymOnboardingController::class, 'createCheckout'])
-    ->name('register.checkout');
 
 
-/*
-|--------------------------------------------------------------------------
-| EMAIL VERIFICATION (FIXED - NO AUTH MIDDLEWARE)
-|--------------------------------------------------------------------------
-*/
+Route::middleware(['web'])->group(function () {
+    
+    Route::get('/register', [GymOnboardingController::class, 'showGymStep'])
+        ->name('register.gym');
+
+    Route::post('/register/gym', [GymOnboardingController::class, 'storeGym'])
+        ->name('register.gym.store');
+
+    Route::get('/register/user', [GymOnboardingController::class, 'showUserStep'])
+        ->name('register.user');
+
+    Route::post('/register/user', [GymOnboardingController::class, 'storeUser'])
+        ->name('register.user.store');
+
+    Route::get('/register/plan', [GymOnboardingController::class, 'showPlans'])
+        ->name('register.plan');
+
+    Route::post('/register/plan', [GymOnboardingController::class, 'storePlan'])
+        ->name('register.plan.store');
+
+    Route::post('/register/checkout', [GymOnboardingController::class, 'createCheckout'])
+        ->name('register.checkout');
+        
+});
+
+
 
 // verify link
 Route::get('/email/verify/{id}/{hash}', [GymOnboardingController::class, 'verifyEmail'])
     ->middleware(['signed'])
     ->name('verification.verify');
 
-// notice page (IMPORTANT FIX)
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
-})->name('verification.notice');
+})->middleware('auth')->name('verification.notice');
 
-// resend verification email
 Route::post('/email/verification-notification', function (Request $request) {
+
     $request->user()->sendEmailVerificationNotification();
 
     return back()->with('message', 'Verification link sent!');
-})->middleware(['throttle:6,1'])->name('verification.send');
+
+})->middleware(['auth', 'throttle:6,1'])
+  ->name('verification.send');
 
 
-/*
-|--------------------------------------------------------------------------
-| BILLING (GYM SAAS)
-|--------------------------------------------------------------------------
-*/
+
 
 Route::get('/billing/plans', [BillingController::class, 'index'])
     ->name('billing.plans');
