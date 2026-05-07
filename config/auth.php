@@ -42,11 +42,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-    ],
-     'platform' => [
+          'platform' => [
         'driver' => 'session',
         'provider' => 'users',
     ],
+    ],
+    
 
     /*
     |--------------------------------------------------------------------------
