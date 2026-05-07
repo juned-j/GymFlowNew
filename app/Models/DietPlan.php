@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use App\Traits\BelongsToTenant;
 class DietPlan extends Model
 {
     use HasFactory;
-
+use BelongsToTenant;
     protected $fillable = [
         'tenant_id',
         'trainer_id',
