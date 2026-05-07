@@ -201,6 +201,12 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->password()
                             ->revealable()
                             ->columnSpanFull(),
+                        Forms\Components\TextInput::make('payments.stripe_webhook_secret')
+                            ->label('Stripe Webhook Secret')
+                            ->placeholder('whsec_...')
+                            ->password()
+                            ->revealable()
+                            ->columnSpanFull(),
                         Forms\Components\Toggle::make('payments.allow_subscriptions'),
                     ]),
                 Section::make('Notifications')
