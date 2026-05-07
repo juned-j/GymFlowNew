@@ -16,6 +16,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 {
     use Forms\Concerns\InteractsWithForms;
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog;
+    protected static ?int $navigationSort = 2;
     protected static ?string $navigationLabel = 'Settings';
     public function getView(): string
     {
@@ -49,6 +50,21 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                 'supported_languages' => ['en'],
             ],
         ];
+        $this->data['tenant'] = [
+            'name' => $tenant->name,
+            'logo_url' => $tenant->logo_url,
+            'email' => $tenant->email,
+            'phone' => $tenant->phone,
+            'address' => $tenant->address,
+            'city' => $tenant->city,
+            'country' => $tenant->country,
+            'timezone' => $tenant->timezone,
+            'currency' => $tenant->currency,
+            'currency_symbol' => $tenant->currency_symbol,
+            'status' => $tenant->status,
+            'is_active' => $tenant->is_active,
+            'trial_ends_at' => $tenant->trial_ends_at,
+        ];
         $this->form->fill($this->data);
     }
 
@@ -69,71 +85,57 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                     ->columns(2)
                     ->schema([
 
-                        Forms\Components\TextInput::make('tenant_name')
+                        Forms\Components\TextInput::make('tenant.name')
                             ->label('Name')
-                            ->default($this->tenant?->name)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_logo')
+                        Forms\Components\TextInput::make('tenant.logo_url')
                             ->label('Logo URL')
-                            ->default($this->tenant?->logo_url)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_email')
+                        Forms\Components\TextInput::make('tenant.email')
                             ->label('Email')
-                            ->default($this->tenant?->email)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_phone')
+                        Forms\Components\TextInput::make('tenant.phone')
                             ->label('Phone')
-                            ->default($this->tenant?->phone)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_address')
+                        Forms\Components\TextInput::make('tenant.address')
                             ->label('Address')
-                            ->default($this->tenant?->address)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_city')
+                        Forms\Components\TextInput::make('tenant.city')
                             ->label('City')
-                            ->default($this->tenant?->city)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_country')
+                        Forms\Components\TextInput::make('tenant.country')
                             ->label('Country')
-                            ->default($this->tenant?->country)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_timezone')
+                        Forms\Components\TextInput::make('tenant.timezone')
                             ->label('Timezone')
-                            ->default($this->tenant?->timezone)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_currency')
+                        Forms\Components\TextInput::make('tenant.currency')
                             ->label('Currency')
-                            ->default($this->tenant?->currency)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_currency_symbol')
+                        Forms\Components\TextInput::make('tenant.currency_symbol')
                             ->label('Currency Symbol')
-                            ->default($this->tenant?->currency_symbol)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('tenant_status')
+                        Forms\Components\TextInput::make('tenant.status')
                             ->label('Status')
-                            ->default($this->tenant?->status)
                             ->disabled(),
 
-                        Forms\Components\Toggle::make('tenant_active')
+                        Forms\Components\Toggle::make('tenant.is_active')
                             ->label('Is Active')
-                            ->default($this->tenant?->is_active)
                             ->disabled(),
 
-                        Forms\Components\DateTimePicker::make('tenant_trial_ends_at')
+                        Forms\Components\DateTimePicker::make('tenant.trial_ends_at')
                             ->label('Trial Ends At')
-                            ->default($this->tenant?->trial_ends_at)
                             ->disabled(),
-
                     ])
                     ->columnSpanFull(),
 

@@ -10,6 +10,7 @@ class Dashboard extends Page
 {
     protected string $view = 'filament.pages.dashboard';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHome;
+    protected static ?int $navigationSort = 1;
     protected function getHeaderWidgets(): array
     {
         return [
