@@ -48,15 +48,19 @@ class BranchResource extends Resource
     }
 
     public static function getEloquentQuery(): Builder
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        $query = static::getModel()::query();
+    $query = static::getModel()::query();
 
-        if ($user->isSuperAdmin()) {
-            return $query;
-        }
-
-        return $query->where('tenant_id', $user->getTenantId());
+    if (!$user) {
+        return $query->whereRaw('1 = 0');
     }
+
+    if (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) {
+        return $query;
+    }
+
+    return $query->where('tenant_id', $user->getTenantId());
+}
 }
