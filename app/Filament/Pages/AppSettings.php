@@ -21,10 +21,6 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
     {
         return 'filament.pages.app-settings';
     }
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
     public ?array $data = [];
     public $tenant;
     public function mount(): void
