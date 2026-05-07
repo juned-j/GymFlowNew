@@ -27,7 +27,7 @@ class PlatformPanelProvider extends PanelProvider
             ->id('platform')
             ->path('platform')
             ->login()
-            ->authGuard('web')
+          ->authGuard('platform')
             ->colors([
                 'primary' => Color::Amber,
             ])
