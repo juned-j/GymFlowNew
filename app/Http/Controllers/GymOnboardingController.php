@@ -188,7 +188,42 @@ class GymOnboardingController extends Controller
 
         return redirect()->route('billing.plans');
     }
+public function resendVerification(Request $request)
+{
+    try {
 
+        if (!auth()->check()) {
+
+            return back()->with('error', 'Session expired. Please login again.');
+        }
+
+        $user = auth()->user();
+
+        // ✅ ALREADY VERIFIED
+        if ($user->hasVerifiedEmail()) {
+
+            return back()->with('already_verified', 'User already verified.');
+        }
+
+        // ✅ SEND EMAIL
+        $user->sendEmailVerificationNotification();
+
+        Log::info('✅ Verification email resent', [
+            'user_id' => $user->id
+        ]);
+
+        return back()->with('message', 'Verification link sent!');
+
+    } catch (\Exception $e) {
+
+        Log::error('❌ resendVerification failed', [
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+        ]);
+
+        return back()->with('error', 'Something went wrong.');
+    }
+}
     public function showPlans()
     {
         $plans = SaasPlan::where('is_active', true)->get();
