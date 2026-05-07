@@ -46,98 +46,116 @@ class GymOnboardingController extends Controller
             ->with('success', 'Gym details saved. Now create your account!');
     }
 
-    public function storeUser(Request $request)
-    {
-        Log::info('🚀 storeUser started', [
-            'input' => $request->all(),
-            'session' => session()->all(),
-        ]);
+ public function storeUser(Request $request)
+{
+    Log::info('🚀 storeUser started', [
+        'input' => $request->all(),
+        'session' => session()->all(),
+    ]);
 
-        if (!Session::has('gym_data')) {
-            return redirect()->route('register.gym')
-                ->with('error', 'Session expired. Please start again.');
-        }
-
-        // 🔥 VALIDATE FIRST (OUTSIDE TRY-CATCH FOR PROPER ERROR HANDLING)
-        $validated = $request->validate([
-            'name' => 'required|string|max:50',
-            'email' => 'required|email|unique:users,email',
-            'password' => [
-                'required',
-                'confirmed',
-                'min:8',
-                'regex:/[A-Z]/',
-                'regex:/[a-z]/',
-                'regex:/[0-9]/',
-            ],
-        ]);
-
-        try {
-
-            Log::info('✅ Validation passed', $validated);
-
-            // 🔥 STEP 1: CREATE USER
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'status' => 'active',
-            ]);
-
-            Log::info('✅ User created', ['user_id' => $user->id]);
-
-            // 🔥 STEP 2: GET GYM DATA FROM SESSION
-            $gym = Session::get('gym_data');
-
-            // 🔥 STEP 3: CREATE TENANT WITH OWNER USER ID
-            $tenant = Tenant::create([
-                'name' => $gym['name'],
-                'slug' => Str::slug($gym['name']) . '-' . uniqid(),
-                'email' => $gym['email'],
-
-                'owner_user_id' => $user->id, // ✅ FIXED
-
-                'phone' => $gym['phone'] ?? null,
-                'address' => $gym['address'] ?? null,
-                'city' => $gym['city'] ?? null,
-                'country' => $gym['country'] ?? null,
-
-                'timezone' => $gym['timezone'] ?? 'Asia/Kolkata',
-                'currency' => 'INR',
-                'currency_symbol' => '₹',
-                'status' => 'active',
-                'is_active' => false,
-            ]);
-
-            // 🔥 STEP 4: LINK USER ↔ TENANT
-            \App\Models\UserTenantRole::create([
-                'user_id' => $user->id,
-                'tenant_id' => $tenant->id,
-                'role_id' => 1
-            ]);
-
-            Session::put('tenant_id', $tenant->id);
-
-            // cleanup
-            Session::forget('gym_data');
-
-            $user->sendEmailVerificationNotification();
-
-            return redirect()->route('verification.notice')
-                ->with('success', 'Account created! Please verify your email.');
-
-        } catch (\Exception $e) {
-
-            Log::error('❌ storeUser failed', [
-                'message' => $e->getMessage(),
-                'line' => $e->getLine()
-            ]);
-
-            return back()
-                ->withInput()
-                ->with('error', 'Something went wrong. Please try again.');
-        }
+    if (!Session::has('gym_data')) {
+        return redirect()->route('register.gym')
+            ->with('error', 'Session expired. Please start again.');
     }
+
+    // 🔥 VALIDATE FIRST
+    $validated = $request->validate([
+        'name' => 'required|string|max:50',
+        'email' => 'required|email|unique:users,email',
+        'password' => [
+            'required',
+            'confirmed',
+            'min:8',
+            'regex:/[A-Z]/',
+            'regex:/[a-z]/',
+            'regex:/[0-9]/',
+        ],
+    ]);
+
+    try {
+
+        Log::info('✅ Validation passed', $validated);
+
+        // 🔥 STEP 1: CREATE USER
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'status' => 'active',
+        ]);
+
+        Log::info('✅ User created', [
+            'user_id' => $user->id
+        ]);
+
+        // 🔥 AUTO LOGIN USER
+        Auth::login($user);
+
+        Log::info('✅ User logged in');
+
+        // 🔥 STEP 2: GET GYM DATA FROM SESSION
+        $gym = Session::get('gym_data');
+
+        // 🔥 STEP 3: CREATE TENANT
+        $tenant = Tenant::create([
+            'name' => $gym['name'],
+            'slug' => Str::slug($gym['name']) . '-' . uniqid(),
+            'email' => $gym['email'],
+
+            'owner_user_id' => $user->id,
+
+            'phone' => $gym['phone'] ?? null,
+            'address' => $gym['address'] ?? null,
+            'city' => $gym['city'] ?? null,
+            'country' => $gym['country'] ?? null,
+
+            'timezone' => $gym['timezone'] ?? 'Asia/Kolkata',
+            'currency' => 'INR',
+            'currency_symbol' => '₹',
+            'status' => 'active',
+            'is_active' => false,
+        ]);
+
+        Log::info('✅ Tenant created', [
+            'tenant_id' => $tenant->id
+        ]);
+
+        // 🔥 STEP 4: LINK USER ↔ TENANT
+        \App\Models\UserTenantRole::create([
+            'user_id' => $user->id,
+            'tenant_id' => $tenant->id,
+            'role_id' => 1
+        ]);
+
+        Log::info('✅ UserTenantRole created');
+
+        // 🔥 SAVE TENANT ID IN SESSION
+        Session::put('tenant_id', $tenant->id);
+
+        // 🔥 CLEANUP
+        Session::forget('gym_data');
+
+        // 🔥 SEND EMAIL VERIFICATION
+        $user->sendEmailVerificationNotification();
+
+        Log::info('✅ Verification email sent');
+
+        return redirect()->route('verification.notice')
+            ->with('success', 'Account created! Please verify your email.');
+
+    } catch (\Exception $e) {
+
+        Log::error('❌ storeUser failed', [
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return back()
+            ->withInput()
+            ->with('error', 'Something went wrong. Please try again.');
+    }
+}
 
     public function showUserStep()
     {
