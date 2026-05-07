@@ -53,9 +53,9 @@ class PlatformPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([
-                // Authenticate::class,
-                \App\Http\Middleware\IsSuperAdmin::class,
-            ]);
+           ->authMiddleware([
+    Authenticate::class,
+    \App\Http\Middleware\IsSuperAdmin::class,
+]);
     }
 }
