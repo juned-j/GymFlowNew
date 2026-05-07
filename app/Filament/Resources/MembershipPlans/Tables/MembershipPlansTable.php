@@ -24,10 +24,14 @@ class MembershipPlansTable
 
                     ->sortable(),
 
-                TextColumn::make('price')
-                    // Automatically uses tenant currency if set in model casts
-                    ->money(fn($record) => auth()->user()->getTenantCurrencyCode() ?? 'USD')
-                    ->sortable(),
+               TextColumn::make('price')
+    ->formatStateUsing(function ($state) {
+
+        $currency = auth()->user()?->getTenantCurrencyCode() ?? 'USD';
+
+        return money($state, $currency);
+    })
+    ->sortable(),
 
                 TextColumn::make('billing_period')
                     ->badge()
