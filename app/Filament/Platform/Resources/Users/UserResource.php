@@ -34,10 +34,10 @@ class UserResource extends Resource
                     ->maxLength(50)
                     ->required(),
 
-             TextInput::make('email')
-    ->email()
-    ->unique(ignoreRecord: true)
-    ->required(),
+                TextInput::make('email')
+                    ->email()
+                    ->unique(ignoreRecord: true)
+                    ->required(),
 
                 TextInput::make('password')
                     ->password()
@@ -51,46 +51,46 @@ class UserResource extends Resource
                     ->required(fn($context) => $context === 'create')
                     ->dehydrated(false),
 
- Select::make('status')
-    ->options([
-        'active' => 'Active',
-        'inactive' => 'Inactive',
-    ])
-    ->default('active')
-    ->required(),
+                Select::make('status')
+                    ->options([
+                        'active' => 'Active',
+                        'inactive' => 'Inactive',
+                    ])
+                    ->default('active')
+                    ->required(),
             ])
                 ->columnSpanFull(),
             Repeater::make('roles')
                 ->relationship()
                 ->columnSpanFull()
                 ->schema([
-      Select::make('role_id')
-      ->label('Role')
-    ->options(function () {
-        if (auth()->user()?->isSuperAdmin()) {
-            return \App\Models\Role::whereIn('name', ['super_admin', 'owner'])
-                ->pluck('name', 'id'); 
-        }
+                    Select::make('role_id')
+                        ->label('Role')
+                        ->options(function () {
+                            if (auth()->user()?->isSuperAdmin()) {
+                                return \App\Models\Role::whereIn('name', ['super_admin', 'owner'])
+                                    ->pluck('name', 'id');
+                            }
 
-        return \App\Models\Role::whereIn('name', ['trainer', 'member'])
-            ->pluck('name', 'id'); 
-    })
-    ->required(),
+                            return \App\Models\Role::whereIn('name', ['trainer', 'member'])
+                                ->pluck('name', 'id');
+                        })
+                        ->required(),
                     Select::make('tenant_id')
-    ->relationship('tenant', 'name')
-    ->searchable()
-    ->nullable()
-    ->visible(fn($get) => $get('role') !== 'super_admin')
-    ->default(function () {
-        $user = auth()->user();
+                        ->relationship('tenant', 'name')
+                        ->searchable()
+                        ->nullable()
+                        ->visible(fn($get) => $get('role') !== 'super_admin')
+                        ->default(function () {
+                            $user = auth()->user();
 
-        if ($user && $user->isTenantUser()) {
-            return $user->getTenantId();
-        }
+                            if ($user && $user->isTenantUser()) {
+                                return $user->getTenantId();
+                            }
 
-        return null;
-    })
-    ->disabled(fn () => auth()->user()?->isTenantUser()),
+                            return null;
+                        })
+                        ->disabled(fn() => auth()->user()?->isTenantUser()),
                     Select::make('branch_id')
                         ->relationship('branch', 'name')
                         ->searchable()
