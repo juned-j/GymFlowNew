@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Member;
+use App\Traits\BelongsToTenant;
 
 class Branch extends Model
 {
     use HasFactory;
+     use BelongsToTenant;
 
     /**
      * The attributes that are mass assignable.
