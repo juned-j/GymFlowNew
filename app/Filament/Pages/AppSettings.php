@@ -15,155 +15,297 @@ use Filament\Forms\Components\Select;
 class AppSettings extends Page implements Forms\Contracts\HasForms
 {
     use Forms\Concerns\InteractsWithForms;
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog;
-    protected static ?string $navigationLabel = 'App Settings';
-
+    protected static ?string $navigationLabel = 'Settings';
     public function getView(): string
     {
         return 'filament.pages.app-settings';
     }
-
     public static function shouldRegisterNavigation(): bool
     {
         return false;
     }
-
     public ?array $data = [];
-
-    public $tenant; // ✅ STORE TENANT HERE
-
-  public function mount(): void
-{
-    $tenant = app()->bound('tenant') ? app('tenant') : null;
-
-    if (!$tenant) {
-        \Log::error('❌ Tenant not found in mount');
-        abort(404, 'Tenant not found');
+    public $tenant;
+    public function mount(): void
+    {
+        $tenant = app()->bound('tenant') ? app('tenant') : null;
+        if (!$tenant) {
+            abort(404, 'Tenant not found');
+        }
+        $this->tenant = $tenant;
+        $settings = $tenant->app_settings;
+        if (is_string($settings)) {
+            $settings = json_decode($settings, true) ?? [];
+        }
+        $this->data = $settings ?: [
+            'branding' => [
+                'primary_color' => '#FF5733',
+                'secondary_color' => '#222222',
+                'accent_color' => '#FFC107',
+            ],
+            'app' => [
+                'app_name' => 'GymFlow',
+                'version' => '1.0.0',
+            ],
+            'ui' => [
+                'default_language' => 'en',
+                'supported_languages' => ['en'],
+            ],
+        ];
+        $this->form->fill($this->data);
     }
-
-    $this->tenant = $tenant; // ✅ IMPORTANT FIX
-
-    \Log::info('✅ Tenant loaded in mount', [
-        'tenant_id' => $tenant->id
-    ]);
-
-    // 🔥 SAFE FIX: ensure array (handles JSON string case)
-    $settings = $tenant->app_settings;
-
-    if (is_string($settings)) {
-        $settings = json_decode($settings, true) ?? [];
-    }
-
-    $this->data = $settings ?: [
-        'branding' => [
-            'primary_color' => '#FF5733',
-            'secondary_color' => '#222222',
-            'accent_color' => '#FFC107',
-        ],
-        'app' => [
-            'app_name' => 'GymFlow',
-            'version' => '1.0.0',
-        ],
-        'ui' => [
-            'default_language' => 'en',
-            'supported_languages' => ['en'],
-        ],
-    ];
-
-    $this->form->fill($this->data);
-}
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->statePath('data')
+            ->columns(2)
             ->schema([
 
+                /*
+                |--------------------------------------------------------------------------
+                | Tenant Information (Read Only)
+                |--------------------------------------------------------------------------
+                */
+                Section::make('Tenant Information')
+                    ->description('Basic tenant details')
+                    ->columns(2)
+                    ->schema([
+
+                        Forms\Components\TextInput::make('tenant_name')
+                            ->label('Name')
+                            ->default($this->tenant?->name)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_logo')
+                            ->label('Logo URL')
+                            ->default($this->tenant?->logo_url)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_email')
+                            ->label('Email')
+                            ->default($this->tenant?->email)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_phone')
+                            ->label('Phone')
+                            ->default($this->tenant?->phone)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_address')
+                            ->label('Address')
+                            ->default($this->tenant?->address)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_city')
+                            ->label('City')
+                            ->default($this->tenant?->city)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_country')
+                            ->label('Country')
+                            ->default($this->tenant?->country)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_timezone')
+                            ->label('Timezone')
+                            ->default($this->tenant?->timezone)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_currency')
+                            ->label('Currency')
+                            ->default($this->tenant?->currency)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_currency_symbol')
+                            ->label('Currency Symbol')
+                            ->default($this->tenant?->currency_symbol)
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('tenant_status')
+                            ->label('Status')
+                            ->default($this->tenant?->status)
+                            ->disabled(),
+
+                        Forms\Components\Toggle::make('tenant_active')
+                            ->label('Is Active')
+                            ->default($this->tenant?->is_active)
+                            ->disabled(),
+
+                        Forms\Components\DateTimePicker::make('tenant_trial_ends_at')
+                            ->label('Trial Ends At')
+                            ->default($this->tenant?->trial_ends_at)
+                            ->disabled(),
+
+                    ])
+                    ->columnSpanFull(),
+
+                /*
+                |--------------------------------------------------------------------------
+                | Branding
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('Branding')
+                    ->columns(2)
                     ->schema([
                         Forms\Components\ColorPicker::make('branding.primary_color'),
+
                         Forms\Components\ColorPicker::make('branding.secondary_color'),
+
                         Forms\Components\ColorPicker::make('branding.accent_color'),
-                     Forms\Components\TextInput::make('branding.logo_url'),
-                 Forms\Components\TextInput::make('branding.splash_screen_url'),
+
+                        Forms\Components\TextInput::make('branding.logo_url'),
+
+                        Forms\Components\TextInput::make('branding.splash_screen_url'),
                     ]),
 
+                /*
+                |--------------------------------------------------------------------------
+                | App
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('App')
+                    ->columns(2)
                     ->schema([
-                        Forms\Components\TextInput::make('app.app_name')->required(),
+                        Forms\Components\TextInput::make('app.app_name')
+                            ->required(),
+
                         Forms\Components\TextInput::make('app.bundle_id'),
+
                         Forms\Components\TextInput::make('app.version'),
+
                         Forms\Components\Toggle::make('app.force_update'),
+
                         Forms\Components\Toggle::make('app.maintenance_mode'),
                     ]),
 
+                /*
+                |--------------------------------------------------------------------------
+                | Features
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('Features')
+                    ->columns(2)
                     ->schema([
                         Forms\Components\Toggle::make('features.enable_chat'),
+
                         Forms\Components\Toggle::make('features.enable_notifications'),
+
                         Forms\Components\Toggle::make('features.enable_payments'),
+
                         Forms\Components\Toggle::make('features.enable_workouts'),
+
                         Forms\Components\Toggle::make('features.enable_diet_plans'),
+
                         Forms\Components\Toggle::make('features.enable_referrals'),
                     ]),
 
+                /*
+                |--------------------------------------------------------------------------
+                | Auth
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('Auth')
+                    ->columns(2)
                     ->schema([
                         Forms\Components\Toggle::make('auth.allow_social_login'),
+
                         Forms\Components\Toggle::make('auth.otp_login'),
+
                         Forms\Components\Toggle::make('auth.email_login'),
                     ]),
-Section::make('Payments')
-    ->schema([
 
-        Forms\Components\TextInput::make('payments.provider')
-            ->label('Payment Provider'),
+                /*
+                |--------------------------------------------------------------------------
+                | Payments
+                |--------------------------------------------------------------------------
+                */
 
-        Select::make('payments.currency')
-            ->label('Currency')
-            ->options(
-                Currency::query()
-                    ->pluck('currency_name', 'currency_name')
-                    ->toArray()
-            )
-            ->searchable()
-            ->required(),
+                Section::make('Payments')
+                    ->columns(2)
+                    ->schema([
 
-        Forms\Components\TextInput::make('payments.stripe_publishable_key')
-            ->label('Stripe Publishable Key')
-            ->placeholder('pk_test_...')
-            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('payments.provider')
+                            ->label('Payment Provider'),
 
-        Forms\Components\TextInput::make('payments.stripe_secret_key')
-            ->label('Stripe Secret Key')
-            ->placeholder('sk_test_...')
-            ->password()
-            ->revealable()
-            ->columnSpanFull(),
+                        Select::make('payments.currency')
+                            ->label('Currency')
+                            ->options(
+                                Currency::query()
+                                    ->pluck('currency_name', 'currency_name')
+                                    ->toArray()
+                            )
+                            ->searchable()
+                            ->required(),
 
-        Forms\Components\Toggle::make('payments.allow_subscriptions'),
+                        Forms\Components\TextInput::make('payments.stripe_publishable_key')
+                            ->label('Stripe Publishable Key')
+                            ->placeholder('pk_test_...')
+                            ->columnSpanFull(),
 
-    ]),
+                        Forms\Components\TextInput::make('payments.stripe_secret_key')
+                            ->label('Stripe Secret Key')
+                            ->placeholder('sk_test_...')
+                            ->password()
+                            ->revealable()
+                            ->columnSpanFull(),
+
+                        Forms\Components\Toggle::make('payments.allow_subscriptions'),
+
+                    ]),
+
+                /*
+                |--------------------------------------------------------------------------
+                | Notifications
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('Notifications')
+                    ->columns(2)
                     ->schema([
                         Forms\Components\Toggle::make('notifications.push_enabled'),
+
                         Forms\Components\Toggle::make('notifications.email_enabled'),
+
                         Forms\Components\Toggle::make('notifications.sms_enabled'),
                     ]),
 
+                /*
+                |--------------------------------------------------------------------------
+                | Content
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('Content')
+                    ->columns(2)
                     ->schema([
                         Forms\Components\TextInput::make('content.terms_url'),
+
                         Forms\Components\TextInput::make('content.privacy_policy_url'),
+
                         Forms\Components\TextInput::make('content.support_email'),
                     ]),
 
+                /*
+                |--------------------------------------------------------------------------
+                | UI
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('UI')
+                    ->columns(2)
                     ->schema([
                         Forms\Components\Toggle::make('ui.dark_mode_enabled'),
+
                         Forms\Components\TextInput::make('ui.default_language'),
-                        Forms\Components\TagsInput::make('ui.supported_languages'),
+
+                        Forms\Components\TagsInput::make('ui.supported_languages')
+                            ->columnSpanFull(),
                     ]),
             ]);
     }
@@ -171,15 +313,10 @@ Section::make('Payments')
     public function save(): void
     {
         if (!$this->tenant) {
-            \Log::error('❌ Tenant missing in component');
             return;
         }
 
-        $data = $this->form->getState(); // ✅ IMPORTANT FIX
-
-        \Log::info('💾 Saving app settings', [
-            'tenant_id' => $this->tenant->id,
-        ]);
+        $data = $this->form->getState();
 
         $this->tenant->update([
             'app_settings' => $data

@@ -9,16 +9,16 @@ use BackedEnum;
 class Dashboard extends Page
 {
     protected string $view = 'filament.pages.dashboard';
-protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHome;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHome;
     protected function getHeaderWidgets(): array
-{
-    return [
-                \App\Filament\Widgets\StatsOverview::class,
-        \App\Filament\Widgets\RevenueGrowth::class,
-    //  \App\Filament\Widgets\WorkoutActivity::class,
-     \App\Filament\Widgets\MemberEngagement::class,
+    {
+        return [
+            \App\Filament\Widgets\StatsOverview::class,
+            \App\Filament\Widgets\RevenueGrowth::class,
+            //  \App\Filament\Widgets\WorkoutActivity::class,
+            \App\Filament\Widgets\MemberEngagement::class,
 
 
-    ];
-}
+        ];
+    }
 }
