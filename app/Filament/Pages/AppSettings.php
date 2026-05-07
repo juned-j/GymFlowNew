@@ -114,21 +114,37 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         Forms\Components\Toggle::make('auth.otp_login'),
                         Forms\Components\Toggle::make('auth.email_login'),
                     ]),
+Section::make('Payments')
+    ->schema([
 
-                Section::make('Payments')
-                    ->schema([
-                        Forms\Components\TextInput::make('payments.provider'),
-       Select::make('currency')
-    ->label('Currency')
-    ->options(
-        Currency::query()
-            ->pluck('currency_name', 'currency_name')
-            ->toArray()
-    )
-    ->searchable()
-    ->required(),                        Forms\Components\Toggle::make('payments.allow_subscriptions'),
-                    ]),
+        Forms\Components\TextInput::make('payments.provider')
+            ->label('Payment Provider'),
 
+        Select::make('payments.currency')
+            ->label('Currency')
+            ->options(
+                Currency::query()
+                    ->pluck('currency_name', 'currency_name')
+                    ->toArray()
+            )
+            ->searchable()
+            ->required(),
+
+        Forms\Components\TextInput::make('payments.stripe_publishable_key')
+            ->label('Stripe Publishable Key')
+            ->placeholder('pk_test_...')
+            ->columnSpanFull(),
+
+        Forms\Components\TextInput::make('payments.stripe_secret_key')
+            ->label('Stripe Secret Key')
+            ->placeholder('sk_test_...')
+            ->password()
+            ->revealable()
+            ->columnSpanFull(),
+
+        Forms\Components\Toggle::make('payments.allow_subscriptions'),
+
+    ]),
                 Section::make('Notifications')
                     ->schema([
                         Forms\Components\Toggle::make('notifications.push_enabled'),
