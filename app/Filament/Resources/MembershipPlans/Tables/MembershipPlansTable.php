@@ -24,14 +24,9 @@ class MembershipPlansTable
 
                     ->sortable(),
 
-               TextColumn::make('price')
-    ->formatStateUsing(function ($state) {
-
-        $currency = auth()->user()?->getTenantCurrencyCode() ?? 'USD';
-
-        return money($state, $currency);
-    })
-    ->sortable(),
+                TextColumn::make('price')
+                   
+                    ->sortable(),
 
                 TextColumn::make('billing_period')
                     ->badge()
