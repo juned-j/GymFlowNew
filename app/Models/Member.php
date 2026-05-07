@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\BelongsToTenant;
+
 
 class Member extends Model
 {
     protected $table = 'members';
+     use BelongsToTenant;
 
     protected $fillable = [
         'user_id',
@@ -42,30 +45,30 @@ class Member extends Model
     }
 
    
-    protected static function booted()
-    {
-        static::creating(function ($member) {
-            if (! $member->tenant_id) {
-                $user = auth()->user();
+    // protected static function booted()
+    // {
+    //     static::creating(function ($member) {
+    //         if (! $member->tenant_id) {
+    //             $user = auth()->user();
 
-                $member->tenant_id = $user?->roles()
-                    ->whereHas('role', fn($q) => $q->where('name', 'owner'))
-                    ->value('tenant_id');
-            }
-        });
+    //             $member->tenant_id = $user?->roles()
+    //                 ->whereHas('role', fn($q) => $q->where('name', 'owner'))
+    //                 ->value('tenant_id');
+    //         }
+    //     });
 
-        static::addGlobalScope('tenant', function ($query) {
-            if (auth()->check()) {
-                $user = auth()->user();
+    //     static::addGlobalScope('tenant', function ($query) {
+    //         if (auth()->check()) {
+    //             $user = auth()->user();
 
-                $tenantId = $user?->roles()
-                    ->whereHas('role', fn($q) => $q->where('name', 'owner'))
-                    ->value('tenant_id');
+    //             $tenantId = $user?->roles()
+    //                 ->whereHas('role', fn($q) => $q->where('name', 'owner'))
+    //                 ->value('tenant_id');
 
-                if ($tenantId) {
-                    $query->where('tenant_id', $tenantId);
-                }
-            }
-        });
-    }
+    //             if ($tenantId) {
+    //                 $query->where('tenant_id', $tenantId);
+    //             }
+    //         }
+    //     });
+    // }
 }
