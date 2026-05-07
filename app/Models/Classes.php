@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\BelongsToTenant;
 
 class Classes extends Model
 {
+
+ use BelongsToTenant;
     // Since 'classes' is the table name and the model is 'Classes', 
     // Laravel usually finds it, but defining it explicitly is safer.
     protected $table = 'classes';
