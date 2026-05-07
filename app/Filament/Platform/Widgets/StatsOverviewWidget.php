@@ -2,7 +2,6 @@
 
 namespace App\Filament\Platform\Widgets;
 
-use App\Models\Tenant; // ✅ added
 use App\Models\Subscription;
 use Filament\Widgets\StatsOverviewWidget as BaseStatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -15,30 +14,99 @@ class StatsOverviewWidget extends BaseStatsOverviewWidget
     {
         $user = auth()->user();
 
-       
-        $totalGyms = Tenant::query()->count();
+        \Log::info('📊 Widget Loaded', [
+            'auth_check' => auth()->check(),
+            'user' => $user?->id,
+        ]);
 
- 
+        if (!$user) {
 
-     
+            \Log::warning('❌ No authenticated user');
+
+            return [];
+        }
+
+        // ✅ GET TENANT ID
+        $tenantId = $user->getTenantId();
+
+        \Log::info('📊 Tenant Debug', [
+            'user_id' => $user->id,
+            'tenant_id' => $tenantId,
+        ]);
+
+        if (!$tenantId) {
+
+            \Log::warning('❌ No tenant ID found');
+
+            return [];
+        }
+
+        // ✅ CHECK ALL SUBSCRIPTIONS
+        $allSubscriptions = Subscription::query()->get();
+
+        \Log::info('📊 ALL SUBSCRIPTIONS', [
+            'count' => $allSubscriptions->count(),
+            'data' => $allSubscriptions->map(function ($sub) {
+                return [
+                    'id' => $sub->id,
+                    'tenant_id' => $sub->tenant_id,
+                    'status' => $sub->status,
+                ];
+            })->toArray(),
+        ]);
+
+        // ✅ FILTERED SUBSCRIPTIONS
+        $tenantSubscriptions = Subscription::query()
+            ->where('tenant_id', $tenantId)
+            ->get();
+
+        \Log::info('📊 FILTERED SUBSCRIPTIONS', [
+            'tenant_id' => $tenantId,
+            'count' => $tenantSubscriptions->count(),
+            'ids' => $tenantSubscriptions->pluck('id')->toArray(),
+        ]);
+
+        /**
+         * ACTIVE SUBSCRIPTIONS
+         */
         $activeSubscriptions = Subscription::query()
+            ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->count();
 
+        \Log::info('📊 ACTIVE SUBSCRIPTIONS COUNT', [
+            'tenant_id' => $tenantId,
+            'active_count' => $activeSubscriptions,
+        ]);
+
         /**
          * MONTHLY REVENUE
-         * Calculated from active subscriptions in current month
          */
-        $monthlyRevenue = Subscription::query()
+        $monthlyRevenueSubscriptions = Subscription::query()
+            ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->whereMonth('created_at', now()->month)
             ->with('membershipPlan')
-            ->get()
+            ->get();
+
+        \Log::info('📊 MONTHLY REVENUE SUBSCRIPTIONS', [
+            'tenant_id' => $tenantId,
+            'count' => $monthlyRevenueSubscriptions->count(),
+            'subscription_ids' => $monthlyRevenueSubscriptions->pluck('id')->toArray(),
+        ]);
+
+        $monthlyRevenue = $monthlyRevenueSubscriptions
             ->sum(fn ($sub) => $sub->membershipPlan?->price ?? 0);
 
+        \Log::info('📊 MONTHLY REVENUE', [
+            'tenant_id' => $tenantId,
+            'amount' => $monthlyRevenue,
+        ]);
+
         return [
-            Stat::make('Total Gyms', $totalGyms)
-                ->description('Total tenants (gyms) in system') 
+
+            Stat::make('Tenant ID', $tenantId)
+                ->description('Current tenant')
                 ->color('primary')
                 ->icon('heroicon-o-building-office'),
 
