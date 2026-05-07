@@ -10,13 +10,56 @@ use Illuminate\Support\Facades\DB;
 class RevenueGrowth extends ChartWidget
 {
     protected ?string $heading = 'Revenue Overview';
+
     protected static ?int $sort = 2;
+
     protected int | string | array $columnSpan = 'full';
 
+    // ✅ Disable lazy loading
+    public static bool $isLazy = false;
 
     protected function getData(): array
     {
-        // 📅 Start from 1st Jan 2025 to today
+        \Log::info('📈 RevenueGrowth Widget Loaded');
+
+        $user = auth()->user();
+
+        \Log::info('📈 Auth User', [
+            'user_id' => $user?->id,
+        ]);
+
+        if (!$user) {
+
+            \Log::warning('❌ No authenticated user');
+
+            return [
+                'datasets' => [],
+                'labels' => [],
+            ];
+        }
+
+        /**
+         * ✅ GET TENANT ID
+         */
+        $tenantId = $user->getTenantId();
+
+        \Log::info('📈 Tenant Info', [
+            'tenant_id' => $tenantId,
+        ]);
+
+        if (!$tenantId) {
+
+            \Log::warning('❌ No tenant ID found');
+
+            return [
+                'datasets' => [],
+                'labels' => [],
+            ];
+        }
+
+        /**
+         * 📅 DATE RANGE
+         */
         $startDate = Carbon::create(2025, 1, 1);
         $endDate = Carbon::today();
 
@@ -29,16 +72,34 @@ class RevenueGrowth extends ChartWidget
 
         $labels = $dates->toArray();
 
-        // 💰 Revenue per day
-        $revenue = $dates->map(function ($date) {
-            return (float) Subscription::query()
-                ->leftJoin('membership_plans', 'subscriptions.membership_plan_id', '=', 'membership_plans.id')
+        /**
+         * 💰 TENANT BASED REVENUE
+         */
+        $revenue = $dates->map(function ($date) use ($tenantId) {
+
+            $amount = (float) Subscription::query()
+                ->where('subscriptions.tenant_id', $tenantId)
                 ->whereDate('subscriptions.created_at', $date)
                 ->whereIn('subscriptions.status', ['active', 'trialing'])
+                ->leftJoin(
+                    'membership_plans',
+                    'subscriptions.membership_plan_id',
+                    '=',
+                    'membership_plans.id'
+                )
                 ->sum(DB::raw('COALESCE(membership_plans.price, 0)'));
+
+            \Log::info('📈 Daily Revenue', [
+                'date' => $date,
+                'amount' => $amount,
+            ]);
+
+            return $amount;
+
         })->toArray();
 
         return [
+
             'labels' => $labels,
 
             'datasets' => [
@@ -47,11 +108,9 @@ class RevenueGrowth extends ChartWidget
 
                     'data' => $revenue,
 
-                    // 🎨 Dribbble style
                     'borderColor' => '#6366F1',
                     'backgroundColor' => 'rgba(99, 102, 241, 0.15)',
 
-                    // ✨ smooth curve
                     'tension' => 0.6,
                     'borderWidth' => 3,
 
