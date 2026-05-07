@@ -86,64 +86,45 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                     ->schema([
 
                         Forms\Components\TextInput::make('tenant.name')
-                            ->label('Name')
-                            ->disabled(),
+                            ->label('Name'),
 
                         Forms\Components\TextInput::make('tenant.logo_url')
-                            ->label('Logo URL')
-                            ->disabled(),
+                            ->label('Logo URL'),
 
                         Forms\Components\TextInput::make('tenant.email')
-                            ->label('Email')
-                            ->disabled(),
+                            ->label('Email'),
 
                         Forms\Components\TextInput::make('tenant.phone')
-                            ->label('Phone')
-                            ->disabled(),
+                            ->label('Phone'),
 
                         Forms\Components\TextInput::make('tenant.address')
-                            ->label('Address')
-                            ->disabled(),
+                            ->label('Address'),
 
                         Forms\Components\TextInput::make('tenant.city')
-                            ->label('City')
-                            ->disabled(),
+                            ->label('City'),
 
                         Forms\Components\TextInput::make('tenant.country')
-                            ->label('Country')
-                            ->disabled(),
+                            ->label('Country'),
 
                         Forms\Components\TextInput::make('tenant.timezone')
-                            ->label('Timezone')
-                            ->disabled(),
+                            ->label('Timezone'),
 
                         Forms\Components\TextInput::make('tenant.currency')
-                            ->label('Currency')
-                            ->disabled(),
+                            ->label('Currency'),
 
                         Forms\Components\TextInput::make('tenant.currency_symbol')
-                            ->label('Currency Symbol')
-                            ->disabled(),
+                            ->label('Currency Symbol'),
 
                         Forms\Components\TextInput::make('tenant.status')
-                            ->label('Status')
-                            ->disabled(),
+                            ->label('Status'),
 
                         Forms\Components\Toggle::make('tenant.is_active')
-                            ->label('Is Active')
-                            ->disabled(),
+                            ->label('Is Active'),
 
                         Forms\Components\DateTimePicker::make('tenant.trial_ends_at')
-                            ->label('Trial Ends At')
-                            ->disabled(),
+                            ->label('Trial Ends At'),
                     ])
                     ->columnSpanFull(),
-
-                /*
-                |--------------------------------------------------------------------------
-                | Branding
-                |--------------------------------------------------------------------------
-                */
 
                 Section::make('Branding')
                     ->columns(2)
@@ -158,13 +139,6 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
                         Forms\Components\TextInput::make('branding.splash_screen_url'),
                     ]),
-
-                /*
-                |--------------------------------------------------------------------------
-                | App
-                |--------------------------------------------------------------------------
-                */
-
                 Section::make('App')
                     ->columns(2)
                     ->schema([
@@ -179,13 +153,6 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
                         Forms\Components\Toggle::make('app.maintenance_mode'),
                     ]),
-
-                /*
-                |--------------------------------------------------------------------------
-                | Features
-                |--------------------------------------------------------------------------
-                */
-
                 Section::make('Features')
                     ->columns(2)
                     ->schema([
@@ -201,13 +168,6 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
                         Forms\Components\Toggle::make('features.enable_referrals'),
                     ]),
-
-                /*
-                |--------------------------------------------------------------------------
-                | Auth
-                |--------------------------------------------------------------------------
-                */
-
                 Section::make('Auth')
                     ->columns(2)
                     ->schema([
@@ -217,20 +177,11 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
                         Forms\Components\Toggle::make('auth.email_login'),
                     ]),
-
-                /*
-                |--------------------------------------------------------------------------
-                | Payments
-                |--------------------------------------------------------------------------
-                */
-
                 Section::make('Payments')
                     ->columns(2)
                     ->schema([
-
                         Forms\Components\TextInput::make('payments.provider')
                             ->label('Payment Provider'),
-
                         Select::make('payments.currency')
                             ->label('Currency')
                             ->options(
@@ -240,29 +191,18 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             )
                             ->searchable()
                             ->required(),
-
                         Forms\Components\TextInput::make('payments.stripe_publishable_key')
                             ->label('Stripe Publishable Key')
                             ->placeholder('pk_test_...')
                             ->columnSpanFull(),
-
                         Forms\Components\TextInput::make('payments.stripe_secret_key')
                             ->label('Stripe Secret Key')
                             ->placeholder('sk_test_...')
                             ->password()
                             ->revealable()
                             ->columnSpanFull(),
-
                         Forms\Components\Toggle::make('payments.allow_subscriptions'),
-
                     ]),
-
-                /*
-                |--------------------------------------------------------------------------
-                | Notifications
-                |--------------------------------------------------------------------------
-                */
-
                 Section::make('Notifications')
                     ->columns(2)
                     ->schema([
@@ -272,13 +212,6 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
                         Forms\Components\Toggle::make('notifications.sms_enabled'),
                     ]),
-
-                /*
-                |--------------------------------------------------------------------------
-                | Content
-                |--------------------------------------------------------------------------
-                */
-
                 Section::make('Content')
                     ->columns(2)
                     ->schema([
@@ -288,13 +221,6 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
                         Forms\Components\TextInput::make('content.support_email'),
                     ]),
-
-                /*
-                |--------------------------------------------------------------------------
-                | UI
-                |--------------------------------------------------------------------------
-                */
-
                 Section::make('UI')
                     ->columns(2)
                     ->schema([
@@ -315,9 +241,24 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
         }
 
         $data = $this->form->getState();
-
         $this->tenant->update([
-            'app_settings' => $data
+            'name' => $data['tenant']['name'] ?? null,
+            'logo_url' => $data['tenant']['logo_url'] ?? null,
+            'email' => $data['tenant']['email'] ?? null,
+            'phone' => $data['tenant']['phone'] ?? null,
+            'address' => $data['tenant']['address'] ?? null,
+            'city' => $data['tenant']['city'] ?? null,
+            'country' => $data['tenant']['country'] ?? null,
+            'timezone' => $data['tenant']['timezone'] ?? null,
+            'currency' => $data['tenant']['currency'] ?? null,
+            'currency_symbol' => $data['tenant']['currency_symbol'] ?? null,
+            'status' => $data['tenant']['status'] ?? null,
+            'is_active' => $data['tenant']['is_active'] ?? false,
+            'trial_ends_at' => $data['tenant']['trial_ends_at'] ?? null,
+        ]);
+        unset($data['tenant']);
+        $this->tenant->update([
+            'app_settings' => $data,
         ]);
 
         Notification::make()
