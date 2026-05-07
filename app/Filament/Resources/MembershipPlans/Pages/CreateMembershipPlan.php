@@ -8,7 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateMembershipPlan extends CreateRecord
 {
     protected static string $resource = MembershipPlanResource::class;
-            protected static bool $canCreateAnother = false;
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -17,8 +16,5 @@ class CreateMembershipPlan extends CreateRecord
 
         return $data;
     }
-        protected function getFormActions(): array
-{
-    return [];
-}
+      
 }
