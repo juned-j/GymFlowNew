@@ -7,9 +7,13 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\MembershipPlan;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use App\Traits\BelongsToTenant;
 class Subscription extends Model
 {
+
+
+ use BelongsToTenant;
+
     protected $fillable = [
         'tenant_id',
         'user_id',
