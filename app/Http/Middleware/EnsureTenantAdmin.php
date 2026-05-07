@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class EnsureTenantAdmin
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
         // if ($request->routeIs('login') || $request->routeIs('register.*')) {
         //     return $next($request);
