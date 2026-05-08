@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToTenant;
 
 class Trainer extends Model
 {
     protected $table = 'trainers';
-
+    use BelongsToTenant;
     protected $fillable = [
         'user_id',
         'specialization',
@@ -15,6 +16,7 @@ class Trainer extends Model
         'status',
         'branch_id',
         'role_id',
+        'tenant_id',
     ];
 
     // -------------------
