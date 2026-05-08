@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Workout extends Model
 {
+
+
+
     protected $fillable = [
         'workout_plan_id',
         'name',

@@ -39,8 +39,7 @@ class Tenant extends Model
         'currency',
         'currency_symbol',
 
-        // Status
-        'status',
+
         'is_active',
         'trial_ends_at',
         'app_settings',

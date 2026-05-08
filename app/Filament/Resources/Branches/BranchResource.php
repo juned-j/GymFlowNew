@@ -53,6 +53,7 @@ class BranchResource extends Resource
 
     $query = static::getModel()::query();
 
+    // Agar user login nahi hai
     if (!$user) {
         return $query->whereRaw('1 = 0');
     }
