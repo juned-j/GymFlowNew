@@ -148,7 +148,7 @@ if ($logoPath) {
     )
     ->searchable()
     ->required(),
-
+//dd
                        
                         Forms\Components\Toggle::make('tenant.is_active')
                             ->label('Is Active'),
