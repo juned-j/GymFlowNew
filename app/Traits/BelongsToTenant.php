@@ -9,34 +9,49 @@ trait BelongsToTenant
     protected static function bootBelongsToTenant()
     {
         /**
-         * AUTO ASSIGN TENANT ID
+         * AUTO ASSIGN TENANT ID ON CREATE
          */
         static::creating(function ($model) {
 
-            if (
-                auth()->check() &&
-                empty($model->tenant_id)
-            ) {
-                $model->tenant_id = auth()->user()->getTenantId();
+            if (auth()->check() && empty($model->tenant_id)) {
+                $model->tenant_id = auth()->user()?->getTenantId();
             }
         });
 
         /**
-         * GLOBAL TENANT SCOPE
+         * GLOBAL SCOPE (SAFE + MODEL-AWARE)
          */
         static::addGlobalScope('tenant', function (Builder $builder) {
 
-            if (auth()->check()) {
+            $model = $builder->getModel();
 
-                $tenantId = auth()->user()->getTenantId();
+            // Skip if model explicitly disables tenant scope
+            if (
+                property_exists($model, 'withoutTenantScope') &&
+                $model::$withoutTenantScope
+            ) {
+                return;
+            }
 
-                if ($tenantId) {
+            $user = auth()->user();
 
-                    $builder->where(
-                        $builder->getModel()->getTable() . '.tenant_id',
-                        $tenantId
-                    );
-                }
+            // No auth = no filtering
+            if (!$user) {
+                return;
+            }
+
+            // Super admin bypass
+            if ($user->isSuperAdmin()) {
+                return;
+            }
+
+            $tenantId = $user->getTenantId();
+
+            if (!empty($tenantId)) {
+                $builder->where(
+                    $model->getTable() . '.tenant_id',
+                    $tenantId
+                );
             }
         });
     }
