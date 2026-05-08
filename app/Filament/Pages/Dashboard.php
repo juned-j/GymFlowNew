@@ -22,4 +22,10 @@ class Dashboard extends Page
 
         ];
     }
+    public function getHeader(): ?\Illuminate\Contracts\View\View
+    {
+        return view('filament.pages.partials.tenant-header', [
+            'tenant' => auth()->user()?->ownedTenant,
+        ]);
+    }
 }
