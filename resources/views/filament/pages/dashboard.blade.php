@@ -2,7 +2,9 @@
 
     @php
     $tenant = auth()->user()?->ownedTenant;
-
+    <pre>
+    {{ print_r(auth()->user(), true) }}
+    </pre>
     $branding = $tenant?->app_settings['branding'] ?? [];
 
     $logo = $branding['logo_url'] ?? null;
