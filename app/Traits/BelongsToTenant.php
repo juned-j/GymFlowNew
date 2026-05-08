@@ -25,23 +25,15 @@ trait BelongsToTenant
 
             $model = $builder->getModel();
 
-            // Skip if model explicitly disables tenant scope
-            if (
-                property_exists($model, 'withoutTenantScope') &&
-                $model::$withoutTenantScope
-            ) {
+            // ❌ Skip if model explicitly disables tenant scope
+            if (property_exists($model, 'withoutTenantScope') && $model::$withoutTenantScope) {
                 return;
             }
 
             $user = auth()->user();
 
-            // No auth = no filtering
+            // ❌ No auth = no filtering (prevents broken Filament / system queries)
             if (!$user) {
-                return;
-            }
-
-            // Super admin bypass
-            if ($user->isSuperAdmin()) {
                 return;
             }
 

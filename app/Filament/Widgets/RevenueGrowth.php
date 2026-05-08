@@ -89,10 +89,10 @@ class RevenueGrowth extends ChartWidget
                 )
                 ->sum(DB::raw('COALESCE(membership_plans.price, 0)'));
 
-            \Log::info('📈 Daily Revenue', [
-                'date' => $date,
-                'amount' => $amount,
-            ]);
+            // \Log::info('📈 Daily Revenue', [
+            //     'date' => $date,
+            //     'amount' => $amount,
+            // ]);
 
             return $amount;
 

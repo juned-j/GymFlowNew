@@ -11,6 +11,9 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Notifications\Notification;
 use App\Models\Currency;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ViewField;
 
 class AppSettings extends Page implements Forms\Contracts\HasForms
 {
@@ -24,49 +27,75 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
     }
     public ?array $data = [];
     public $tenant;
-    public function mount(): void
-    {
-        $tenant = app()->bound('tenant') ? app('tenant') : null;
-        if (!$tenant) {
-            abort(404, 'Tenant not found');
-        }
-        $this->tenant = $tenant;
-        $settings = $tenant->app_settings;
-        if (is_string($settings)) {
-            $settings = json_decode($settings, true) ?? [];
-        }
-        $this->data = $settings ?: [
-            'branding' => [
-                'primary_color' => '#FF5733',
-                'secondary_color' => '#222222',
-                'accent_color' => '#FFC107',
-            ],
-            'app' => [
-                'app_name' => 'GymFlow',
-                'version' => '1.0.0',
-            ],
-            'ui' => [
-                'default_language' => 'en',
-                'supported_languages' => ['en'],
-            ],
-        ];
-        $this->data['tenant'] = [
-            'name' => $tenant->name,
-            'logo_url' => $tenant->logo_url,
-            'email' => $tenant->email,
-            'phone' => $tenant->phone,
-            'address' => $tenant->address,
-            'city' => $tenant->city,
-            'country' => $tenant->country,
-            'timezone' => $tenant->timezone,
-            'currency' => $tenant->currency,
-            'currency_symbol' => $tenant->currency_symbol,
-            'status' => $tenant->status,
-            'is_active' => $tenant->is_active,
-            'trial_ends_at' => $tenant->trial_ends_at,
-        ];
-        $this->form->fill($this->data);
+public function mount(): void
+{
+    $tenant = app()->bound('tenant') ? app('tenant') : null;
+
+    if (!$tenant) {
+        abort(404, 'Tenant not found');
     }
+
+    $this->tenant = $tenant;
+
+    $settings = $tenant->app_settings;
+
+    if (is_string($settings)) {
+        $settings = json_decode($settings, true) ?? [];
+    }
+
+    $this->data = $settings ?: [
+        'branding' => [
+            'primary_color' => '#FF5733',
+            'secondary_color' => '#222222',
+            'accent_color' => '#FFC107',
+        ],
+
+        'app' => [
+            'app_name' => 'GymFlow',
+            'version' => '1.0.0',
+        ],
+
+        'ui' => [
+            'default_language' => 'en',
+            'supported_languages' => ['en'],
+        ],
+    ];
+
+   
+$this->data['branding'] = $this->data['branding'] ?? [];
+$logoPath = $this->data['branding']['logo_url'] ?? $this->tenant->logo_url;
+if ($logoPath) {
+    $this->data['branding']['logo_url'] = $logoPath;
+    $this->data['branding']['logo_full_url'] = asset('storage/' . $logoPath);
+} else {
+ 
+    $this->data['branding']['logo_url'] = null;
+    $this->data['branding']['logo_full_url'] = null;
+}
+
+    
+    $this->data['tenant'] = [
+        'name' => $tenant->name,
+        'logo_url' => $tenant->logo_url,
+        'email' => $tenant->email,
+        'phone' => $tenant->phone,
+        'address' => $tenant->address,
+        'city' => $tenant->city,
+        'country' => $tenant->country,
+        'timezone' => $tenant->timezone,
+        'currency' => $tenant->currency,
+        'is_active' => $tenant->is_active,
+        'trial_ends_at' => $tenant->trial_ends_at,
+        
+    ];
+
+    // Payments data
+    $this->data['payments'] = $this->data['payments'] ?? [];
+
+    $this->data['payments']['currency'] = $tenant->currency;
+
+    $this->form->fill($this->data);
+}
 
     public function form(Schema $schema): Schema
     {
@@ -88,9 +117,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         Forms\Components\TextInput::make('tenant.name')
                             ->label('Name'),
 
-                        Forms\Components\TextInput::make('tenant.logo_url')
-                            ->label('Logo URL'),
-
+                        
                         Forms\Components\TextInput::make('tenant.email')
                             ->label('Email'),
 
@@ -109,15 +136,20 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         Forms\Components\TextInput::make('tenant.timezone')
                             ->label('Timezone'),
 
-                        Forms\Components\TextInput::make('tenant.currency')
-                            ->label('Currency'),
-
-                        Forms\Components\TextInput::make('tenant.currency_symbol')
-                            ->label('Currency Symbol'),
-
-                        Forms\Components\TextInput::make('tenant.status')
-                            ->label('Status'),
-
+        Select::make('tenant.currency')
+    ->label('Currency')
+    ->options(
+        \App\Models\Currency::query()
+            ->get()
+            ->mapWithKeys(fn ($currency) => [
+                $currency->id => "{$currency->currency_name} ({$currency->currency_symbol})"
+            ])
+            ->toArray()
+    )
+    ->searchable()
+    ->required(),
+//dd
+                       
                         Forms\Components\Toggle::make('tenant.is_active')
                             ->label('Is Active'),
 
@@ -134,8 +166,21 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         Forms\Components\ColorPicker::make('branding.secondary_color'),
 
                         Forms\Components\ColorPicker::make('branding.accent_color'),
+FileUpload::make('branding.logo_url')
+    ->label('Logo')
+    ->image()
+    ->disk('public')
+    ->directory('tenant-branding')
+    ->visibility('public'),
+ 
+   
 
-                        Forms\Components\TextInput::make('branding.logo_url'),
+    
+
+TextInput::make('branding.logo_full_url')
+    ->label('Logo URL')
+    ->readOnly()
+    ->dehydrated(false),
 
                         Forms\Components\TextInput::make('branding.splash_screen_url'),
                     ]),
@@ -182,15 +227,18 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                     ->schema([
                         Forms\Components\TextInput::make('payments.provider')
                             ->label('Payment Provider'),
-                        Select::make('payments.currency')
-                            ->label('Currency')
-                            ->options(
-                                Currency::query()
-                                    ->pluck('currency_name', 'currency_name')
-                                    ->toArray()
-                            )
-                            ->searchable()
-                            ->required(),
+        Select::make('payments.currency')
+    ->label('Currency')
+    ->options(
+        \App\Models\Currency::query()
+            ->get()
+            ->mapWithKeys(fn ($currency) => [
+                $currency->id => "{$currency->currency_name} ({$currency->currency_symbol})"
+            ])
+            ->toArray()
+    )
+    ->searchable()
+    ->required(),
                         Forms\Components\TextInput::make('payments.stripe_publishable_key')
                             ->label('Stripe Publishable Key')
                             ->placeholder('pk_test_...')
@@ -227,49 +275,44 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
                         Forms\Components\TextInput::make('content.support_email'),
                     ]),
-                Section::make('UI')
-                    ->columns(2)
-                    ->schema([
-                        Forms\Components\Toggle::make('ui.dark_mode_enabled'),
-
-                        Forms\Components\TextInput::make('ui.default_language'),
-
-                        Forms\Components\TagsInput::make('ui.supported_languages')
-                            ->columnSpanFull(),
-                    ]),
+            
             ]);
     }
 
-    public function save(): void
-    {
-        if (!$this->tenant) {
-            return;
-        }
-
-        $data = $this->form->getState();
-        $this->tenant->update([
-            'name' => $data['tenant']['name'] ?? null,
-            'logo_url' => $data['tenant']['logo_url'] ?? null,
-            'email' => $data['tenant']['email'] ?? null,
-            'phone' => $data['tenant']['phone'] ?? null,
-            'address' => $data['tenant']['address'] ?? null,
-            'city' => $data['tenant']['city'] ?? null,
-            'country' => $data['tenant']['country'] ?? null,
-            'timezone' => $data['tenant']['timezone'] ?? null,
-            'currency' => $data['tenant']['currency'] ?? null,
-            'currency_symbol' => $data['tenant']['currency_symbol'] ?? null,
-            'status' => $data['tenant']['status'] ?? null,
-            'is_active' => $data['tenant']['is_active'] ?? false,
-            'trial_ends_at' => $data['tenant']['trial_ends_at'] ?? null,
-        ]);
-        unset($data['tenant']);
-        $this->tenant->update([
-            'app_settings' => $data,
-        ]);
-
-        Notification::make()
-            ->title('Settings saved successfully')
-            ->success()
-            ->send();
+   public function save(): void
+{
+    if (!$this->tenant) {
+        return;
     }
+
+    $data = $this->form->getState();
+
+    
+    $this->tenant->update([
+        'name'          => $data['tenant']['name'] ?? null,
+        'logo_url'      => $data['branding']['logo_url'] ?? null, 
+        'email'         => $data['tenant']['email'] ?? null,
+        'phone'         => $data['tenant']['phone'] ?? null,
+        'address'       => $data['tenant']['address'] ?? null,
+        'city'          => $data['tenant']['city'] ?? null,
+        'country'       => $data['tenant']['country'] ?? null,
+        'timezone'      => $data['tenant']['timezone'] ?? null,
+        'currency'      => $data['payments']['currency'] ?? null,
+        'is_active'     => $data['tenant']['is_active'] ?? false,
+        'trial_ends_at' => $data['tenant']['trial_ends_at'] ?? null,
+    ]);
+
+    $settingsJson = $data;
+    unset($settingsJson['tenant']);
+
+    $this->tenant->update([
+        'app_settings' => $settingsJson,
+    ]);
+
+    // 5. Success Notification
+    Notification::make()
+        ->title('Settings saved successfully')
+        ->success()
+        ->send();
+}
 }
