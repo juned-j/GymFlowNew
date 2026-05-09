@@ -120,12 +120,21 @@ class GymOnboardingController extends Controller
             'tenant_id' => $tenant->id
         ]);
 
-        // 🔥 STEP 4: LINK USER ↔ TENANT
-        \App\Models\UserTenantRole::create([
-            'user_id' => $user->id,
-            'tenant_id' => $tenant->id,
-            'role_id' => 1
-        ]);
+        $ownerRole = \App\Models\Role::where('name', 'owner')->first();
+if (! $ownerRole) {
+
+    Log::error('❌ Owner role not found');
+
+    return back()
+        ->withInput()
+        ->with('error', 'Owner role not found. Please contact admin.');
+}
+
+\App\Models\UserTenantRole::create([
+    'user_id' => $user->id,
+    'tenant_id' => $tenant->id,
+    'role_id' => $ownerRole->id,
+]);
 
         Log::info('✅ UserTenantRole created');
 
