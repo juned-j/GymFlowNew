@@ -22,7 +22,6 @@ use Filament\Http\Responses\Auth\Contracts\LoginResponse as LoginResponseContrac
 use App\Http\Responses\LoginResponse;
 use App\Http\Middleware\CheckUserStatus;
 
-
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -33,7 +32,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->registration()
-            
+              ->passwordReset()
+        ->emailVerification()
+        ->emailChangeVerification()
+         ->profile()
             ->authGuard('web')
             ->colors([
                 'primary' => Color::Amber,
