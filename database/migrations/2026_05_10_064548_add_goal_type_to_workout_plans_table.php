@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('injuries', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('workout_plans', function (Blueprint $table) {
+            $table->enum('goal_type', [
+                'fat_loss',
+                'muscle_gain',
+                'strength'
+            ])->nullable()->after('name');
         });
     }
 
@@ -22,6 +25,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('injuries');
+        Schema::table('workout_plans', function (Blueprint $table) {
+            $table->dropColumn('goal_type');
+        });
     }
 };
