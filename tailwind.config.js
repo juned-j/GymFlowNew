@@ -4,6 +4,7 @@ export default {
         "./resources/**/*.js",
         "./resources/**/*.vue",
         "./app/**/*.php",
+        "./resources/views/filament/**/*.blade.php",
         "./vendor/filament/**/*.blade.php",
     ],
 
