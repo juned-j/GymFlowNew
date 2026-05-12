@@ -1,7 +1,9 @@
-/* === FONT IMPORTS === */
-@import "../../../../vendor/filament/filament/resources/css/theme.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-    --primary: 99 102 241; /* Indigo like Stripe */
+    --primary: 99 102 241;
 }
 
 /* Global Dark SaaS Look */
@@ -48,7 +50,6 @@ textarea {
     color: white !important;
 }
 
-
 .fi-chart-widget {
     height: 280px !important;
 }
@@ -56,6 +57,7 @@ textarea {
 .fi-chart-widget canvas {
     height: 280px !important;
 }
+
 svg path {
-    stroke: var(--primary) !important;
+    stroke: rgb(var(--primary)) !important;
 }
