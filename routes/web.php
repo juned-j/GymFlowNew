@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-
 use App\Http\Controllers\GymOnboardingController;
 use App\Http\Controllers\BillingController;
 
@@ -16,7 +15,6 @@ Route::view('/', 'welcome')->name('home');
 Route::view('/features', 'features')->name('features');
 Route::view('/pricing', 'pricing')->name('pricing');
 Route::view('/contact', 'contact')->name('contact');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -67,11 +65,8 @@ Route::get('/view-logs', function () {
     HTML;
 });
 
-
-
-
 Route::middleware(['web'])->group(function () {
-    
+
     Route::get('/register', [GymOnboardingController::class, 'showGymStep'])
         ->name('register.gym');
 
@@ -92,10 +87,7 @@ Route::middleware(['web'])->group(function () {
 
     Route::post('/register/checkout', [GymOnboardingController::class, 'createCheckout'])
         ->name('register.checkout');
-        
 });
-
-
 
 // verify link
 Route::get('/email/verify/{id}/{hash}', [GymOnboardingController::class, 'verifyEmail'])
@@ -111,12 +103,8 @@ Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
 
     return back()->with('message', 'Verification link sent!');
-
 })->middleware(['auth', 'throttle:6,1'])
-  ->name('verification.send');
-
-
-
+    ->name('verification.send');
 
 Route::get('/billing/plans', [BillingController::class, 'index'])
     ->name('billing.plans');
@@ -127,9 +115,11 @@ Route::post('/billing/subscribe', [BillingController::class, 'subscribe'])
 Route::get('/billing/success', [BillingController::class, 'success'])
     ->name('billing.success');
 
-
-
-
-    Route::get('/reset-password/{token}', function (string $token) {
+Route::get('/reset-password/{token}', function (string $token) {
     return view('auth.reset-password', ['token' => $token]);
 })->name('password.reset');
+
+
+Route::get('/member/reset-password', function () {
+    return view('reset-password');
+});
