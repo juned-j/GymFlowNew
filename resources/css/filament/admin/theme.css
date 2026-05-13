@@ -52,7 +52,7 @@ body {
 }
 
 /* =====================================================
-   WIDGET SPACING FIX
+   PAGE / WIDGET SPACING
 ===================================================== */
 
 /* Dashboard widget grid */
@@ -60,18 +60,130 @@ body {
     gap: 1.25rem !important;
 }
 
-/* Prevent cards joining */
-.fi-section,
-.fi-ta,
-.fi-wi-widget {
-    margin-bottom: 1rem;
-}
 /* Page spacing */
 .fi-page {
     gap: 1.25rem;
 }
 
-/* Widget headings */
+/* Remove wrapper spacing */
+.fi-section,
+.fi-widget {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* =====================================================
+   CLEAN SINGLE CARD UI
+===================================================== */
+
+/* ONLY real widget containers */
+.fi-wi-widget,
+.fi-ta,
+.fi-chart-widget {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    overflow: hidden;
+
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.03),
+        0 6px 18px rgba(0, 0, 0, 0.04);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* Dark mode cards */
+.dark .fi-wi-widget,
+.dark .fi-ta,
+.dark .fi-chart-widget {
+    background: #111827;
+    border: 1px solid #1f2937;
+}
+
+/* Hover effect */
+.fi-wi-widget:hover,
+.fi-chart-widget:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.06),
+        0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+/* =====================================================
+   REMOVE FILAMENT INNER WRAPPERS
+===================================================== */
+
+.fi-section,
+.fi-widget,
+.fi-section-content,
+.fi-widget-content,
+.fi-ta-ctn,
+.fi-chart,
+.fi-chart-widget canvas {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove inner padding causing double container */
+.fi-section-content,
+.fi-widget-content {
+    padding: 0 !important;
+}
+
+/* =====================================================
+   STATS OVERVIEW FIX
+===================================================== */
+
+.fi-wi-stats-overview {
+    gap: 1rem !important;
+}
+
+/* Individual stat cards */
+.fi-wi-stats-overview-stat {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+
+    padding: 1.5rem !important;
+    min-height: 130px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Remove nested wrappers */
+.fi-wi-stats-overview-stat > div {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* =====================================================
+   TABLES
+===================================================== */
+
+.fi-ta-table {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* =====================================================
+   CHARTS
+===================================================== */
+
+.fi-chart-widget {
+    padding: 1rem !important;
+}
+
+/* =====================================================
+   WIDGET HEADINGS
+===================================================== */
+
 .fi-section-header-heading {
     font-size: 1.1rem !important;
     font-weight: 700 !important;
@@ -143,26 +255,6 @@ body {
 }
 
 /* =====================================================
-   TABLES
-===================================================== */
-
-.fi-ta-table {
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-/* =====================================================
-   CHARTS
-===================================================== */
-
-/* Chart widgets */
-.fi-chart-widget {
-    border-radius: 22px !important;
-    overflow: hidden;
-    padding: 1rem !important;
-}
-
-/* =====================================================
    SCROLLBAR
 ===================================================== */
 
@@ -178,113 +270,4 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
-}
-
-/* =====================================================
-   COMMON UI
-===================================================== */
-
-/* Main containers only */
-.fi-section,
-.fi-ta,
-.fi-wi-widget {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 20px;
-    overflow: hidden;
-
-    box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.03),
-        0 6px 18px rgba(0, 0, 0, 0.04);
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-/* Dark mode */
-.dark .fi-section,
-.dark .fi-ta,
-.dark .fi-wi-widget {
-    background: #111827;
-    border: 1px solid #1f2937;
-}
-
-/* Hover */
-.fi-section:hover,
-.fi-wi-widget:hover {
-    transform: translateY(-2px);
-
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.06),
-        0 12px 28px rgba(0, 0, 0, 0.08);
-}
-/* =====================================================
-   REMOVE INNER DOUBLE BORDERS
-===================================================== */
-
-.fi-section-content,
-.fi-widget-content,
-.fi-ta-ctn,
-.fi-chart,
-.fi-ta-table {
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-}
-
-/* Remove internal table border */
-.fi-ta-table {
-    border-radius: 0 !important;
-}
-
-/* Remove chart inner card */
-.fi-chart-widget canvas {
-    background: transparent !important;
-}
-
-/* =====================================================
-   STATS OVERVIEW WIDGET FIX
-===================================================== */
-
-/* Main stats container */
-.fi-wi-stats-overview {
-    gap: 1rem !important;
-}
-
-/* Individual stat card */
-.fi-wi-stats-overview-stat {
-    background: #ffffff !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 20px !important;
-
-    box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.03),
-        0 6px 18px rgba(0, 0, 0, 0.04) !important;
-
-    padding: 1.5rem !important;
-
-    overflow: hidden;
-}
-
-/* Dark mode */
-.dark .fi-wi-stats-overview-stat {
-    background: #111827 !important;
-    border: 1px solid #1f2937 !important;
-}
-
-/* Remove inner borders */
-.fi-wi-stats-overview-stat > div {
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-}
-
-/* Hover */
-.fi-wi-stats-overview-stat:hover {
-    transform: translateY(-2px);
-
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.06),
-        0 12px 28px rgba(0, 0, 0, 0.08) !important;
 }
