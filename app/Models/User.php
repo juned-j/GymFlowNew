@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Tenant;
+
 #[Fillable([
     'name',
     'email',
@@ -25,7 +26,8 @@ use App\Models\Tenant;
     'email_verified_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements MustVerifyEmail{
+class User extends Authenticatable implements MustVerifyEmail
+{
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
     public $timestamps = true;
@@ -45,41 +47,41 @@ class User extends Authenticatable implements MustVerifyEmail{
     {
         return $this->hasMany(UserTenantRole::class, 'user_id');
     }
-  public function isSuperAdmin(): bool
-{
-    if ($this->is_super_admin) {
-        return true;
+    public function isSuperAdmin(): bool
+    {
+        if ($this->is_super_admin) {
+            return true;
+        }
+
+        return $this->roles()
+            ->whereHas('role', fn($q) => $q->where('name', 'super_admin'))
+            ->exists();
     }
 
-    return $this->roles()
-        ->whereHas('role', fn ($q) => $q->where('name', 'super_admin'))
-        ->exists();
-}
-
-public function isTenantUser()
-{
-    return $this->ownedTenant()->where('is_active', true)->exists();
-}
-
-public function ownedTenant()
-{
-   
-    return $this->hasOne(Tenant::class, 'owner_user_id');
-}
-  public function getTenantId(): ?int
-{
-
-    $ownedTenantId = $this->ownedTenant()->value('id');
-
-    if ($ownedTenantId) {
-        return (int) $ownedTenantId;
+    public function isTenantUser()
+    {
+        return $this->ownedTenant()->where('is_active', true)->exists();
     }
 
-    return $this->roles()
-        ->whereNotNull('tenant_id')
-        ->orderBy('id', 'asc')
-        ->value('tenant_id');
-}
+    public function ownedTenant()
+    {
+
+        return $this->hasOne(Tenant::class, 'owner_user_id');
+    }
+    public function getTenantId(): ?int
+    {
+
+        $ownedTenantId = $this->ownedTenant()->value('id');
+
+        if ($ownedTenantId) {
+            return (int) $ownedTenantId;
+        }
+
+        return $this->roles()
+            ->whereNotNull('tenant_id')
+            ->orderBy('id', 'asc')
+            ->value('tenant_id');
+    }
     public function getTenantIds()
     {
         return $this->roles()
@@ -117,15 +119,28 @@ public function ownedTenant()
     }
 
     public function user()
-{
-    return $this->belongsTo(User::class);
-}
-public function subscription()
-{
-    return $this->hasOne(\App\Models\TenantSubscription::class, 'user_id');
-}
-public function tenant()
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function subscription()
+    {
+        return $this->hasOne(\App\Models\TenantSubscription::class, 'user_id');
+    }
+    public function tenant()
     {
         return $this->belongsTo(Tenant::class, 'tenant_id');
+    }
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // PLATFORM PANEL
+        if ($panel->getId() === 'platform') {
+            return $this->is_super_admin === true;
+        }
+        // ADMIN PANEL
+        if ($panel->getId() === 'admin') {
+            return $this->is_super_admin === false
+                && $this->status === 'active';
+        }
+        return false;
     }
 }
