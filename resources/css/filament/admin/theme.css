@@ -84,12 +84,10 @@ body {
 
 /* Prevent cards joining */
 .fi-section,
-.fi-card,
 .fi-ta,
-.fi-widget {
+.fi-wi-widget {
     margin-bottom: 1rem;
 }
-
 /* Page spacing */
 .fi-page {
     gap: 1.25rem;
@@ -207,11 +205,10 @@ body {
 /* =====================================================
    COMMON UI
 ===================================================== */
-/* Unified cards/widgets styling */
+
+/* Main containers only */
 .fi-section,
-.fi-widget,
 .fi-ta,
-.fi-card,
 .fi-wi-widget {
     background: #ffffff;
     border: 1px solid #e5e7eb;
@@ -227,10 +224,16 @@ body {
         box-shadow 0.2s ease;
 }
 
-/* Hover effect */
+/* Dark mode */
+.dark .fi-section,
+.dark .fi-ta,
+.dark .fi-wi-widget {
+    background: #111827;
+    border: 1px solid #1f2937;
+}
+
+/* Hover */
 .fi-section:hover,
-.fi-widget:hover,
-.fi-card:hover,
 .fi-wi-widget:hover {
     transform: translateY(-2px);
 
