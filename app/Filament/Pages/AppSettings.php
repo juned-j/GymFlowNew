@@ -139,7 +139,6 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->label('Trial Ends At'),
                     ])
                     ->columnSpanFull(),
-
                 Section::make('Branding')
                     ->columns(2)
                     ->schema([
@@ -154,7 +153,14 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->directory('tenant-branding/logos')
                             ->visibility('public')
                             ->preserveFilenames()
-                            ->maxSize(2048),
+                            ->maxSize(2048)
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                $set(
+                                    'branding.logo_full_url',
+                                    $state ? asset('storage/' . $state) : null
+                                );
+                            }),
                         TextInput::make('branding.logo_full_url')
                             ->label('Logo URL')
                             ->readOnly()
@@ -167,9 +173,16 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->directory('tenant-branding/splash')
                             ->visibility('public')
                             ->preserveFilenames()
-                            ->maxSize(4096),
+                            ->maxSize(4096)
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                $set(
+                                    'branding.splash_screen_full_url',
+                                    $state ? asset('storage/' . $state) : null
+                                );
+                            }),
                         TextInput::make('branding.splash_screen_full_url')
-                            ->label('Logo URL')
+                            ->label('Splash Screen URL')
                             ->readOnly()
                             ->dehydrated(false),
                     ])->columnSpanFull(),
@@ -196,20 +209,15 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                 Section::make('Authentication')
                     ->columns(2)
                     ->schema([
-
                         /*
         |--------------------------------------------------------------------------
         | Basic Auth
         |--------------------------------------------------------------------------
         */
-
                         Forms\Components\Toggle::make('auth.allow_social_login')
                             ->live(),
-
                         Forms\Components\Toggle::make('auth.otp_login'),
-
                         Forms\Components\Toggle::make('auth.email_login'),
-
                         /*
         |--------------------------------------------------------------------------
         | GOOGLE LOGIN
