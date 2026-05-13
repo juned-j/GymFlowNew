@@ -51,15 +51,6 @@ body {
     border-bottom: 1px solid #1f2937;
 }
 
-.dark .fi-section,
-.dark .fi-widget,
-.dark .fi-ta,
-.dark .fi-card,
-.dark .fi-wi-widget {
-    background: #111827;
-    border: 1px solid #1f2937;
-}
-
 /* =====================================================
    WIDGET SPACING FIX
 ===================================================== */
@@ -240,4 +231,27 @@ body {
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.06),
         0 12px 28px rgba(0, 0, 0, 0.08);
+}
+/* =====================================================
+   REMOVE INNER DOUBLE BORDERS
+===================================================== */
+
+.fi-section-content,
+.fi-widget-content,
+.fi-ta-ctn,
+.fi-chart,
+.fi-ta-table {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* Remove internal table border */
+.fi-ta-table {
+    border-radius: 0 !important;
+}
+
+/* Remove chart inner card */
+.fi-chart-widget canvas {
+    background: transparent !important;
 }
