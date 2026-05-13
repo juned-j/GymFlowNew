@@ -7,6 +7,8 @@ use Filament\Pages\Page;
 use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Filament\Notifications\Notification;
 use App\Models\Currency;
@@ -145,6 +147,8 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         Forms\Components\ColorPicker::make('branding.primary_color'),
                         Forms\Components\ColorPicker::make('branding.secondary_color'),
                         Forms\Components\ColorPicker::make('branding.accent_color'),
+
+                        // --- Logo Upload ---
                         FileUpload::make('branding.logo_url')
                             ->label('Logo')
                             ->image()
@@ -153,38 +157,41 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->directory('tenant-branding/logos')
                             ->visibility('public')
                             ->preserveFilenames()
-                            /* ADD THESE LINES */
                             ->live()
                             ->deletable(true)
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                            ->afterStateUpdated(function ($state, Set $set) {
                                 if (!$state) {
                                     $set('branding.logo_full_url', null);
                                     return;
                                 }
-                                // Handle both string and array states
-                                $path = is_array($state) ? array_key_first($state) : $state;
+                                $path = is_array($state) ? (array_key_first($state) ?: current($state)) : $state;
                                 $set('branding.logo_full_url', asset('storage/' . $path));
                             }),
+
                         TextInput::make('branding.logo_full_url')
                             ->label('Logo URL')
                             ->readOnly()
                             ->dehydrated(false),
+
+                        // --- Splash Screen Upload ---
                         FileUpload::make('branding.splash_screen_url')
                             ->label('Splash Screen')
                             ->image()
-                            // ->imageEditor()
                             ->disk('public')
                             ->directory('tenant-branding/splash')
                             ->visibility('public')
-                            // ->preserveFilenames()
                             ->maxSize(4096)
-                            // ->live()
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                $set(
-                                    'branding.splash_screen_full_url',
-                                    $state ? asset('storage/' . $state) : null
-                                );
+                            ->live() // Critical to make the URL field update instantly
+                            ->afterStateUpdated(function ($state, Set $set) {
+                                if (!$state) {
+                                    $set('branding.splash_screen_full_url', null);
+                                    return;
+                                }
+                                // Handle Filament's file array structure
+                                $path = is_array($state) ? (array_key_first($state) ?: current($state)) : $state;
+                                $set('branding.splash_screen_full_url', asset('storage/' . $path));
                             }),
+
                         TextInput::make('branding.splash_screen_full_url')
                             ->label('Splash Screen URL')
                             ->readOnly()
