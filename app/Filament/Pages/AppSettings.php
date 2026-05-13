@@ -149,14 +149,29 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         FileUpload::make('branding.logo_url')
                             ->label('Logo')
                             ->image()
+                            ->imageEditor()
                             ->disk('public')
-                            ->directory('tenant-branding')
-                            ->visibility('public'),
+                            ->directory('tenant-branding/logos')
+                            ->visibility('public')
+                            ->preserveFilenames()
+                            ->maxSize(2048),
                         TextInput::make('branding.logo_full_url')
                             ->label('Logo URL')
                             ->readOnly()
                             ->dehydrated(false),
-                        Forms\Components\TextInput::make('branding.splash_screen_url'),
+                        FileUpload::make('branding.splash_screen_url')
+                            ->label('Splash Screen')
+                            ->image()
+                            ->imageEditor()
+                            ->disk('public')
+                            ->directory('tenant-branding/splash')
+                            ->visibility('public')
+                            ->preserveFilenames()
+                            ->maxSize(4096),
+                        TextInput::make('branding.splash_screen_full_url')
+                            ->label('Logo URL')
+                            ->readOnly()
+                            ->dehydrated(false),
                     ])->columnSpanFull(),
                 Section::make('App')
                     ->columns(2)
@@ -177,14 +192,102 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         Forms\Components\Toggle::make('features.enable_workouts'),
                         Forms\Components\Toggle::make('features.enable_diet_plans'),
                         Forms\Components\Toggle::make('features.enable_referrals'),
-                    ]),
-                Section::make('Auth')
+                    ])->columnSpanFull(),
+                Section::make('Authentication')
                     ->columns(2)
                     ->schema([
-                        Forms\Components\Toggle::make('auth.allow_social_login'),
+
+                        /*
+        |--------------------------------------------------------------------------
+        | Basic Auth
+        |--------------------------------------------------------------------------
+        */
+
+                        Forms\Components\Toggle::make('auth.allow_social_login')
+                            ->live(),
+
                         Forms\Components\Toggle::make('auth.otp_login'),
+
                         Forms\Components\Toggle::make('auth.email_login'),
-                    ])->columnSpanFull(),
+
+                        /*
+        |--------------------------------------------------------------------------
+        | GOOGLE LOGIN
+        |--------------------------------------------------------------------------
+        */
+
+                        Section::make('Google Login')
+                            ->visible(fn($get) => $get('auth.allow_social_login'))
+                            ->columns(2)
+                            ->schema([
+
+                                Forms\Components\Toggle::make('auth.google.enabled')
+                                    ->label('Enable Google Login'),
+
+                                Forms\Components\TextInput::make('auth.google.web_client_id')
+                                    ->label('Web Client ID'),
+
+                                Forms\Components\TextInput::make('auth.google.android_client_id')
+                                    ->label('Android Client ID'),
+
+                                Forms\Components\TextInput::make('auth.google.ios_client_id')
+                                    ->label('iOS Client ID'),
+
+                                Forms\Components\Textarea::make('auth.google.android_sha1')
+                                    ->label('Android SHA1'),
+
+                            ]),
+
+                        /*
+        |--------------------------------------------------------------------------
+        | FACEBOOK LOGIN
+        |--------------------------------------------------------------------------
+        */
+
+                        Section::make('Facebook Login')
+                            ->visible(fn($get) => $get('auth.allow_social_login'))
+                            ->columns(2)
+                            ->schema([
+
+                                Forms\Components\Toggle::make('auth.facebook.enabled')
+                                    ->label('Enable Facebook Login'),
+
+                                Forms\Components\TextInput::make('auth.facebook.app_id')
+                                    ->label('Facebook App ID'),
+
+                                Forms\Components\TextInput::make('auth.facebook.client_token')
+                                    ->label('Client Token'),
+
+                                Forms\Components\TextInput::make('auth.facebook.app_secret')
+                                    ->password()
+                                    ->revealable()
+                                    ->label('App Secret'),
+
+                            ]),
+
+                        /*
+        |--------------------------------------------------------------------------
+        | APPLE LOGIN
+        |--------------------------------------------------------------------------
+        */
+                        Section::make('Apple Login')
+                            ->visible(fn($get) => $get('auth.allow_social_login'))
+                            ->columns(2)
+                            ->schema([
+                                Forms\Components\Toggle::make('auth.apple.enabled')
+                                    ->label('Enable Apple Login'),
+                                Forms\Components\TextInput::make('auth.apple.client_id')
+                                    ->label('Client ID'),
+                                Forms\Components\TextInput::make('auth.apple.team_id')
+                                    ->label('Team ID'),
+                                Forms\Components\TextInput::make('auth.apple.key_id')
+                                    ->label('Key ID'),
+                                Forms\Components\Textarea::make('auth.apple.private_key')
+                                    ->label('Private Key')
+                                    ->rows(8),
+                            ]),
+                    ])
+                    ->columnSpanFull(),
                 Section::make('Payments')
                     ->columns(2)
                     ->schema([
@@ -238,13 +341,11 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
             ]);
     }
-
     public function save(): void
     {
         if (!$this->tenant) {
             return;
         }
-
         $data = $this->form->getState();
         $this->tenant->update([
             'name'          => $data['tenant']['name'] ?? null,
