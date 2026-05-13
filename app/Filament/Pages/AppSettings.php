@@ -32,29 +32,24 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
     public function mount(): void
     {
         $tenant = app()->bound('tenant') ? app('tenant') : null;
-
         if (!$tenant) {
             abort(404, 'Tenant not found');
         }
         $this->tenant = $tenant;
         $settings = $tenant->app_settings;
-
         if (is_string($settings)) {
             $settings = json_decode($settings, true) ?? [];
         }
-
         $this->data = $settings ?: [
             'branding' => [
                 'primary_color' => '#FF5733',
                 'secondary_color' => '#222222',
                 'accent_color' => '#FFC107',
             ],
-
             'app' => [
                 'app_name' => 'GymFlow',
                 'version' => '1.0.0',
             ],
-
             'ui' => [
                 'default_language' => 'en',
                 'supported_languages' => ['en'],

@@ -1,6 +1,9 @@
 @php
 $branding = $tenant?->app_settings['branding'] ?? [];
-$logo = $branding['logo_url'] ?? $tenant?->logo_url;
+$logoPath = $branding['logo_url'] ?? $tenant?->logo_url ?? null;
+$logo = $logoPath
+? asset('storage/' . ltrim($logoPath, '/'))
+: null;
 $planName = $tenant?->subscription?->plan?->name ?? 'No Active Plan';
 @endphp
 
@@ -16,17 +19,19 @@ $planName = $tenant?->subscription?->plan?->name ?? 'No Active Plan';
             <div class="flex items-center gap-4">
 
                 @if($logo)
-                <img src="{{ asset('storage/' . $logo) }}"
-                    class="w-12 h-12 rounded-xl object-cover border">
+                <img
+                    src="{{ $logo }}"
+                    alt="Logo"
+                    class="w-14 h-14 rounded-xl object-cover border border-gray-200 dark:border-gray-700">
                 @endif
 
                 <div>
-                    <div class="text-lg font-bold text-gray-900 dark:text-white">
+                    <div class="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                         {{ $tenant?->name }}
                     </div>
 
                     <div class="text-xs text-gray-500 dark:text-gray-400">
-                        SuperFitness Dashboard
+                        Dashboard
                     </div>
                 </div>
 
