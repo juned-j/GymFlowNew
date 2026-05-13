@@ -33,16 +33,6 @@ body {
     backdrop-filter: blur(10px);
 }
 
-/* Cards / Tables / Widgets */
-.fi-section,
-.fi-widget,
-.fi-ta,
-.fi-card,
-.fi-wi-widget {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-}
-
 /* =====================================================
    DARK MODE
 ===================================================== */
@@ -71,22 +61,6 @@ body {
 }
 
 /* =====================================================
-   COMMON UI
-===================================================== */
-
-.fi-section,
-.fi-widget,
-.fi-ta,
-.fi-card,
-.fi-wi-widget {
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.04),
-        0 4px 12px rgba(0, 0, 0, 0.03);
-}
-
-/* =====================================================
    WIDGET SPACING FIX
 ===================================================== */
 
@@ -95,17 +69,17 @@ body {
     gap: 1.25rem !important;
 }
 
-/* Individual widgets */
-.fi-wi-widget {
-    margin-bottom: 1rem;
-    padding: 0.25rem;
-}
-
 /* Stats cards */
 .fi-wi-stats-overview-stat {
     border-radius: 18px !important;
-    padding: 1.25rem !important;
-    overflow: hidden;
+    padding: 1.5rem !important;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* Prevent cards joining */
@@ -119,6 +93,12 @@ body {
 /* Page spacing */
 .fi-page {
     gap: 1.25rem;
+}
+
+/* Widget headings */
+.fi-section-header-heading {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
 }
 
 /* =====================================================
@@ -199,9 +179,11 @@ body {
    CHARTS
 ===================================================== */
 
+/* Chart widgets */
 .fi-chart-widget {
-    border-radius: 18px;
+    border-radius: 22px !important;
     overflow: hidden;
+    padding: 1rem !important;
 }
 
 /* =====================================================
@@ -220,4 +202,39 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
+}
+
+/* =====================================================
+   COMMON UI
+===================================================== */
+/* Unified cards/widgets styling */
+.fi-section,
+.fi-widget,
+.fi-ta,
+.fi-card,
+.fi-wi-widget {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    overflow: hidden;
+
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.03),
+        0 6px 18px rgba(0, 0, 0, 0.04);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* Hover effect */
+.fi-section:hover,
+.fi-widget:hover,
+.fi-card:hover,
+.fi-wi-widget:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.06),
+        0 12px 28px rgba(0, 0, 0, 0.08);
 }
