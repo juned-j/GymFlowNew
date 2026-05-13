@@ -220,50 +220,39 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->visible(fn($get) => $get('auth.allow_social_login'))
                             ->columns(2)
                             ->schema([
-
                                 Forms\Components\Toggle::make('auth.google.enabled')
                                     ->label('Enable Google Login'),
-
                                 Forms\Components\TextInput::make('auth.google.web_client_id')
                                     ->label('Web Client ID'),
-
                                 Forms\Components\TextInput::make('auth.google.android_client_id')
                                     ->label('Android Client ID'),
-
                                 Forms\Components\TextInput::make('auth.google.ios_client_id')
                                     ->label('iOS Client ID'),
-
                                 Forms\Components\Textarea::make('auth.google.android_sha1')
                                     ->label('Android SHA1'),
 
-                            ]),
+                            ])->columnSpanFull(),
 
                         /*
         |--------------------------------------------------------------------------
         | FACEBOOK LOGIN
         |--------------------------------------------------------------------------
         */
-
                         Section::make('Facebook Login')
                             ->visible(fn($get) => $get('auth.allow_social_login'))
                             ->columns(2)
                             ->schema([
-
                                 Forms\Components\Toggle::make('auth.facebook.enabled')
                                     ->label('Enable Facebook Login'),
-
                                 Forms\Components\TextInput::make('auth.facebook.app_id')
                                     ->label('Facebook App ID'),
-
                                 Forms\Components\TextInput::make('auth.facebook.client_token')
                                     ->label('Client Token'),
-
                                 Forms\Components\TextInput::make('auth.facebook.app_secret')
                                     ->password()
                                     ->revealable()
                                     ->label('App Secret'),
-
-                            ]),
+                            ])->columnSpanFull(),
 
                         /*
         |--------------------------------------------------------------------------
@@ -286,8 +275,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                                     ->label('Private Key')
                                     ->rows(8),
                             ]),
-                    ])
-                    ->columnSpanFull(),
+                    ])->columnSpanFull(),
                 Section::make('Payments')
                     ->columns(2)
                     ->schema([
