@@ -62,6 +62,9 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
         ];
         $this->data['branding'] = $this->data['branding'] ?? [];
         $logoPath = $this->data['branding']['logo_url'] ?? $this->tenant->logo_url;
+        // ADD THIS: Splash Screen Initial URL
+        $splashPath = $this->data['branding']['splash_screen_url'] ?? null;
+        $this->data['branding']['splash_screen_full_url'] = $splashPath ? asset('storage/' . $splashPath) : null;
         if ($logoPath) {
             $this->data['branding']['logo_url'] = $logoPath;
             $this->data['branding']['logo_full_url'] = asset('storage/' . $logoPath);
@@ -70,6 +73,13 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
             $this->data['branding']['logo_url'] = null;
             $this->data['branding']['logo_full_url'] = null;
         }
+        // if ($splashPath) {
+        //     $this->data['branding']['splash_screen_url'] = $splashPath;
+        //     $this->data['branding']['splash_screen_full_url'] = asset('storage/' . $splashPath);
+        // } else {
+        //     $this->data['branding']['splash_screen_url'] = null;
+        //     $this->data['branding']['splash_screen_full_url'] = null;
+        // }
         $this->data['tenant'] = [
             'name' => $tenant->name,
             'logo_url' => $tenant->logo_url,
