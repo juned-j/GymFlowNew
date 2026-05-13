@@ -141,7 +141,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                     ->columnSpanFull(),
 
                 Section::make('Branding')
-                    ->columns(1)
+                    ->columns(2)
                     ->schema([
                         Forms\Components\ColorPicker::make('branding.primary_color'),
                         Forms\Components\ColorPicker::make('branding.secondary_color'),
@@ -157,7 +157,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->readOnly()
                             ->dehydrated(false),
                         Forms\Components\TextInput::make('branding.splash_screen_url'),
-                    ]),
+                    ])->columnSpanFull(),
                 Section::make('App')
                     ->columns(2)
                     ->schema([
@@ -167,9 +167,9 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         Forms\Components\TextInput::make('app.version'),
                         Forms\Components\Toggle::make('app.force_update'),
                         Forms\Components\Toggle::make('app.maintenance_mode'),
-                    ]),
+                    ])->columnSpanFull(),
                 Section::make('Features')
-                    ->columns(1)
+                    ->columns(2)
                     ->schema([
                         Forms\Components\Toggle::make('features.enable_chat'),
                         Forms\Components\Toggle::make('features.enable_notifications'),
@@ -179,14 +179,14 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         Forms\Components\Toggle::make('features.enable_referrals'),
                     ]),
                 Section::make('Auth')
-                    ->columns(1)
+                    ->columns(2)
                     ->schema([
                         Forms\Components\Toggle::make('auth.allow_social_login'),
                         Forms\Components\Toggle::make('auth.otp_login'),
                         Forms\Components\Toggle::make('auth.email_login'),
-                    ]),
+                    ])->columnSpanFull(),
                 Section::make('Payments')
-                    ->columns(1)
+                    ->columns(2)
                     ->schema([
                         Forms\Components\TextInput::make('payments.provider')
                             ->label('Payment Provider'),
@@ -219,21 +219,22 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->revealable()
                             ->columnSpanFull(),
                         Forms\Components\Toggle::make('payments.allow_subscriptions'),
-                    ]),
+                    ])
+                    ->columnSpanFull(),
                 Section::make('Notifications')
-                    ->columns(1)
+                    ->columns(2)
                     ->schema([
                         Forms\Components\Toggle::make('notifications.push_enabled'),
                         Forms\Components\Toggle::make('notifications.email_enabled'),
                         Forms\Components\Toggle::make('notifications.sms_enabled'),
-                    ]),
+                    ])->columnSpanFull(),
                 Section::make('Content')
-                    ->columns(1)
+                    ->columns(2)
                     ->schema([
                         Forms\Components\TextInput::make('content.terms_url'),
                         Forms\Components\TextInput::make('content.privacy_policy_url'),
                         Forms\Components\TextInput::make('content.support_email'),
-                    ]),
+                    ])->columnSpanFull(),
 
             ]);
     }
