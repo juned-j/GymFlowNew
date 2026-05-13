@@ -30,7 +30,7 @@ class Tenant extends Model
 
         // Location
         'address',
-        
+
         'city',
         'country',
 
@@ -45,11 +45,9 @@ class Tenant extends Model
         'app_settings',
     ];
 
-
-
     protected $casts = [
-    'app_settings' => 'array',
-];
+        'app_settings' => 'array',
+    ];
     /**
      * Owner of the tenant (gym owner)
      */
@@ -57,41 +55,29 @@ class Tenant extends Model
     {
         return $this->belongsTo(User::class, 'owner_user_id');
     }
-
-   
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
-
-
     public function scopeSuspended($query)
     {
         return $query->where('is_active', false);
     }
-
-  
     public function subscription()
     {
         return $this->hasOne(TenantSubscription::class, 'tenant_id');
     }
-
-
     public function getPlanAttribute()
     {
         $sub = $this->subscription;
         return ($sub && $sub->isActive()) ? $sub->plan : null;
     }
-
-
     public function reachedLimit(string $type): bool
     {
         return app(SubscriptionService::class)->reachedLimit($this, $type);
     }
-
     public function isActive(): bool
     {
         return (bool) $this->is_active;
     }
-
 }
