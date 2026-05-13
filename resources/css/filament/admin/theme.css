@@ -1,5 +1,14 @@
+@import "tailwindcss";
+
+/* Point this to your Filament vendor directory */
+@source "../../../../vendor/filament/**/*.blade.php";
+
 @theme {
-    /* Your custom theme overrides here */
+    /* If you had custom colors in your tailwind.config.js, move them here */
+    --color-primary-50: #f0f9ff;
+    --color-primary-500: #0ea5e9;
+    /* ... etc */
 }
 
-@import "tailwindcss";
+/* Include Filament's core styles */
+@config "../../../tailwind.config.js";
