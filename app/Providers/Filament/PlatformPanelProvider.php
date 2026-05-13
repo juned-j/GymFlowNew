@@ -26,9 +26,10 @@ class PlatformPanelProvider extends PanelProvider
         return $panel
             ->id('platform')
             ->path('platform')
+            ->viteTheme('resources/css/filament/platform/theme.css')
             ->login()
-   ->path('platform')
-               ->colors([
+            ->path('platform')
+            ->colors([
                 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Platform/Resources'), for: 'App\Filament\Platform\Resources')
@@ -41,7 +42,7 @@ class PlatformPanelProvider extends PanelProvider
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
-            
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -53,9 +54,9 @@ class PlatformPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-           ->authMiddleware([
-    Authenticate::class,
-    \App\Http\Middleware\IsSuperAdmin::class,
-]);
+            ->authMiddleware([
+                Authenticate::class,
+                \App\Http\Middleware\IsSuperAdmin::class,
+            ]);
     }
 }
