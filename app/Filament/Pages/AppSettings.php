@@ -27,75 +27,67 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
     }
     public ?array $data = [];
     public $tenant;
-public function mount(): void
-{
-    $tenant = app()->bound('tenant') ? app('tenant') : null;
+    public function mount(): void
+    {
+        $tenant = app()->bound('tenant') ? app('tenant') : null;
 
-    if (!$tenant) {
-        abort(404, 'Tenant not found');
+        if (!$tenant) {
+            abort(404, 'Tenant not found');
+        }
+        $this->tenant = $tenant;
+        $settings = $tenant->app_settings;
+
+        if (is_string($settings)) {
+            $settings = json_decode($settings, true) ?? [];
+        }
+
+        $this->data = $settings ?: [
+            'branding' => [
+                'primary_color' => '#FF5733',
+                'secondary_color' => '#222222',
+                'accent_color' => '#FFC107',
+            ],
+
+            'app' => [
+                'app_name' => 'GymFlow',
+                'version' => '1.0.0',
+            ],
+
+            'ui' => [
+                'default_language' => 'en',
+                'supported_languages' => ['en'],
+            ],
+        ];
+        $this->data['branding'] = $this->data['branding'] ?? [];
+        $logoPath = $this->data['branding']['logo_url'] ?? $this->tenant->logo_url;
+        if ($logoPath) {
+            $this->data['branding']['logo_url'] = $logoPath;
+            $this->data['branding']['logo_full_url'] = asset('storage/' . $logoPath);
+        } else {
+
+            $this->data['branding']['logo_url'] = null;
+            $this->data['branding']['logo_full_url'] = null;
+        }
+        $this->data['tenant'] = [
+            'name' => $tenant->name,
+            'logo_url' => $tenant->logo_url,
+            'email' => $tenant->email,
+            'phone' => $tenant->phone,
+            'address' => $tenant->address,
+            'city' => $tenant->city,
+            'country' => $tenant->country,
+            'timezone' => $tenant->timezone,
+            'currency' => $tenant->currency,
+            'is_active' => $tenant->is_active,
+            'trial_ends_at' => $tenant->trial_ends_at,
+
+        ];
+
+        // Payments data
+        $this->data['payments'] = $this->data['payments'] ?? [];
+        $this->data['payments']['currency'] = $tenant->currency;
+        $this->form->fill($this->data);
     }
-
-    $this->tenant = $tenant;
-
-    $settings = $tenant->app_settings;
-
-    if (is_string($settings)) {
-        $settings = json_decode($settings, true) ?? [];
-    }
-
-    $this->data = $settings ?: [
-        'branding' => [
-            'primary_color' => '#FF5733',
-            'secondary_color' => '#222222',
-            'accent_color' => '#FFC107',
-        ],
-
-        'app' => [
-            'app_name' => 'GymFlow',
-            'version' => '1.0.0',
-        ],
-
-        'ui' => [
-            'default_language' => 'en',
-            'supported_languages' => ['en'],
-        ],
-    ];
-
-   
-$this->data['branding'] = $this->data['branding'] ?? [];
-$logoPath = $this->data['branding']['logo_url'] ?? $this->tenant->logo_url;
-if ($logoPath) {
-    $this->data['branding']['logo_url'] = $logoPath;
-    $this->data['branding']['logo_full_url'] = asset('storage/' . $logoPath);
-} else {
- 
-    $this->data['branding']['logo_url'] = null;
-    $this->data['branding']['logo_full_url'] = null;
-}
-
-    
-    $this->data['tenant'] = [
-        'name' => $tenant->name,
-        'logo_url' => $tenant->logo_url,
-        'email' => $tenant->email,
-        'phone' => $tenant->phone,
-        'address' => $tenant->address,
-        'city' => $tenant->city,
-        'country' => $tenant->country,
-        'timezone' => $tenant->timezone,
-        'currency' => $tenant->currency,
-        'is_active' => $tenant->is_active,
-        'trial_ends_at' => $tenant->trial_ends_at,
-        
-    ];
-
-    // Payments data
-    $this->data['payments'] = $this->data['payments'] ?? [];
-
-    $this->data['payments']['currency'] = $tenant->currency;
-
-    $this->form->fill($this->data);
-}
 
     public function form(Schema $schema): Schema
     {
@@ -113,75 +105,57 @@ if ($logoPath) {
                     ->description('Basic tenant details')
                     ->columns(2)
                     ->schema([
-
                         Forms\Components\TextInput::make('tenant.name')
                             ->label('Name'),
-
-                        
                         Forms\Components\TextInput::make('tenant.email')
                             ->label('Email'),
-
                         Forms\Components\TextInput::make('tenant.phone')
                             ->label('Phone'),
-
                         Forms\Components\TextInput::make('tenant.address')
                             ->label('Address'),
-
                         Forms\Components\TextInput::make('tenant.city')
                             ->label('City'),
-
                         Forms\Components\TextInput::make('tenant.country')
                             ->label('Country'),
-
                         Forms\Components\TextInput::make('tenant.timezone')
                             ->label('Timezone'),
 
-        Select::make('tenant.currency')
-    ->label('Currency')
-    ->options(
-        \App\Models\Currency::query()
-            ->get()
-            ->mapWithKeys(fn ($currency) => [
-                $currency->id => "{$currency->currency_name} ({$currency->currency_symbol})"
-            ])
-            ->toArray()
-    )
-    ->searchable()
-    ->required(),
-//dd
-                       
+                        Select::make('tenant.currency')
+                            ->label('Currency')
+                            ->options(
+                                \App\Models\Currency::query()
+                                    ->get()
+                                    ->mapWithKeys(fn($currency) => [
+                                        $currency->id => "{$currency->currency_name} ({$currency->currency_symbol})"
+                                    ])
+                                    ->toArray()
+                            )
+                            ->searchable()
+                            ->required(),
+                        //dd
                         Forms\Components\Toggle::make('tenant.is_active')
                             ->label('Is Active'),
-
                         Forms\Components\DateTimePicker::make('tenant.trial_ends_at')
                             ->label('Trial Ends At'),
                     ])
                     ->columnSpanFull(),
 
                 Section::make('Branding')
-                    ->columns(2)
+                    ->columns(1)
                     ->schema([
                         Forms\Components\ColorPicker::make('branding.primary_color'),
-
                         Forms\Components\ColorPicker::make('branding.secondary_color'),
-
                         Forms\Components\ColorPicker::make('branding.accent_color'),
-FileUpload::make('branding.logo_url')
-    ->label('Logo')
-    ->image()
-    ->disk('public')
-    ->directory('tenant-branding')
-    ->visibility('public'),
- 
-   
-
-    
-
-TextInput::make('branding.logo_full_url')
-    ->label('Logo URL')
-    ->readOnly()
-    ->dehydrated(false),
-
+                        FileUpload::make('branding.logo_url')
+                            ->label('Logo')
+                            ->image()
+                            ->disk('public')
+                            ->directory('tenant-branding')
+                            ->visibility('public'),
+                        TextInput::make('branding.logo_full_url')
+                            ->label('Logo URL')
+                            ->readOnly()
+                            ->dehydrated(false),
                         Forms\Components\TextInput::make('branding.splash_screen_url'),
                     ]),
                 Section::make('App')
@@ -189,56 +163,45 @@ TextInput::make('branding.logo_full_url')
                     ->schema([
                         Forms\Components\TextInput::make('app.app_name')
                             ->required(),
-
                         Forms\Components\TextInput::make('app.bundle_id'),
-
                         Forms\Components\TextInput::make('app.version'),
-
                         Forms\Components\Toggle::make('app.force_update'),
-
                         Forms\Components\Toggle::make('app.maintenance_mode'),
                     ]),
                 Section::make('Features')
-                    ->columns(2)
+                    ->columns(1)
                     ->schema([
                         Forms\Components\Toggle::make('features.enable_chat'),
-
                         Forms\Components\Toggle::make('features.enable_notifications'),
-
                         Forms\Components\Toggle::make('features.enable_payments'),
-
                         Forms\Components\Toggle::make('features.enable_workouts'),
-
                         Forms\Components\Toggle::make('features.enable_diet_plans'),
-
                         Forms\Components\Toggle::make('features.enable_referrals'),
                     ]),
                 Section::make('Auth')
-                    ->columns(2)
+                    ->columns(1)
                     ->schema([
                         Forms\Components\Toggle::make('auth.allow_social_login'),
-
                         Forms\Components\Toggle::make('auth.otp_login'),
-
                         Forms\Components\Toggle::make('auth.email_login'),
                     ]),
                 Section::make('Payments')
-                    ->columns(2)
+                    ->columns(1)
                     ->schema([
                         Forms\Components\TextInput::make('payments.provider')
                             ->label('Payment Provider'),
-        Select::make('payments.currency')
-    ->label('Currency')
-    ->options(
-        \App\Models\Currency::query()
-            ->get()
-            ->mapWithKeys(fn ($currency) => [
-                $currency->id => "{$currency->currency_name} ({$currency->currency_symbol})"
-            ])
-            ->toArray()
-    )
-    ->searchable()
-    ->required(),
+                        Select::make('payments.currency')
+                            ->label('Currency')
+                            ->options(
+                                \App\Models\Currency::query()
+                                    ->get()
+                                    ->mapWithKeys(fn($currency) => [
+                                        $currency->id => "{$currency->currency_name} ({$currency->currency_symbol})"
+                                    ])
+                                    ->toArray()
+                            )
+                            ->searchable()
+                            ->required(),
                         Forms\Components\TextInput::make('payments.stripe_publishable_key')
                             ->label('Stripe Publishable Key')
                             ->placeholder('pk_test_...')
@@ -258,62 +221,56 @@ TextInput::make('branding.logo_full_url')
                         Forms\Components\Toggle::make('payments.allow_subscriptions'),
                     ]),
                 Section::make('Notifications')
-                    ->columns(2)
+                    ->columns(1)
                     ->schema([
                         Forms\Components\Toggle::make('notifications.push_enabled'),
-
                         Forms\Components\Toggle::make('notifications.email_enabled'),
-
                         Forms\Components\Toggle::make('notifications.sms_enabled'),
                     ]),
                 Section::make('Content')
-                    ->columns(2)
+                    ->columns(1)
                     ->schema([
                         Forms\Components\TextInput::make('content.terms_url'),
-
                         Forms\Components\TextInput::make('content.privacy_policy_url'),
-
                         Forms\Components\TextInput::make('content.support_email'),
                     ]),
-            
+
             ]);
     }
 
-   public function save(): void
-{
-    if (!$this->tenant) {
-        return;
-    }
+    public function save(): void
+    {
+        if (!$this->tenant) {
+            return;
+        }
 
-    $data = $this->form->getState();
+        $data = $this->form->getState();
+        $this->tenant->update([
+            'name'          => $data['tenant']['name'] ?? null,
+            'logo_url'      => $data['branding']['logo_url'] ?? null,
+            'email'         => $data['tenant']['email'] ?? null,
+            'phone'         => $data['tenant']['phone'] ?? null,
+            'address'       => $data['tenant']['address'] ?? null,
+            'city'          => $data['tenant']['city'] ?? null,
+            'country'       => $data['tenant']['country'] ?? null,
+            'timezone'      => $data['tenant']['timezone'] ?? null,
+            'currency'      => $data['payments']['currency'] ?? null,
+            'is_active'     => $data['tenant']['is_active'] ?? false,
+            'trial_ends_at' => $data['tenant']['trial_ends_at'] ?? null,
+        ]);
 
-    
-    $this->tenant->update([
-        'name'          => $data['tenant']['name'] ?? null,
-        'logo_url'      => $data['branding']['logo_url'] ?? null, 
-        'email'         => $data['tenant']['email'] ?? null,
-        'phone'         => $data['tenant']['phone'] ?? null,
-        'address'       => $data['tenant']['address'] ?? null,
-        'city'          => $data['tenant']['city'] ?? null,
-        'country'       => $data['tenant']['country'] ?? null,
-        'timezone'      => $data['tenant']['timezone'] ?? null,
-        'currency'      => $data['payments']['currency'] ?? null,
-        'is_active'     => $data['tenant']['is_active'] ?? false,
-        'trial_ends_at' => $data['tenant']['trial_ends_at'] ?? null,
-    ]);
+        $settingsJson = $data;
+        unset($settingsJson['tenant']);
 
-    $settingsJson = $data;
-    unset($settingsJson['tenant']);
+        $this->tenant->update([
+            'app_settings' => $settingsJson,
+        ]);
 
-    $this->tenant->update([
-        'app_settings' => $settingsJson,
-    ]);
-
-    // 5. Success Notification
-    Notification::make()
-        ->title('Settings saved successfully')
-        ->success()
-        ->send();
+        // 5. Success Notification
+        Notification::make()
+            ->title('Settings saved successfully')
+            ->success()
+            ->send();
         //dd
-}
+    }
 }
