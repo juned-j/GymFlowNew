@@ -1,16 +1,14 @@
 @import "tailwindcss";
 
-/* Point to Filament vendor files - ensure the path is correct from this file's location */
+/* 1. Fix the source paths (4 levels up to reach root) */
 @source "../../../../vendor/filament/**/*.blade.php";
-@source "../../../../vendor/laravel/framework/src/Illuminate/Translation/resources/views/*.blade.php";
 @source "../../../../app/Filament/**/*.php";
 @source "../../../../resources/views/filament/**/*.blade.php";
 
 @theme {
-    /* Custom primary colors if needed */
-    --color-amber-500: #f59e0b;
+    --color-primary-50: #f0f9ff;
+    --color-primary-500: #0ea5e9;
 }
 
-/* If you still need the old config for specific plugins, keep this, 
-   but v4 prefers everything inside this CSS file */
-@config "../../../tailwind.config.js";
+/* 2. Fix the config path (4 levels up, not 3) */
+@config "../../../../tailwind.config.js";
