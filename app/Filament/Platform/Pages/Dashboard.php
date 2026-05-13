@@ -12,14 +12,11 @@ class Dashboard extends Page
 {
     protected string $view = 'filament.platform.pages.dashboard';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHome;
-protected function getHeaderWidgets(): array
-{
-    return [
-     
-  StatsOverviewWidget::class,
-RevenueOverviewWidget::class
-
-
-    ];
-}
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            StatsOverviewWidget::class,
+            RevenueOverviewWidget::class
+        ];
+    }
 }
