@@ -148,18 +148,22 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                         FileUpload::make('branding.logo_url')
                             ->label('Logo')
                             ->image()
-                            // ->imageEditor()
+                            ->imageEditor()
                             ->disk('public')
                             ->directory('tenant-branding/logos')
                             ->visibility('public')
-                            // ->preserveFilenames()
-                            ->maxSize(2048)
-                            // ->live()
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                $set(
-                                    'branding.logo_full_url',
-                                    $state ? asset('storage/' . $state) : null
-                                );
+                            ->preserveFilenames()
+                            /* ADD THESE LINES */
+                            ->live()
+                            ->deletable(true)
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                if (!$state) {
+                                    $set('branding.logo_full_url', null);
+                                    return;
+                                }
+                                // Handle both string and array states
+                                $path = is_array($state) ? array_key_first($state) : $state;
+                                $set('branding.logo_full_url', asset('storage/' . $path));
                             }),
                         TextInput::make('branding.logo_full_url')
                             ->label('Logo URL')
@@ -343,9 +347,13 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
             return;
         }
         $data = $this->form->getState();
+        $logoUrl = $data['branding']['logo_url'];
+        if (is_array($logoUrl)) {
+            $logoUrl = array_values($logoUrl)[0] ?? null;
+        }
         $this->tenant->update([
             'name'          => $data['tenant']['name'] ?? null,
-            'logo_url'      => $data['branding']['logo_url'] ?? null,
+            'logo_url'      => $logoUrl ?? null,
             'email'         => $data['tenant']['email'] ?? null,
             'phone'         => $data['tenant']['phone'] ?? null,
             'address'       => $data['tenant']['address'] ?? null,
