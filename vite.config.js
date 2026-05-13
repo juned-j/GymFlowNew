@@ -10,6 +10,7 @@ export default defineConfig({
                 "resources/css/app.css",
                 "resources/js/app.js",
                 "resources/css/filament/admin/theme.css", // Your Filament theme
+                "resources/css/filament/platform/theme.css", // Platform panel theme
             ],
             refresh: true,
         }),
