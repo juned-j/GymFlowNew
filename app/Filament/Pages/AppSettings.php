@@ -347,13 +347,51 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
             return;
         }
         $data = $this->form->getState();
-        $logoUrl = $data['branding']['logo_url'];
+        /*
+    |--------------------------------------------------------------------------
+    | Normalize Logo Upload
+    |--------------------------------------------------------------------------
+    */
+        $logoUrl = $data['branding']['logo_url'] ?? null;
         if (is_array($logoUrl)) {
             $logoUrl = array_values($logoUrl)[0] ?? null;
         }
+        /*
+    |--------------------------------------------------------------------------
+    | Normalize Splash Upload
+    |--------------------------------------------------------------------------
+    */
+        $splashUrl = $data['branding']['splash_screen_url'] ?? null;
+        if (is_array($splashUrl)) {
+            $splashUrl = array_values($splashUrl)[0] ?? null;
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Save normalized paths back
+    |--------------------------------------------------------------------------
+    */
+        $data['branding']['logo_url'] = $logoUrl;
+        $data['branding']['splash_screen_url'] = $splashUrl;
+        /*
+    |--------------------------------------------------------------------------
+    | Generate Full Public URLs
+    |--------------------------------------------------------------------------
+    */
+        $data['branding']['logo_full_url'] = $logoUrl
+            ? asset('storage/' . $logoUrl)
+            : null;
+        $data['branding']['splash_screen_full_url'] = $splashUrl
+            ? asset('storage/' . $splashUrl)
+            : null;
+        /*
+    |--------------------------------------------------------------------------
+    | Update Tenant Table
+    |--------------------------------------------------------------------------
+    */
         $this->tenant->update([
             'name'          => $data['tenant']['name'] ?? null,
-            'logo_url'      => $logoUrl ?? null,
+            'logo_url'      => $logoUrl,
             'email'         => $data['tenant']['email'] ?? null,
             'phone'         => $data['tenant']['phone'] ?? null,
             'address'       => $data['tenant']['address'] ?? null,
@@ -364,19 +402,24 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
             'is_active'     => $data['tenant']['is_active'] ?? false,
             'trial_ends_at' => $data['tenant']['trial_ends_at'] ?? null,
         ]);
-
+        /*
+    |--------------------------------------------------------------------------
+    | Save App Settings JSON
+    |--------------------------------------------------------------------------
+    */
         $settingsJson = $data;
         unset($settingsJson['tenant']);
-
         $this->tenant->update([
             'app_settings' => $settingsJson,
         ]);
-
-        // 5. Success Notification
+        /*
+    |--------------------------------------------------------------------------
+    | Success Notification
+    |--------------------------------------------------------------------------
+    */
         Notification::make()
             ->title('Settings saved successfully')
             ->success()
             ->send();
-        //dd
     }
 }
