@@ -65,13 +65,6 @@ body {
     gap: 1.25rem;
 }
 
-/* Remove wrapper spacing */
-.fi-section,
-.fi-widget {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
 /* =====================================================
    CLEAN SINGLE CARD UI
 ===================================================== */
@@ -94,6 +87,10 @@ body {
         box-shadow 0.2s ease;
 }
 
+/* Dashboard widgets spacing */
+.fi-wi-widget {
+    margin-bottom: 1rem;
+}
 /* Dark mode cards */
 .dark .fi-wi-widget,
 .dark .fi-ta,
@@ -113,27 +110,24 @@ body {
 }
 
 /* =====================================================
-   REMOVE FILAMENT INNER WRAPPERS
+   REMOVE ONLY DASHBOARD INNER WRAPPERS
 ===================================================== */
 
-.fi-section,
+/* Dashboard widgets only */
 .fi-widget,
-.fi-section-content,
 .fi-widget-content,
-.fi-ta-ctn,
 .fi-chart,
-.fi-chart-widget canvas {
+.fi-chart-widget canvas,
+.fi-ta-ctn {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-/* Remove inner padding causing double container */
-.fi-section-content,
-.fi-widget-content {
-    padding: 0 !important;
+/* Keep normal section padding for forms/settings */
+.fi-section-content {
+    padding: 1.5rem !important;
 }
-
 /* =====================================================
    STATS OVERVIEW FIX
 ===================================================== */
