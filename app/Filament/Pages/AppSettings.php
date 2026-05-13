@@ -154,7 +154,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->visibility('public')
                             ->preserveFilenames()
                             ->maxSize(2048)
-                            ->live()
+                            // ->live()
                             ->afterStateUpdated(function ($state, callable $set) {
                                 $set(
                                     'branding.logo_full_url',
@@ -174,7 +174,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->visibility('public')
                             ->preserveFilenames()
                             ->maxSize(4096)
-                            ->live()
+                            // ->live()
                             ->afterStateUpdated(function ($state, callable $set) {
                                 $set(
                                     'branding.splash_screen_full_url',
