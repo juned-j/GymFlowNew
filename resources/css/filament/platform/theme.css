@@ -3,8 +3,221 @@
 @source '../../../../app/Filament/Platform/**/*';
 @source '../../../../resources/views/filament/platform/**/*';
 
-/* Custom CSS */
+/* =====================================================
+   PTBuddy / GymFlow Super Admin Panel CSS Theme
+===================================================== */
 
 body {
-    /* background-color: #0f172a; */
+    font-family: Inter, sans-serif;
+}
+
+/* =====================================================
+   LIGHT MODE
+===================================================== */
+
+.fi-main {
+    background: #f8fafc;
+}
+
+/* Sidebar */
+.fi-sidebar {
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Topbar */
+.fi-topbar {
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid #e5e7eb;
+    backdrop-filter: blur(10px);
+}
+
+/* Cards / Tables / Widgets */
+.fi-section,
+.fi-widget,
+.fi-ta,
+.fi-card,
+.fi-wi-widget {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+}
+
+/* =====================================================
+   DARK MODE
+===================================================== */
+
+.dark .fi-main {
+    background: #0f172a;
+}
+
+.dark .fi-sidebar {
+    background: #111827;
+    border-right: 1px solid #1f2937;
+}
+
+.dark .fi-topbar {
+    background: rgba(17, 24, 39, 0.9);
+    border-bottom: 1px solid #1f2937;
+}
+
+.dark .fi-section,
+.dark .fi-widget,
+.dark .fi-ta,
+.dark .fi-card,
+.dark .fi-wi-widget {
+    background: #111827;
+    border: 1px solid #1f2937;
+}
+
+/* =====================================================
+   COMMON UI
+===================================================== */
+
+.fi-section,
+.fi-widget,
+.fi-ta,
+.fi-card,
+.fi-wi-widget {
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+/* =====================================================
+   WIDGET SPACING FIX
+===================================================== */
+
+/* Dashboard widget grid */
+.fi-wi {
+    gap: 1.25rem !important;
+}
+
+/* Individual widgets */
+.fi-wi-widget {
+    margin-bottom: 1rem;
+    padding: 0.25rem;
+}
+
+/* Stats cards */
+.fi-wi-stats-overview-stat {
+    border-radius: 18px !important;
+    padding: 1.25rem !important;
+    overflow: hidden;
+}
+
+/* Prevent cards joining */
+.fi-section,
+.fi-card,
+.fi-ta,
+.fi-widget {
+    margin-bottom: 1rem;
+}
+
+/* Page spacing */
+.fi-page {
+    gap: 1.25rem;
+}
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+.fi-sidebar-item-active a {
+    background: linear-gradient(to right, #7c3aed, #a855f7);
+    color: white !important;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.fi-sidebar-item a:hover {
+    background: rgba(245, 158, 11, 0.08);
+    border-radius: 12px;
+}
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+.fi-btn {
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.fi-btn-color-primary {
+    background: linear-gradient(to right, #f59e0b, #fbbf24);
+    border: none;
+}
+
+.fi-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* =====================================================
+   INPUTS
+===================================================== */
+
+.fi-input,
+.fi-select-input,
+.fi-textarea,
+.fi-input-wrp {
+    border-radius: 12px !important;
+}
+
+.fi-input:focus,
+.fi-select-input:focus,
+.fi-textarea:focus {
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15) !important;
+}
+
+/* =====================================================
+   MODALS / DROPDOWNS
+===================================================== */
+
+.fi-modal-window {
+    border-radius: 22px;
+}
+
+.fi-dropdown-panel {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* =====================================================
+   TABLES
+===================================================== */
+
+.fi-ta-table {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* =====================================================
+   CHARTS
+===================================================== */
+
+.fi-chart-widget {
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+/* =====================================================
+   SCROLLBAR
+===================================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
 }
