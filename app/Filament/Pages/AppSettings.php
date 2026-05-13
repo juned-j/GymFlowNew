@@ -274,7 +274,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                                 Forms\Components\Textarea::make('auth.apple.private_key')
                                     ->label('Private Key')
                                     ->rows(8),
-                            ]),
+                            ])->columnSpanFull(),
                     ])->columnSpanFull(),
                 Section::make('Payments')
                     ->columns(2)
