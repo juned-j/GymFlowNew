@@ -119,23 +119,23 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->label('Name')
                             ->required()
                             ->minLength(2)
-                            ->maxLength(100),
+                            ->maxLength(50),
 
                         Forms\Components\TextInput::make('tenant.email')
                             ->label('Email')
                             ->email()
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(55),
 
                         Forms\Components\TextInput::make('tenant.phone')
                             ->label('Phone')
                             ->tel()
-                            ->maxLength(20)
+                            ->maxLength(15)
                             ->rule('regex:/^[0-9+\-\s()]+$/'),
 
                         Forms\Components\TextInput::make('tenant.address')
                             ->label('Address')
-                            ->maxLength(255),
+                            ->maxLength(100),
 
                         Forms\Components\TextInput::make('tenant.city')
                             ->label('City')
