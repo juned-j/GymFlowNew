@@ -1,4 +1,12 @@
 @php
+\Illuminate\Support\Facades\Log::info('tenant-header view debug', [
+'tenant' => $tenant,
+'tenant_id' => $tenant?->id,
+'tenant_name' => $tenant?->name,
+'tenant_logo_url' => $tenant?->logo_url,
+'tenant_app_settings' => $tenant?->app_settings,
+]);
+
 $branding = $tenant?->app_settings['branding'] ?? [];
 
 $logoPath = $branding['logo_url']

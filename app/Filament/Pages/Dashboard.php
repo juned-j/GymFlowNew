@@ -24,8 +24,21 @@ class Dashboard extends Page
     }
     public function getHeader(): ?\Illuminate\Contracts\View\View
     {
+        $user = auth()->user();
+        $tenant = $user?->ownedTenant;
+
+        \Log::info('Dashboard getHeader debug', [
+            'user_id' => $user?->id,
+            'user_exists' => $user !== null,
+            'tenant' => $tenant,
+            'tenant_id' => $tenant?->id,
+            'tenant_name' => $tenant?->name,
+            'tenant_logo_url' => $tenant?->logo_url,
+            'tenant_app_settings' => $tenant?->app_settings,
+        ]);
+
         return view('filament.pages.partials.tenant-header', [
-            'tenant' => auth()->user()?->ownedTenant,
+            'tenant' => $tenant,
         ]);
     }
 }
