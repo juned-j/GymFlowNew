@@ -9,6 +9,7 @@ use Filament\Widgets\ChartWidget;
 class WorkoutActivity extends ChartWidget
 {
     protected ?string $heading = 'Workout Consistency (%)';
+    protected string $contentHeight = '250px';
     protected static ?int $sort = 3;
 
     protected function getData(): array

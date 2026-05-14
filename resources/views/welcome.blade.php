@@ -80,9 +80,7 @@
 
     <!-- FEATURES -->
     <section class="py-24 bg-white border-t border-slate-100">
-
         <div class="max-w-6xl mx-auto px-6">
-
             <div class="text-center mb-14">
                 <h2 class="text-sm font-semibold text-indigo-600 uppercase tracking-widest">
                     Features
@@ -91,9 +89,7 @@
                     Everything you need to grow faster
                 </p>
             </div>
-
             <div class="grid md:grid-cols-3 gap-8">
-
                 <!-- Card -->
                 <div class="p-8 rounded-2xl border border-slate-100 bg-slate-50 hover:shadow-md transition">
                     <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center mb-6">
@@ -104,7 +100,6 @@
                         Create structured training programs for every client.
                     </p>
                 </div>
-
                 <div class="p-8 rounded-2xl border border-slate-100 bg-slate-50 hover:shadow-md transition">
                     <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center mb-6">
                         📊
@@ -114,7 +109,6 @@
                         Track strength, weight, and performance trends.
                     </p>
                 </div>
-
                 <div class="p-8 rounded-2xl border border-slate-100 bg-slate-50 hover:shadow-md transition">
                     <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center mb-6">
                         👥
@@ -124,12 +118,9 @@
                         Manage all clients, schedules, and sessions easily.
                     </p>
                 </div>
-
             </div>
-
         </div>
     </section>
-
     <!-- FOOTER -->
     <footer class="py-10 border-t border-slate-100 bg-white">
         <div class="max-w-6xl mx-auto px-6 flex justify-between text-sm text-slate-500">
@@ -137,7 +128,6 @@
             <span>© {{ date('Y') }} All rights reserved.</span>
         </div>
     </footer>
-
 </body>
 
 </html>
