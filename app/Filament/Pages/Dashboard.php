@@ -24,12 +24,15 @@ class Dashboard extends Page
     }
     public function getHeader(): ?\Illuminate\Contracts\View\View
     {
-        $user = auth()->user();
-        $tenant = $user?->ownedTenant;
+        $tenantId = app('tenant_id');
 
         \Log::info('Dashboard getHeader debug', [
-            'user_id' => $user?->id,
-            'user_exists' => $user !== null,
+            'tenant_id' => $tenantId,
+        ]);
+
+        $tenant = \App\Models\Tenant::find($tenantId);
+
+        \Log::info('Dashboard getHeader debug', [
             'tenant' => $tenant,
             'tenant_id' => $tenant?->id,
             'tenant_name' => $tenant?->name,
