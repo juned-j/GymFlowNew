@@ -24,91 +24,165 @@ class ClassesForm
     {
         return $schema
             ->components([
+
                 Hidden::make('tenant_id')
                     ->default(fn() => auth()->user()->getTenantId()),
 
+                /*
+                |--------------------------------------------------------------------------
+                | CLASS ESSENTIALS
+                |--------------------------------------------------------------------------
+                */
                 Section::make('Class Essentials')
-                    ->description('Basic information about the session.')
+                    ->description('Basic information about the class.')
                     ->schema([
+
                         TextInput::make('name')
                             ->required()
                             ->maxLength(255)
-                            ->placeholder('e.g., Morning Yoga Flow'),
+                            ->placeholder('e.g. Weight Loss Bootcamp'),
 
                         Select::make('branch_id')
                             ->label('Branch')
                             ->required()
-                            ->options(fn() => Branch::where('tenant_id', auth()->user()->getTenantId())->pluck('name', 'id'))
-                            ->searchable(),
+                            ->searchable()
+                            ->options(
+                                fn() =>
+                                Branch::where(
+                                    'tenant_id',
+                                    auth()->user()->getTenantId()
+                                )->pluck('name', 'id')
+                            ),
 
                         Select::make('trainer_id')
                             ->label('Trainer')
                             ->required()
+                            ->searchable()
                             ->options(function () {
+
                                 $tenantId = auth()->user()->getTenantId();
 
                                 return User::whereHas('roles', function ($query) use ($tenantId) {
-                                    $query->where('tenant_id', $tenantId) // Column is here, not in users table
+
+                                    $query->where('tenant_id', $tenantId)
                                         ->whereHas('role', function ($q) {
                                             $q->whereIn('name', ['trainer', 'admin']);
                                         });
-                                })->pluck('name', 'id');
-                            })
-                            ->searchable(),
+                                })
+                                    ->pluck('name', 'id');
+                            }),
 
                         TextInput::make('capacity')
                             ->numeric()
+                            ->required()
                             ->default(20)
                             ->minValue(1)
-                            ->required(),
-                    ])->columns(2),
+                            ->suffix('members'),
 
-                Section::make('Schedule & Location')
+                    ])
+                    ->columns(2),
+
+                /*
+                |--------------------------------------------------------------------------
+                | CLASS SCHEDULE
+                |--------------------------------------------------------------------------
+                */
+                Section::make('Class Schedule')
+                    ->description('Recurring schedule configuration.')
                     ->schema([
-                        DateTimePicker::make('start_time')
-                            ->label('Start Time')
+
+                        Select::make('duration_type')
+                            ->label('Program Duration Type')
                             ->required()
-                            ->native(false)
-                            ->seconds(false)
-                            ->minDate(now())
-                            ->displayFormat('d M Y h:i A')
-                            ->live()
-                            ->afterStateUpdated(function (Get $get, Set $set, $state) {
-                                if ($state) {
-                                    $set('end_time', Carbon::parse($state)->addHour());
-                                }
-                            })
-                            ->default(now()->addHour()),
-
-                        DateTimePicker::make('end_time')
-                            ->label('End Time')
-                            ->required()
-                            ->native(false)
-                            ->seconds(false)
-                            ->displayFormat('d M Y h:i A')
-                            ->live()
-                            ->rules([
-                                function (Get $get): \Closure {
-                                    return function ($attribute, $value, $fail) use ($get) {
-
-                                        if (!$get('start_time') || !$value) {
-                                            return;
-                                        }
-
-                                        if (Carbon::parse($value)->lte(Carbon::parse($get('start_time')))) {
-                                            $fail('End Time must be after Start Time.');
-                                        }
-                                    };
-                                },
+                            ->options([
+                                'weeks' => 'Weeks',
+                                'months' => 'Months',
+                                'years' => 'Years',
                             ]),
 
+                        TextInput::make('duration_value')
+                            ->label('Duration Value')
+                            ->numeric()
+                            ->required()
+                            ->default(1)
+                            ->minValue(1)
+                            ->placeholder('e.g. 3'),
+
+                        Select::make('repeat_type')
+                            ->label('Repeat Type')
+                            ->required()
+                            ->options([
+                                'daily' => 'Daily',
+                                'weekly' => 'Weekly',
+                                'monthly' => 'Monthly',
+                            ]),
+
+                        CheckboxList::make('days_of_week')
+                            ->label('Class Days')
+                            ->columns(4)
+                            ->options([
+                                'mon' => 'Mon',
+                                'tue' => 'Tue',
+                                'wed' => 'Wed',
+                                'thu' => 'Thu',
+                                'fri' => 'Fri',
+                                'sat' => 'Sat',
+                                'sun' => 'Sun',
+                            ])
+                            ->visible(
+                                fn($get) =>
+                                $get('repeat_type') === 'weekly'
+                            ),
+
+                        DatePicker::make('start_date')
+                            ->label('Program Start Date')
+                            ->required()
+                            ->native(false)
+                            ->minDate(today()),
+
+                        DatePicker::make('end_date')
+                            ->label('Program End Date')
+                            ->required()
+                            ->native(false)
+                            ->minDate(today()),
+
+                        TimePicker::make('start_time')
+                            ->label('Start Time')
+                            ->required()
+                            ->seconds(false)
+                            ->native(false)
+                            ->minutesStep(5)
+                            ->displayFormat('h:i A'),
+
+                        TimePicker::make('end_time')
+                            ->label('End Time')
+                            ->required()
+                            ->seconds(false)
+                            ->native(false)
+                            ->minutesStep(5)
+                            ->displayFormat('h:i A'),
+
+                    ])
+                    ->columns(2),
+
+                /*
+                |--------------------------------------------------------------------------
+                | DESCRIPTION & LOCATION
+                |--------------------------------------------------------------------------
+                */
+                Section::make('Additional Details')
+                    ->schema([
+
                         TextInput::make('location')
-                            ->placeholder('e.g., Studio A or Online'),
+                            ->placeholder('e.g. Studio A'),
 
                         Textarea::make('description')
-                            ->columnSpanFull()
-                            ->rows(3),
-                    ])->columns(2),
+                            ->rows(4)
+                            ->columnSpanFull(),
+
+                    ])
+                    ->columns(1),
+
             ]);
     }
 }
