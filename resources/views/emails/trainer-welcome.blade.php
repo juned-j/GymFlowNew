@@ -12,7 +12,8 @@
     <p>Your trainer account has been created successfully.</p>
     <p><strong>Email:</strong> {{ $user->email }}</p>
     <p><strong>Password:</strong> {{ $password }}</p>
-    <p>Please login and change your password immediately.</p>
+    <p>Please login and change your password after login.</p>
+
 </body>
 
 </html>
