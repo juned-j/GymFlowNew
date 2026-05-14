@@ -9,6 +9,7 @@ use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\TrainerWelcomeMail;
 
 class CreateTrainer extends CreateRecord
 {
@@ -43,17 +44,15 @@ class CreateTrainer extends CreateRecord
     {
         $formData = $this->form->getRawState();
 
-        $roleData = $formData['user']['roles'] ?? [];
+        $userData = $formData['user'] ?? [];
 
-        // Assign tenant role
         UserTenantRole::create([
             'user_id' => $this->trainerUser->id,
             'tenant_id' => auth()->user()->getTenantId(),
-            'branch_id' => $roleData['branch_id'] ?? null,
-            'role_id' => $roleData['role_id'] ?? null,
+            'branch_id' => $userData['branch_id'] ?? null,
+            'role_id' => $userData['role_id'] ?? null,
         ]);
 
-        // Send welcome email with password
         Mail::to($this->trainerUser->email)
             ->send(new TrainerWelcomeMail(
                 $this->trainerUser,
