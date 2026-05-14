@@ -50,7 +50,7 @@ class CreateTrainer extends CreateRecord
             'user_id' => $this->trainerUser->id,
             'tenant_id' => auth()->user()->getTenantId(),
             'branch_id' => $userData['branch_id'] ?? null,
-            'role_id' => $userData['role_id'] ?? null,
+            'role_id' => 3,
         ]);
 
         Mail::to($this->trainerUser->email)
