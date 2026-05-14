@@ -15,7 +15,6 @@ class Trainer extends Model
         'bio',
         'status',
         'branch_id',
-        'role_id',
         'tenant_id',
     ];
 
