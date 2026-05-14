@@ -38,20 +38,14 @@ class WorkoutActivity extends ChartWidget
             'datasets' => [
                 [
                     'label' => 'Consistency %',
-
                     'data' => $consistency,
-
                     // 🔥 THICK & PREMIUM LINE
                     'borderColor' => '#6366F1',
                     'borderWidth' => 5,   // 👈 thicker line
-
                     'tension' => 0.6,
-
                     'pointRadius' => 3,   // 👈 visible points
                     'pointHoverRadius' => 7,
-
                     'pointBackgroundColor' => '#6366F1',
-
                     'fill' => false,
                 ],
             ],
@@ -91,7 +85,6 @@ class WorkoutActivity extends ChartWidget
                 'y' => [
                     'beginAtZero' => true,
                     'max' => 100,
-
                     'ticks' => [
                         'callback' => "function(value) {
                             return value + '%';

@@ -46,7 +46,6 @@ class RevenueGrowth extends ChartWidget
          * 💰 TENANT BASED REVENUE
          */
         $revenue = $dates->map(function ($date) use ($tenantId) {
-
             $amount = (float) Subscription::query()
                 ->where('subscriptions.tenant_id', $tenantId)
                 ->whereDate('subscriptions.created_at', $date)
@@ -60,9 +59,7 @@ class RevenueGrowth extends ChartWidget
                 ->sum(DB::raw('COALESCE(membership_plans.price, 0)'));
             return $amount;
         })->toArray();
-
         return [
-
             'labels' => $labels,
             'datasets' => [
                 [
