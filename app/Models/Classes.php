@@ -10,7 +10,7 @@ use App\Traits\BelongsToTenant;
 class Classes extends Model
 {
 
- use BelongsToTenant;
+    use BelongsToTenant;
     // Since 'classes' is the table name and the model is 'Classes', 
     // Laravel usually finds it, but defining it explicitly is safer.
     protected $table = 'classes';
@@ -25,6 +25,12 @@ class Classes extends Model
         'end_time',
         'capacity',
         'location',
+        'duration_type',
+        'duration_value',
+        'repeat_type',
+        'start_date',
+        'end_date',
+        'days_of_week',
     ];
 
     /**
@@ -36,6 +42,10 @@ class Classes extends Model
             'start_time' => 'datetime',
             'end_time' => 'datetime',
             'capacity' => 'integer',
+            // NEW
+            'start_date' => 'date',
+            'end_date' => 'date',
+            'days_of_week' => 'array',
         ];
     }
 
