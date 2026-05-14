@@ -3,20 +3,17 @@
 namespace App\Filament\Resources\Classes\Schemas;
 
 use Filament\Schemas\Schema;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\TimePicker;
-use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Components\Section;
 use App\Models\Branch;
 use App\Models\User;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
-use Illuminate\Support\Carbon;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TimePicker;
 
 class ClassesForm
 {
