@@ -25,19 +25,12 @@
                         <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg">
                             <i class="fas fa-check"></i>
                         </div>
-                        <span class="ml-2 text-sm font-medium text-green-600">Gym</span>
-                    </div>
-                    <div class="w-16 h-1 bg-indigo-600"></div>
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        <span class="ml-2 text-sm font-medium text-green-600">Admin</span>
+                        <span class="ml-2 text-sm font-medium text-green-600">Registration</span>
                     </div>
                     <div class="w-16 h-1 bg-indigo-600"></div>
                     <div class="flex items-center">
                         <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold shadow-lg">
-                            3
+                            2
                         </div>
                         <span class="ml-2 text-sm font-medium text-indigo-600">Plan</span>
                     </div>

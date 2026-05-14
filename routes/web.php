@@ -67,7 +67,15 @@ Route::get('/view-logs', function () {
 
 Route::middleware(['web'])->group(function () {
 
-    Route::get('/register', [GymOnboardingController::class, 'showGymStep'])
+    // Combined tenant registration (gym + user in one step)
+    Route::get('/register', [GymOnboardingController::class, 'showTenantRegistration'])
+        ->name('register.tenant');
+
+    Route::post('/register/tenant', [GymOnboardingController::class, 'storeTenantRegistration'])
+        ->name('register.tenant.store');
+
+    // Legacy routes (kept for backward compatibility, can be removed later)
+    Route::get('/register/gym', [GymOnboardingController::class, 'showGymStep'])
         ->name('register.gym');
 
     Route::post('/register/gym', [GymOnboardingController::class, 'storeGym'])
