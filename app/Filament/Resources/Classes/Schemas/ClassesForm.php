@@ -77,7 +77,7 @@ class ClassesForm
                             ->suffix('members'),
 
                     ])
-                    ->columns(2),
+                    ->columnSpanFull(),
 
                 /*
                 |--------------------------------------------------------------------------
@@ -160,7 +160,7 @@ class ClassesForm
                             ->displayFormat('h:i A'),
 
                     ])
-                    ->columns(2),
+                    ->columnSpanFull(),
 
                 /*
                 |--------------------------------------------------------------------------
@@ -178,7 +178,7 @@ class ClassesForm
                             ->columnSpanFull(),
 
                     ])
-                    ->columns(1),
+                    ->columnSpanFull(),
 
             ]);
     }
