@@ -12,6 +12,8 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Filament\Notifications\Notification;
 use App\Models\Currency;
+use Filament\Forms\Components\Toggle;
+use App\Models\Country;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -112,38 +114,81 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                     ->description('Basic tenant details')
                     ->columns(2)
                     ->schema([
-                        Forms\Components\TextInput::make('tenant.name')
-                            ->label('Name'),
-                        Forms\Components\TextInput::make('tenant.email')
-                            ->label('Email'),
-                        Forms\Components\TextInput::make('tenant.phone')
-                            ->label('Phone'),
-                        Forms\Components\TextInput::make('tenant.address')
-                            ->label('Address'),
-                        Forms\Components\TextInput::make('tenant.city')
-                            ->label('City'),
-                        Forms\Components\TextInput::make('tenant.country')
-                            ->label('Country'),
-                        Forms\Components\TextInput::make('tenant.timezone')
-                            ->label('Timezone'),
 
-                        Select::make('tenant.currency')
-                            ->label('Currency')
+                        Forms\Components\TextInput::make('tenant.name')
+                            ->label('Name')
+                            ->required()
+                            ->minLength(2)
+                            ->maxLength(100),
+
+                        Forms\Components\TextInput::make('tenant.email')
+                            ->label('Email')
+                            ->email()
+                            ->required()
+                            ->maxLength(255),
+
+                        Forms\Components\TextInput::make('tenant.phone')
+                            ->label('Phone')
+                            ->tel()
+                            ->maxLength(20)
+                            ->rule('regex:/^[0-9+\-\s()]+$/'),
+
+                        Forms\Components\TextInput::make('tenant.address')
+                            ->label('Address')
+                            ->maxLength(255),
+
+                        Forms\Components\TextInput::make('tenant.city')
+                            ->label('City')
+                            ->maxLength(100),
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | COUNTRY DROPDOWN
+                        |--------------------------------------------------------------------------
+                        */
+                        Select::make('tenant.country')
+                            ->label('Country')
+                            ->searchable()
+                            ->preload()
                             ->options(
-                                \App\Models\Currency::query()
-                                    ->get()
-                                    ->mapWithKeys(fn($currency) => [
-                                        $currency->id => "{$currency->currency_name} ({$currency->currency_symbol})"
-                                    ])
+                                \App\Models\Country::query()
+                                    ->orderBy('name')
+                                    ->pluck('name', 'name')
                                     ->toArray()
                             )
-                            ->searchable()
                             ->required(),
-                        //dd
+
+                        Forms\Components\TextInput::make('tenant.timezone')
+                            ->label('Timezone')
+                            ->maxLength(100),
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | ALL CURRENCIES
+                        |--------------------------------------------------------------------------
+                        */
+                        Select::make('tenant.currency')
+                            ->label('Currency')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->options(
+                                \App\Models\Currency::query()
+                                    ->orderBy('currency_name')
+                                    ->get()
+                                    ->mapWithKeys(fn($currency) => [
+                                        $currency->id =>
+                                        "{$currency->currency_name} ({$currency->currency_code}) {$currency->currency_symbol}"
+                                    ])
+                                    ->toArray()
+                            ),
+
                         Forms\Components\Toggle::make('tenant.is_active')
                             ->label('Is Active'),
+
                         Forms\Components\DateTimePicker::make('tenant.trial_ends_at')
                             ->label('Trial Ends At'),
+
                     ])
                     ->columnSpanFull(),
                 Section::make('Branding')
@@ -226,19 +271,19 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                     ->columns(2)
                     ->schema([
                         /*
-        |--------------------------------------------------------------------------
-        | Basic Auth
-        |--------------------------------------------------------------------------
-        */
+                        |--------------------------------------------------------------------------
+                        | Basic Auth
+                        |--------------------------------------------------------------------------
+                        */
                         Forms\Components\Toggle::make('auth.allow_social_login')
                             ->live(),
                         Forms\Components\Toggle::make('auth.otp_login'),
                         Forms\Components\Toggle::make('auth.email_login'),
                         /*
-        |--------------------------------------------------------------------------
-        | GOOGLE LOGIN
-        |--------------------------------------------------------------------------
-        */
+                        |--------------------------------------------------------------------------
+                        | GOOGLE LOGIN
+                        |--------------------------------------------------------------------------
+                        */
 
                         Section::make('Google Login')
                             ->visible(fn($get) => $get('auth.allow_social_login'))
@@ -258,10 +303,10 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ])->columnSpanFull(),
 
                         /*
-        |--------------------------------------------------------------------------
-        | FACEBOOK LOGIN
-        |--------------------------------------------------------------------------
-        */
+                        |--------------------------------------------------------------------------
+                        | FACEBOOK LOGIN
+                        |--------------------------------------------------------------------------
+                        */
                         Section::make('Facebook Login')
                             ->visible(fn($get) => $get('auth.allow_social_login'))
                             ->columns(2)
@@ -279,10 +324,10 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ])->columnSpanFull(),
 
                         /*
-        |--------------------------------------------------------------------------
-        | APPLE LOGIN
-        |--------------------------------------------------------------------------
-        */
+                        |--------------------------------------------------------------------------
+                        | APPLE LOGIN
+                        |--------------------------------------------------------------------------
+                        */
                         Section::make('Apple Login')
                             ->visible(fn($get) => $get('auth.allow_social_login'))
                             ->columns(2)
@@ -307,11 +352,16 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->label('Payment Provider'),
                         Select::make('payments.currency')
                             ->label('Currency')
+                            ->searchable()
+                            ->preload()
+                            ->required()
                             ->options(
                                 \App\Models\Currency::query()
+                                    ->orderBy('currency_name')
                                     ->get()
                                     ->mapWithKeys(fn($currency) => [
-                                        $currency->id => "{$currency->currency_name} ({$currency->currency_symbol})"
+                                        $currency->id =>
+                                        "{$currency->currency_name} ({$currency->currency_code}) {$currency->currency_symbol}"
                                     ])
                                     ->toArray()
                             )
