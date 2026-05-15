@@ -125,7 +125,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->label('Email')
                             ->email()
                             ->required()
-                            ->maxLength(55),
+                            ->maxLength(50),
 
                         Forms\Components\TextInput::make('tenant.phone')
                             ->label('Phone')
@@ -135,11 +135,11 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
                         Forms\Components\TextInput::make('tenant.address')
                             ->label('Address')
-                            ->maxLength(100),
+                            ->maxLength(50),
 
                         Forms\Components\TextInput::make('tenant.city')
                             ->label('City')
-                            ->maxLength(100),
+                            ->maxLength(50),
 
                         /*
                         |--------------------------------------------------------------------------
@@ -361,7 +361,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                                     ->get()
                                     ->mapWithKeys(fn($currency) => [
                                         $currency->id =>
-                                        "{$currency->currency_name} ({$currency->currency_code}) {$currency->currency_symbol}"
+                                        "{$currency->currency_name} {$currency->currency_symbol}"
                                     ])
                                     ->toArray()
                             )
