@@ -178,7 +178,7 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                                     ->get()
                                     ->mapWithKeys(fn($currency) => [
                                         $currency->id =>
-                                        "{$currency->currency_name} ({$currency->currency_code}) {$currency->currency_symbol}"
+                                        "{$currency->currency_name} {$currency->currency_symbol}"
                                     ])
                                     ->toArray()
                             ),
