@@ -20,13 +20,15 @@ class IsTenantAdmin
         // Prevent Super Admin from accessing admin panel
         if ($user->isSuperAdmin()) {
             auth('admin')->logout();
-            abort(403, 'Unauthorized. Super Admins cannot access the Admin Panel.');
+            return redirect('/admin/login')
+                ->with('error', 'You are not authorized to access the Admin Panel.');
         }
 
         // Ensure user has a valid tenant role
         if (! $user->hasTenantRole()) {
             auth('admin')->logout();
-            abort(403, 'Unauthorized. You must have a tenant role to access the Admin Panel.');
+            return redirect('/admin/login')
+                ->with('error', 'You are not authorized to access the Admin Panel.');
         }
 
         return $next($request);
