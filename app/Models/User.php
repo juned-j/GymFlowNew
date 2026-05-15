@@ -140,14 +140,32 @@ class User extends Authenticatable implements MustVerifyEmail
     // }
     public function canAccessPanel(Panel $panel): bool
     {
+        /*
+    |--------------------------------------------------------------------------
+    | PLATFORM PANEL
+    |--------------------------------------------------------------------------
+    */
         if ($panel->getId() === 'platform') {
-            return $this->is_super_admin;
+            return $this->isSuperAdmin();
         }
+
+        /*
+    |--------------------------------------------------------------------------
+    | ADMIN PANEL
+    |--------------------------------------------------------------------------
+    */
         if ($panel->getId() === 'admin') {
+
+            // BLOCK super admins from admin panel
+            if ($this->isSuperAdmin()) {
+                return false;
+            }
+
             return $this->roles()
                 ->whereNotNull('tenant_id')
                 ->exists();
         }
+
         return false;
     }
 }

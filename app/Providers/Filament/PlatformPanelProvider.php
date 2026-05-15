@@ -33,7 +33,7 @@ class PlatformPanelProvider extends PanelProvider
             ->emailVerification()
             ->emailChangeVerification()
             ->profile()
-            ->authGuard('web')
+            ->authGuard('platform')
             ->colors([
                 'primary' => Color::Amber,
             ])
