@@ -18,6 +18,8 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Http\Middleware\PlatformSessionCookie;
+use App\Http\Middleware\IsSuperAdmin;
 
 class PlatformPanelProvider extends PanelProvider
 {
@@ -48,6 +50,7 @@ class PlatformPanelProvider extends PanelProvider
                 FilamentInfoWidget::class,
             ])
             ->middleware([
+                PlatformSessionCookie::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
@@ -60,7 +63,7 @@ class PlatformPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                // \App\Http\Middleware\IsSuperAdmin::class,
+                IsSuperAdmin::class,
             ]);
     }
 }
