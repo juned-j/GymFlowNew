@@ -8,20 +8,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IsSuperAdmin
 {
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        $user = auth()->user();
-        if (! $user) {
-            return $next($request); // allow login page
+        // Allow guests to access login page
+        if (! auth()->check()) {
+            return $next($request);
         }
-        if (! $user->isSuperAdmin()) {
+        $user = auth()->user();
+        if (! $user->is_super_admin) {
             abort(403, 'Unauthorized. Super Admin only.');
         }
         return $next($request);
     }
-
-//      public function handle($request, Closure $next)
-// {
-//     return $next($request); // ✅ TEMP disable
-// }
 }
