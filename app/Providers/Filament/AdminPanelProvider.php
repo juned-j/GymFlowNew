@@ -3,7 +3,7 @@
 namespace App\Providers\Filament;
 
 use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\AuthenticateSession;
+// use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
@@ -21,7 +21,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse as LoginResponseContract;
 use App\Http\Responses\LoginResponse;
 use App\Http\Middleware\CheckUserStatus;
-use App\Http\Middleware\AdminSessionCookie;
+// use App\Http\Middleware\AdminSessionCookie;
 use App\Http\Middleware\IsTenantAdmin;
 
 class AdminPanelProvider extends PanelProvider
@@ -54,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode()
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->middleware([
-                AdminSessionCookie::class,
+                // AdminSessionCookie::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
