@@ -60,7 +60,7 @@ class PlatformPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                \App\Http\Middleware\IsSuperAdmin::class,
+                // \App\Http\Middleware\IsSuperAdmin::class,
             ]);
     }
 }

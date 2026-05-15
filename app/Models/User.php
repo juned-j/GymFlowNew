@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Tenant;
+use Filament\Panel;
 
 #[Fillable([
     'name',
@@ -52,7 +53,6 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($this->is_super_admin) {
             return true;
         }
-
         return $this->roles()
             ->whereHas('role', fn($q) => $q->where('name', 'super_admin'))
             ->exists();
@@ -65,18 +65,14 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function ownedTenant()
     {
-
         return $this->hasOne(Tenant::class, 'owner_user_id');
     }
     public function getTenantId(): ?int
     {
-
         $ownedTenantId = $this->ownedTenant()->value('id');
-
         if ($ownedTenantId) {
             return (int) $ownedTenantId;
         }
-
         return $this->roles()
             ->whereNotNull('tenant_id')
             ->orderBy('id', 'asc')
@@ -103,7 +99,6 @@ class User extends Authenticatable implements MustVerifyEmail
         // Fetches the first available tenant role and gets the symbol
         // Based on your UserTenantRole model
         $role = $this->roles()->whereNotNull('tenant_id')->with('tenant')->first();
-
         return $role?->tenant?->currency_symbol ?? '$';
     }
 
@@ -130,16 +125,28 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsTo(Tenant::class, 'tenant_id');
     }
+    // public function canAccessPanel(Panel $panel): bool
+    // {
+    //     // PLATFORM PANEL
+    //     if ($panel->getId() === 'platform') {
+    //         return $this->is_super_admin === true;
+    //     }
+    //     // ADMIN PANEL
+    //     if ($panel->getId() === 'admin') {
+    //         return $this->is_super_admin === false
+    //             && $this->status === 'active';
+    //     }
+    //     return false;
+    // }
     public function canAccessPanel(Panel $panel): bool
     {
-        // PLATFORM PANEL
         if ($panel->getId() === 'platform') {
-            return $this->is_super_admin === true;
+            return $this->is_super_admin;
         }
-        // ADMIN PANEL
         if ($panel->getId() === 'admin') {
-            return $this->is_super_admin === false
-                && $this->status === 'active';
+            return $this->roles()
+                ->whereNotNull('tenant_id')
+                ->exists();
         }
         return false;
     }
