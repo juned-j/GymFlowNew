@@ -24,8 +24,10 @@ class Dashboard extends Page
     }
     public function getHeader(): ?\Illuminate\Contracts\View\View
     {
-        $tenantId = app('tenant_id');
-        $tenant = \App\Models\Tenant::find($tenantId);
+        $tenant = app()->bound('tenant')
+            ? app('tenant')
+            : null;
+
         return view('filament.pages.partials.tenant-header', [
             'tenant' => $tenant,
         ]);
