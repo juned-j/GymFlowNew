@@ -29,6 +29,11 @@ class PlatformPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/platform/theme.css')
             ->login()
             ->path('platform')
+            ->passwordReset()
+            ->emailVerification()
+            ->emailChangeVerification()
+            ->profile()
+            ->authGuard('web')
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -42,10 +47,10 @@ class PlatformPanelProvider extends PanelProvider
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
-
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
+                \App\Http\Middleware\PlatformSessionCookie::class,
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
