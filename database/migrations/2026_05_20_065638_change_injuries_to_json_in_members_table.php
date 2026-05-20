@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        DB::statement("
+            ALTER TABLE members
+            ALTER COLUMN injuries
+            TYPE JSON
+            USING
+                CASE
+                    WHEN injuries IS NULL OR injuries = ''
+                    THEN NULL
+                    ELSE to_json(ARRAY[injuries])
+                END
+        ");
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        DB::statement("
+            ALTER TABLE members
+            ALTER COLUMN injuries
+            TYPE TEXT
+            USING injuries::text
+        ");
+    }
+};
