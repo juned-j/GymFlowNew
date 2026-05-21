@@ -7,9 +7,7 @@ use App\Traits\BelongsToTenant;
 
 class MembershipPlan extends Model
 {
-
- use BelongsToTenant;
-
+    use BelongsToTenant;
     protected $fillable = [
         'tenant_id',
         'name',
@@ -18,8 +16,9 @@ class MembershipPlan extends Model
         'workout_plan_limit',
         'stripe_product_id',
         'stripe_price_id',
-      'features',
-        'has_trainer_support'
+        'features',
+        'has_trainer_support',
+        'is_active'
     ];
     protected function casts(): array
     {
@@ -27,16 +26,17 @@ class MembershipPlan extends Model
             'price' => 'decimal:2',
             'features' => 'array', // Crucial for the Repeater to work
             'has_trainer_support' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
     public function subscriptions()
-{
-    return $this->hasMany(\App\Models\Subscription::class, 'membership_plan_id');
-}
+    {
+        return $this->hasMany(\App\Models\Subscription::class, 'membership_plan_id');
+    }
     protected static function booted()
-{
-    static::deleting(function ($plan) {
-        $plan->subscriptions()->delete();
-    });
-}
+    {
+        static::deleting(function ($plan) {
+            $plan->subscriptions()->delete();
+        });
+    }
 }

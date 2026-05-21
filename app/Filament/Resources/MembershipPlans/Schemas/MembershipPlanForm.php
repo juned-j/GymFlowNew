@@ -47,20 +47,23 @@ class MembershipPlanForm
                         ->minValue(1)
                         ->required(),
 
-                        TextInput::make('stripe_product_id')
-    ->label('Stripe Product ID')
-    ->nullable()
-    ->maxLength(255),
+                    TextInput::make('stripe_product_id')
+                        ->label('Stripe Product ID')
+                        ->nullable()
+                        ->maxLength(255),
 
-TextInput::make('stripe_price_id')
-    ->label('Stripe Price ID')
-    ->nullable()
-    ->maxLength(255),
-
+                    TextInput::make('stripe_price_id')
+                        ->label('Stripe Price ID')
+                        ->nullable()
+                        ->maxLength(255),
 
                     Toggle::make('has_trainer_support')
                         ->label('Includes Trainer Support')
                         ->default(false)
+                        ->inline(false),
+                    Toggle::make('is_active')
+                        ->label('Active Plan')
+                        ->default(true)
                         ->inline(false),
                 ])->columns(2)
                 ->columnSpanFull(),
