@@ -10,7 +10,7 @@ use App\Traits\BelongsToTenant;
 class Member extends Model
 {
     protected $table = 'members';
-     use BelongsToTenant;
+    use BelongsToTenant;
 
     protected $fillable = [
         'user_id',
@@ -29,7 +29,9 @@ class Member extends Model
         'program_match',
         'branch_id',
     ];
-
+    protected $casts = [
+        'injuries' => 'array',
+    ];
     // -------------------
     // RELATIONS (UNCHANGED)
     // -------------------
@@ -44,7 +46,7 @@ class Member extends Model
         return $this->hasOne(Member::class, 'user_id', 'id');
     }
 
-   
+
     // protected static function booted()
     // {
     //     static::creating(function ($member) {
