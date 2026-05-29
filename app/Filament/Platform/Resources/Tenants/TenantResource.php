@@ -35,25 +35,25 @@ class TenantResource extends Resource
             Wizard::make([
                 Step::make('Gym Identity')->schema([
                     TextInput::make('name')->required()
-                    ->maxLength(50),
+                        ->maxLength(50),
                     TextInput::make('slug')->required()
-                    ->maxLength(50)->unique(Tenant::class, 'slug'),
-
+                        ->maxLength(50)->unique(Tenant::class, 'slug'),
                     TextInput::make('email')
-                    ->email()
- ->unique(ignoreRecord: true)
-                     ->required(),
+                        ->email()
+                        ->unique(ignoreRecord: true)
+                        ->required(),
                     TextInput::make('phone')->tel(),
                 ]),
 
                 Step::make('Location')->schema([
                     TextInput::make('address'),
                     TextInput::make('city')->required(),
-  Select::make('country')
-    ->label('Country')
-    ->options(Country::query()->pluck('name', 'name'))
-    ->searchable()
-    ->required(),                ]),
+                    Select::make('country')
+                        ->label('Country')
+                        ->options(Country::query()->pluck('name', 'name'))
+                        ->searchable()
+                        ->required(),
+                ]),
 
                 Step::make('Settings')->schema([
                     TextInput::make('timezone')->default('Asia/Kolkata'),
@@ -64,28 +64,27 @@ class TenantResource extends Resource
                 Step::make('Owner')->schema([
                     TextInput::make('owner_name')
                         ->required(),
-
-     TextInput::make('owner_email')
-        ->email()
-        ->required()
-        ->unique(\App\Models\User::class, 'email'),
-
+                    TextInput::make('owner_email')
+                        ->email()
+                        ->required()
+                        ->unique(\App\Models\User::class, 'email'),
                     TextInput::make('owner_password')
                         ->password()
                         ->required(),
                 ])
             ])
-              ->submitAction(
-                \Filament\Actions\Action::make('submit')
-                    ->label(fn () => request()->routeIs('*edit*')
-                        ? 'Save Changes'
-                        : 'Create Tenant'
-                    )
-                    ->submit('create')
-                    ->color('primary')
-            )
+                ->submitAction(
+                    \Filament\Actions\Action::make('submit')
+                        ->label(
+                            fn() => request()->routeIs('*edit*')
+                                ? 'Save Changes'
+                                : 'Create Tenant'
+                        )
+                        ->submit('create')
+                        ->color('primary')
+                )
 
-            ->skippable(str(request()->route()->getName())->endsWith('.edit'))
+                ->skippable(str(request()->route()->getName())->endsWith('.edit'))
                 ->columnSpanFull()
         ]);
     }
