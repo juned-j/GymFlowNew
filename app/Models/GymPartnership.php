@@ -83,4 +83,17 @@ class GymPartnership extends Model
     {
         return $this->status === 'rejected';
     }
+    protected static function booted()
+    {
+        static::addGlobalScope('tenant_visibility', function ($query) {
+            if (!auth()->check()) return;
+
+            $tenantId = auth()->user()->getTenantId();
+
+            $query->where(function ($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId)
+                    ->orWhere('partner_tenant_id', $tenantId);
+            });
+        });
+    }
 }
