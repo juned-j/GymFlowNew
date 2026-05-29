@@ -16,11 +16,17 @@ class GymPartnershipForm
         return $schema
             ->components([
                 Hidden::make('tenant_id')
-                    ->default(fn() => auth()->user()->gym_id),
+                    ->default(fn() => auth()->user()?->getTenantId()),
 
                 Placeholder::make('home_gym')
                     ->label('Home Gym')
-                    ->content(fn() => auth()->user()->gym?->name),
+                    ->content(function () {
+                        $tenantId = auth()->user()?->getTenantId();
+                        if (! $tenantId) {
+                            return 'No Gym Assigned';
+                        }
+                        return Tenant::find($tenantId)?->name ?? 'No Gym Found';
+                    }),
 
                 Select::make('partner_tenant_id')
                     ->label('Partner Gym')
