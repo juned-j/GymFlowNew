@@ -80,4 +80,8 @@ class Tenant extends Model
     {
         return (bool) $this->is_active;
     }
+    public function partnerships()
+    {
+        return $this->hasMany(GymPartnership::class);
+    }
 }

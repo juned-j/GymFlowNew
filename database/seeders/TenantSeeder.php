@@ -15,31 +15,36 @@ class TenantSeeder extends Seeder
     public function run(): void
     {
         // 1. Create Platform Admin User
-        $user = User::create([
-            'name' => 'GymFlow Admin',
-            'email' => 'admin@gymflow.com',
-            'password' => Hash::make('password'),
-            'phone' => '9999999999',
-            'status' => 'active',
-            'is_super_admin' => true, // optional but recommended
-        ]);
+        $user = User::updateOrCreate(
+            [
+                'email' => 'manoj@gymflow.com',
+            ],
+            [
+                'name' => 'GymFlow Admin',
+                'password' => Hash::make('password'),
+                'phone' => '9999999999',
+                'status' => 'active',
+                'is_super_admin' => true,
+            ]
+        );
 
         // 2. Create Tenant
-        DB::table('tenants')->insert([
-            'id' => 1,
-            'name' => 'GymFlow Demo',
-            'slug' => 'gymflow-demo',
-            'owner_user_id' => $user->id,
-            'email' => 'admin@gymflow.com',
-            'phone' => '9999999999',
-            'country' => 'India',
-            'currency' => 'INR',
-            'currency_symbol' => '₹',
-            'timezone' => 'Asia/Kolkata',
-            'is_active' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $tenant = DB::table('tenants')->updateOrInsert(
+            ['slug' => 'gymflow-demo'],
+            [
+                'name' => 'GymFlow Demo',
+                'owner_user_id' => $user->id,
+                'email' => 'manoj@gymflow.com',
+                'phone' => '9999999999',
+                'country' => 'India',
+                'currency' => 'INR',
+                'currency_symbol' => '₹',
+                'timezone' => 'Asia/Kolkata',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
 
         // 3. Get Super Admin Role
         $role = Role::where('name', 'super_admin')->first();

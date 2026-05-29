@@ -12,6 +12,7 @@ class SuperAdminSeeder extends Seeder
      */
     public function run(): void
     {
+        
         $user = \App\Models\User::create([
             'name' => 'Platform Admin',
             'email' => 'platform@gymflow.com',

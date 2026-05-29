@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\BelongsToTenant;
-
+use App\Models\GymVisits;
 
 class Member extends Model
 {
@@ -45,8 +45,14 @@ class Member extends Model
     {
         return $this->hasOne(Member::class, 'user_id', 'id');
     }
-
-
+    public function networkAccess()
+    {
+        return $this->hasMany(MemberNetworkAccess::class);
+    }
+    public function gymVisits()
+    {
+        return $this->hasMany(GymVisit::class);
+    }
     // protected static function booted()
     // {
     //     static::creating(function ($member) {
