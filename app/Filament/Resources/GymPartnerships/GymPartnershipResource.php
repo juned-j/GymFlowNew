@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class GymPartnershipResource extends Resource
 {
@@ -48,10 +49,18 @@ class GymPartnershipResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
-        $tenantId = auth()->user()?->getTenantId();
-
         return parent::getEloquentQuery()
-            ->where(function ($query) use ($tenantId) {
+            ->where(function ($query) {
+
+                $user = Auth::user();
+
+                if (! $user) {
+                    $query->whereRaw('1 = 0');
+                    return;
+                }
+
+                $tenantId = $user->getTenantId();
+
                 $query->where('tenant_id', $tenantId)
                     ->orWhere('partner_tenant_id', $tenantId);
             });
