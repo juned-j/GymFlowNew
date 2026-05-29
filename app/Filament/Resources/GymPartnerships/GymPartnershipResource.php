@@ -15,6 +15,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class GymPartnershipResource extends Resource
 {
@@ -47,30 +48,28 @@ class GymPartnershipResource extends Resource
             'edit' => EditGymPartnership::route('/{record}/edit'),
         ];
     }
-    // public static function getEloquentQuery(): Builder
-    // {
-    //     return parent::getEloquentQuery()
-    //         ->where(function ($query) {
-
-    //             $user = Auth::user();
-
-    //             if (! $user) {
-    //                 $query->whereRaw('1 = 0');
-    //                 return;
-    //             }
-
-    //             $tenantId = $user->getTenantId();
-
-    //             $query->where('tenant_id', $tenantId)
-    //                 ->orWhere('partner_tenant_id', $tenantId);
-    //         });
-    // }
     public static function getEloquentQuery(): Builder
     {
-        dd([
-            'user' => auth()->id(),
-            'tenant' => auth()->user()?->getTenantId(),
-            'roles' => auth()->user()?->roles?->pluck('tenant_id'),
+        $tenantId = auth()->user()?->getTenantId();
+
+        // 👇 ADD IT HERE
+        Log::info('Tenant Filter', [
+            'tenant_id' => $tenantId,
+            'user_id' => auth()->id(),
         ]);
+
+        return GymPartnership::query()
+            ->where(function ($query) use ($tenantId) {
+                $query->where('tenant_id', $tenantId)
+                    ->orWhere('partner_tenant_id', $tenantId);
+            });
     }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     dd([
+    //         'user' => auth()->id(),
+    //         'tenant' => auth()->user()?->getTenantId(),
+    //         'roles' => auth()->user()?->roles?->pluck('tenant_id'),
+    //     ]);
+    // }
 }
