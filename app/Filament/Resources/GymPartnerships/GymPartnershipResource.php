@@ -47,22 +47,30 @@ class GymPartnershipResource extends Resource
             'edit' => EditGymPartnership::route('/{record}/edit'),
         ];
     }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     return parent::getEloquentQuery()
+    //         ->where(function ($query) {
+
+    //             $user = Auth::user();
+
+    //             if (! $user) {
+    //                 $query->whereRaw('1 = 0');
+    //                 return;
+    //             }
+
+    //             $tenantId = $user->getTenantId();
+
+    //             $query->where('tenant_id', $tenantId)
+    //                 ->orWhere('partner_tenant_id', $tenantId);
+    //         });
+    // }
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->where(function ($query) {
-
-                $user = Auth::user();
-
-                if (! $user) {
-                    $query->whereRaw('1 = 0');
-                    return;
-                }
-
-                $tenantId = $user->getTenantId();
-
-                $query->where('tenant_id', $tenantId)
-                    ->orWhere('partner_tenant_id', $tenantId);
-            });
+        dd([
+            'user' => auth()->id(),
+            'tenant' => auth()->user()?->getTenantId(),
+            'roles' => auth()->user()?->roles?->pluck('tenant_id'),
+        ]);
     }
 }
