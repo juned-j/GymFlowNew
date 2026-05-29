@@ -26,15 +26,15 @@ class MemberForm
                             ->maxLength(50)
                             ->required(),
 
-                 TextInput::make('user.email')
-    ->label('Email Address')
-    ->email()
-    ->required()
-    ->unique(
-        table: 'users',
-        column: 'email',
-        ignorable: fn ($record) => $record?->user 
-    ),
+                        TextInput::make('user.email')
+                            ->label('Email Address')
+                            ->email()
+                            ->required()
+                            ->unique(
+                                table: 'users',
+                                column: 'email',
+                                ignorable: fn($record) => $record?->user
+                            ),
 
                         TextInput::make('user.phone')
                             ->tel(),
@@ -43,29 +43,32 @@ class MemberForm
                 Step::make('Gym & Role')
                     ->description('Assign to a branch')
                     ->schema([
-                 Select::make('branch_id') 
-    ->label('Branch')
-    ->options(fn () =>
-        Branch::where('tenant_id', auth()->user()->getTenantId())
-            ->pluck('name', 'id')
-            ->toArray()
-    )
-    ->required()
-    ->searchable()
-    ->preload()
-    ->native(false),
+                        Select::make('branch_id')
+                            ->label('Branch')
+                            ->options(
+                                fn() =>
+                                Branch::where('tenant_id', auth()->user()->getTenantId())
+                                    ->pluck('name', 'id')
+                                    ->toArray()
+                            )
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->native(false),
 
-                      Select::make('user.roles.role_id')
-    ->label('Assigned Role')
-    ->options(fn () => 
-        \App\Models\Role::where('name', 'member')->pluck('name', 'id')->toArray()
-    )
-    ->default(fn () => 
-        \App\Models\Role::where('name', 'member')->value('id')
-    )
-   
-    ->dehydrated(true) 
-    ->required(false), 
+                        Select::make('user.roles.role_id')
+                            ->label('Assigned Role')
+                            ->options(
+                                fn() =>
+                                \App\Models\Role::where('name', 'member')->pluck('name', 'id')->toArray()
+                            )
+                            ->default(
+                                fn() =>
+                                \App\Models\Role::where('name', 'member')->value('id')
+                            )
+
+                            ->dehydrated(true)
+                            ->required(false),
                     ]),
 
                 Step::make('Physical Profile')
@@ -125,36 +128,37 @@ class MemberForm
 
             ])
 
-            ->afterStateHydrated(function ($state, $record, $set) {
-                if (!$record || !$record->user) {
-                    return;
-                }
+                ->afterStateHydrated(function ($state, $record, $set) {
+                    if (!$record || !$record->user) {
+                        return;
+                    }
 
-                $set('user.name', $record->user->name);
-                $set('user.email', $record->user->email);
-                $set('user.phone', $record->user->phone);
+                    $set('user.name', $record->user->name);
+                    $set('user.email', $record->user->email);
+                    $set('user.phone', $record->user->phone);
 
-                $role = $record->user->roles()->first();
+                    $role = $record->user->roles()->first();
 
-                if ($role) {
-                    $set('user.roles.branch_id', $role->pivot->branch_id ?? null);
-                    $set('user.roles.role_id', $role->id);
-                }
-            })
+                    if ($role) {
+                        $set('user.roles.branch_id', $role->pivot->branch_id ?? null);
+                        $set('user.roles.role_id', $role->id);
+                    }
+                })
 
-            // ✅ SUBMIT BUTTON
-            ->submitAction(
-                \Filament\Actions\Action::make('submit')
-                    ->label(fn () => request()->routeIs('*edit*')
-                        ? 'Save Changes'
-                        : 'Create Member'
-                    )
-                    ->submit('create')
-                    ->color('primary')
-            )
+                // ✅ SUBMIT BUTTON
+                ->submitAction(
+                    \Filament\Actions\Action::make('submit')
+                        ->label(
+                            fn() => request()->routeIs('*edit*')
+                                ? 'Save Changes'
+                                : 'Create Member'
+                        )
+                        ->submit('create')
+                        ->color('primary')
+                )
 
-            ->skippable(str(request()->route()->getName())->endsWith('.edit'))
-            ->columnSpanFull()
+                ->skippable(str(request()->route()->getName())->endsWith('.edit'))
+                ->columnSpanFull()
         ]);
     }
 }

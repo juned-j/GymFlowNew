@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class GymPartnershipResource extends Resource
 {
@@ -44,5 +45,15 @@ class GymPartnershipResource extends Resource
             'create' => CreateGymPartnership::route('/create'),
             'edit' => EditGymPartnership::route('/{record}/edit'),
         ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        $tenantId = auth()->user()?->getTenantId();
+
+        return parent::getEloquentQuery()
+            ->where(function ($query) use ($tenantId) {
+                $query->where('tenant_id', $tenantId)
+                    ->orWhere('partner_tenant_id', $tenantId);
+            });
     }
 }
