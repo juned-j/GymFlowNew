@@ -5,6 +5,8 @@ namespace App\Filament\Resources\GymPartnerships\Schemas;
 use App\Models\Tenant;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Hidden;
 use Filament\Schemas\Schema;
 
 class GymPartnershipForm
@@ -13,17 +15,13 @@ class GymPartnershipForm
     {
         return $schema
             ->components([
-                // 🏠 HOME GYM (AUTO-SET IN REAL SYSTEM)
-                Select::make('tenant_id')
-                    ->label('Home Gym')
-                    ->relationship('tenant', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->default(fn () => auth()->user()->gym_id)
-                    ->disabled(),
+                Hidden::make('tenant_id')
+                    ->default(fn() => auth()->user()->gym_id),
 
-                // 🤝 PARTNER GYM DROPDOWN
+                Placeholder::make('home_gym')
+                    ->label('Home Gym')
+                    ->content(fn() => auth()->user()->gym?->name),
+
                 Select::make('partner_tenant_id')
                     ->label('Partner Gym')
                     ->relationship('partnerTenant', 'name')
@@ -31,7 +29,6 @@ class GymPartnershipForm
                     ->preload()
                     ->required(),
 
-                // 📊 STATUS (AUTO CONTROLLED, NOT MANUAL)
                 Select::make('status')
                     ->options([
                         'pending' => 'Pending',
@@ -42,14 +39,9 @@ class GymPartnershipForm
                     ->default('pending')
                     ->disabled(),
 
-                // 💰 REVENUE SPLIT
                 TextInput::make('revenue_share_percent')
-                    ->label('Partner Revenue %')
                     ->numeric()
-                    ->minValue(0)
-                    ->maxValue(100)
                     ->default(50)
-                    ->required(),
             ]);
     }
 }
