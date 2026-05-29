@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\GymPartnerships\Schemas;
 
+use App\Models\Tenant;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -11,19 +13,43 @@ class GymPartnershipForm
     {
         return $schema
             ->components([
-                TextInput::make('tenant_id')
+                // 🏠 HOME GYM (AUTO-SET IN REAL SYSTEM)
+                Select::make('tenant_id')
+                    ->label('Home Gym')
+                    ->relationship('tenant', 'name')
+                    ->searchable()
+                    ->preload()
                     ->required()
-                    ->numeric(),
-                TextInput::make('partner_tenant_id')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('status')
-                    ->required()
-                    ->default('pending'),
+                    ->default(fn () => auth()->user()->gym_id)
+                    ->disabled(),
+
+                // 🤝 PARTNER GYM DROPDOWN
+                Select::make('partner_tenant_id')
+                    ->label('Partner Gym')
+                    ->relationship('partnerTenant', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+
+                // 📊 STATUS (AUTO CONTROLLED, NOT MANUAL)
+                Select::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'active' => 'Active',
+                        'rejected' => 'Rejected',
+                        'suspended' => 'Suspended',
+                    ])
+                    ->default('pending')
+                    ->disabled(),
+
+                // 💰 REVENUE SPLIT
                 TextInput::make('revenue_share_percent')
-                    ->required()
+                    ->label('Partner Revenue %')
                     ->numeric()
-                    ->default(50),
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->default(50)
+                    ->required(),
             ]);
     }
 }
