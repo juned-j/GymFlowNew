@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('password_reset_tokens', function (Blueprint $table) {
+            // Adds a boolean 'verified' column that defaults to false (0)
+            $table->boolean('verified')->default(false);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('password_reset_tokens', function (Blueprint $table) {
+            // Removes the column if you ever roll back this migration
+            $table->dropColumn('verified');
+        });
+    }
+};
