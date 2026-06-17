@@ -17,6 +17,10 @@ class ClassesTable
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable()
+                               ->extraAttributes([
+                        'style' => 'max-width: 200px; white-space: normal; word-wrap: break-word;',
+                    ])
+                    ->wrap()
                     ->description(fn($record) => $record->branch?->name),
 
                 TextColumn::make('trainer.name')
