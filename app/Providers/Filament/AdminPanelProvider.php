@@ -67,8 +67,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                IsTenantAdmin::class,
-                \App\Http\Middleware\SetTenantContext::class,
+                // IsTenantAdmin::class,
+                // \App\Http\Middleware\SetTenantContext::class,
             ]);
     }
 }

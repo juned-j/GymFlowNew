@@ -49,7 +49,9 @@
         <!-- soft background -->
         <div class="absolute inset-0 bg-gradient-to-b from-indigo-50 via-slate-50 to-white"></div>
 
-        <div class="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-3xl rounded-full"></div>
+        <div
+            class="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-3xl rounded-full">
+        </div>
 
         <div class="relative max-w-4xl mx-auto text-center px-6">
 
@@ -58,7 +60,8 @@
             </h1>
 
             <p class="mt-6 text-lg text-slate-600 max-w-2xl mx-auto">
-                PTBuddy helps personal trainers manage clients, build programs, and track progress — all in one simple platform.
+                PTBuddy helps personal trainers manage clients, build programs, and track progress — all in one simple
+                platform.
             </p>
 
             <div class="mt-10 flex justify-center gap-4 flex-col sm:flex-row">

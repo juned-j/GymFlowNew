@@ -31,72 +31,67 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
     }
     public ?array $data = [];
     public $tenant;
-    public function mount(): void
-    {
-        $tenant = app()->bound('tenant') ? app('tenant') : null;
-        if (!$tenant) {
-            abort(404, 'Tenant not found');
-        }
-        $this->tenant = $tenant;
-        $settings = $tenant->app_settings;
-        if (is_string($settings)) {
-            $settings = json_decode($settings, true) ?? [];
-        }
-        $this->data = $settings ?: [
-            'branding' => [
-                'primary_color' => '#FF5733',
-                'secondary_color' => '#222222',
-                'accent_color' => '#FFC107',
-            ],
-            'app' => [
-                'app_name' => 'GymFlow',
-                'version' => '1.0.0',
-            ],
-            'ui' => [
-                'default_language' => 'en',
-                'supported_languages' => ['en'],
-            ],
-        ];
-        $this->data['branding'] = $this->data['branding'] ?? [];
-        $logoPath = $this->data['branding']['logo_url'] ?? $this->tenant->logo_url;
-        // ADD THIS: Splash Screen Initial URL
-        $splashPath = $this->data['branding']['splash_screen_url'] ?? null;
-        $this->data['branding']['splash_screen_full_url'] = $splashPath ? asset('storage/' . $splashPath) : null;
-        if ($logoPath) {
-            $this->data['branding']['logo_url'] = $logoPath;
-            $this->data['branding']['logo_full_url'] = asset('storage/' . $logoPath);
-        } else {
-
-            $this->data['branding']['logo_url'] = null;
-            $this->data['branding']['logo_full_url'] = null;
-        }
-        // if ($splashPath) {
-        //     $this->data['branding']['splash_screen_url'] = $splashPath;
-        //     $this->data['branding']['splash_screen_full_url'] = asset('storage/' . $splashPath);
-        // } else {
-        //     $this->data['branding']['splash_screen_url'] = null;
-        //     $this->data['branding']['splash_screen_full_url'] = null;
-        // }
-        $this->data['tenant'] = [
-            'name' => $tenant->name,
-            'logo_url' => $tenant->logo_url,
-            'email' => $tenant->email,
-            'phone' => $tenant->phone,
-            'address' => $tenant->address,
-            'city' => $tenant->city,
-            'country' => $tenant->country,
-            'timezone' => $tenant->timezone,
-            'currency' => $tenant->currency,
-            'is_active' => $tenant->is_active,
-            'trial_ends_at' => $tenant->trial_ends_at,
-
-        ];
-
-        // Payments data
-        $this->data['payments'] = $this->data['payments'] ?? [];
-        $this->data['payments']['currency'] = $tenant->currency;
-        $this->form->fill($this->data);
+  public function mount(): void
+{
+    $tenant = app()->bound('tenant') ? app('tenant') : null;
+    if (!$tenant) {
+        abort(404, 'Tenant not found');
     }
+    $this->tenant = $tenant;
+    $settings = $tenant->app_settings;
+    if (is_string($settings)) {
+        $settings = json_decode($settings, true) ?? [];
+    }
+    $this->data = $settings ?: [
+        'branding' => [
+            'primary_color' => '#FF5733',
+            'secondary_color' => '#222222',
+            'accent_color' => '#FFC107',
+        ],
+        'app' => [
+            'app_name' => 'GymFlow',
+            'version' => '1.0.0',
+        ],
+        'ui' => [
+            'default_language' => 'en',
+            'supported_languages' => ['en'],
+        ],
+    ];
+    $this->data['branding'] = $this->data['branding'] ?? [];
+    $logoPath = $this->data['branding']['logo_url'] ?? $this->tenant->logo_url;
+    
+    // Splash Screen Initial URL
+    $splashPath = $this->data['branding']['splash_screen_url'] ?? null;
+    $this->data['branding']['splash_screen_full_url'] = $splashPath ? asset('storage/' . $splashPath) : null;
+    
+    if ($logoPath) {
+        $this->data['branding']['logo_url'] = $logoPath;
+        $this->data['branding']['logo_full_url'] = asset('storage/' . $logoPath);
+    } else {
+        $this->data['branding']['logo_url'] = null;
+        $this->data['branding']['logo_full_url'] = null;
+    }
+
+    $this->data['tenant'] = [
+        'name' => $tenant->name,
+        'logo_url' => $tenant->logo_url,
+        'email' => $tenant->email,
+        'phone' => $tenant->phone,
+        'address' => $tenant->address,
+        'city' => $tenant->city,
+        'country' => $tenant->country,
+        'timezone' => $tenant->timezone,
+        'currency' => $tenant->currency,
+        'is_active' => $tenant->is_active,
+        'trial_ends_at' => $tenant->trial_ends_at,
+    ];
+
+   
+    $this->data['payments'] = $this->data['payments'] ?? [];
+    $this->data['payments']['currency'] = $this->data['payments']['currency'] ?? $tenant->currency;
+    
+    $this->form->fill($this->data);
+}
 
     public function form(Schema $schema): Schema
     {
@@ -121,17 +116,18 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             ->minLength(2)
                             ->maxLength(50),
 
-                        Forms\Components\TextInput::make('tenant.email')
-                            ->label('Email')
-                            ->email()
-                            ->required()
-                            ->maxLength(50),
+                       Forms\Components\TextInput::make('tenant.email')
+    ->label('Email')
+    ->email()
+    ->required()
+    ->maxLength(50)
+    ->unique(ignoreRecord: true),
 
                         Forms\Components\TextInput::make('tenant.phone')
                             ->label('Phone')
                             ->tel()
                             ->maxLength(15)
-                            ->rule('regex:/^[0-9+\-\s()]+$/'),
+                           ->rules(['regex:/^[0-9+\-\s()]{7,15}$/']),
 
                         Forms\Components\TextInput::make('tenant.address')
                             ->label('Address')
@@ -158,9 +154,11 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
                             )
                             ->required(),
 
-                        Forms\Components\TextInput::make('tenant.timezone')
-                            ->label('Timezone')
-                            ->maxLength(100),
+                  Forms\Components\TextInput::make('tenant.timezone')
+    ->label('Timezone')
+ 
+    ->maxLength(100)
+    ->rule('timezone'),
 
                         /*
                         |--------------------------------------------------------------------------
@@ -403,54 +401,31 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
 
             ]);
     }
-    public function save(): void
+  public function save(): void
     {
+        $this->form->validate();
         if (!$this->tenant) {
             return;
         }
+        
         $data = $this->form->getState();
-        /*
-    |--------------------------------------------------------------------------
-    | Normalize Logo Upload
-    |--------------------------------------------------------------------------
-    */
+
         $logoUrl = $data['branding']['logo_url'] ?? null;
         if (is_array($logoUrl)) {
             $logoUrl = array_values($logoUrl)[0] ?? null;
         }
-        /*
-    |--------------------------------------------------------------------------
-    | Normalize Splash Upload
-    |--------------------------------------------------------------------------
-    */
+
         $splashUrl = $data['branding']['splash_screen_url'] ?? null;
         if (is_array($splashUrl)) {
             $splashUrl = array_values($splashUrl)[0] ?? null;
         }
 
-        /*
-    |--------------------------------------------------------------------------
-    | Save normalized paths back
-    |--------------------------------------------------------------------------
-    */
         $data['branding']['logo_url'] = $logoUrl;
         $data['branding']['splash_screen_url'] = $splashUrl;
-        /*
-    |--------------------------------------------------------------------------
-    | Generate Full Public URLs
-    |--------------------------------------------------------------------------
-    */
-        $data['branding']['logo_full_url'] = $logoUrl
-            ? asset('storage/' . $logoUrl)
-            : null;
-        $data['branding']['splash_screen_full_url'] = $splashUrl
-            ? asset('storage/' . $splashUrl)
-            : null;
-        /*
-    |--------------------------------------------------------------------------
-    | Update Tenant Table
-    |--------------------------------------------------------------------------
-    */
+        $data['branding']['logo_full_url'] = $logoUrl ? asset('storage/' . $logoUrl) : null;
+        $data['branding']['splash_screen_full_url'] = $splashUrl ? asset('storage/' . $splashUrl) : null;
+
+        // Change Here: Update direct tenant columns explicitly
         $this->tenant->update([
             'name'          => $data['tenant']['name'] ?? null,
             'logo_url'      => $logoUrl,
@@ -460,25 +435,19 @@ class AppSettings extends Page implements Forms\Contracts\HasForms
             'city'          => $data['tenant']['city'] ?? null,
             'country'       => $data['tenant']['country'] ?? null,
             'timezone'      => $data['tenant']['timezone'] ?? null,
-            'currency'      => $data['payments']['currency'] ?? null,
+            'currency'      => $data['tenant']['currency'] ?? null, 
             'is_active'     => $data['tenant']['is_active'] ?? false,
             'trial_ends_at' => $data['tenant']['trial_ends_at'] ?? null,
         ]);
-        /*
-    |--------------------------------------------------------------------------
-    | Save App Settings JSON
-    |--------------------------------------------------------------------------
-    */
+
+        // Change Here: Unset tenant data to avoid duplicate nesting inside app_settings json
         $settingsJson = $data;
-        unset($settingsJson['tenant']);
+        unset($settingsJson['tenant']); 
+
         $this->tenant->update([
-            'app_settings' => $settingsJson,
+            'app_settings' => $settingsJson, 
         ]);
-        /*
-    |--------------------------------------------------------------------------
-    | Success Notification
-    |--------------------------------------------------------------------------
-    */
+
         Notification::make()
             ->title('Settings saved successfully')
             ->success()

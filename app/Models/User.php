@@ -133,31 +133,39 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Tenant::class, 'tenant_id');
     }
     public function canAccessPanel(Panel $panel): bool
-    {
-        /*
-    |--------------------------------------------------------------------------
-    | PLATFORM PANEL
-    |--------------------------------------------------------------------------
-    */
-        if ($panel->getId() === 'platform') {
-            return $this->isSuperAdmin();
-        }
-        /*
-    |--------------------------------------------------------------------------
-    | ADMIN PANEL
-    |--------------------------------------------------------------------------
-    */
-        if ($panel->getId() === 'admin') {
-            // BLOCK super admins from admin panel
-            if ($this->isSuperAdmin()) {
-                return false;
-            }
-            return $this->roles()
-                ->whereNotNull('tenant_id')
-                ->exists();
-        }
-        return false;
-    }
+{
+    // Sabhi panels ke liye aankh band karke true return kar do testing ke liye
+    return true; 
+}
 
-    
+    // public function canAccessPanel(Panel $panel): bool
+    // {
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | PLATFORM PANEL
+    //     |--------------------------------------------------------------------------
+    //     */
+    //     if ($panel->getId() === 'platform') {
+    //         return $this->isSuperAdmin();
+    //     }
+        
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | ADMIN PANEL
+    //     |--------------------------------------------------------------------------
+    //     */
+    //     if ($panel->getId() === 'admin') {
+    //         // 👇 BLOCK karne waale code ko comment kar diya hai taaki Super Admin bhi login kar sake
+    //         // if ($this->isSuperAdmin()) {
+    //         //     return false;
+    //         // }
+            
+    //         // 👇 Tenant link ki strict condition ko hata kar direct true kar diya hai testing ke liye
+    //         // return $this->roles()->whereNotNull('tenant_id')->exists();
+            
+    //         return true; 
+    //     }
+        
+    //     return false;
+    // }
 }

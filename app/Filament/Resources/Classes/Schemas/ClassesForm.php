@@ -29,6 +29,7 @@ class ClassesForm
                 |--------------------------------------------------------------------------
                 | CLASS ESSENTIALS
                 |--------------------------------------------------------------------------
+                |
                 */
                 Section::make('Class Essentials')
                     ->description('Basic information about the class.')
@@ -36,7 +37,7 @@ class ClassesForm
 
                         TextInput::make('name')
                             ->required()
-                            ->maxLength(255)
+                            ->maxLength(50)
                             ->placeholder('e.g. Weight Loss Bootcamp'),
 
                         Select::make('branch_id')
@@ -84,6 +85,7 @@ class ClassesForm
                 |--------------------------------------------------------------------------
                 | CLASS SCHEDULE
                 |--------------------------------------------------------------------------
+                |
                 */
                 Section::make('Class Schedule')
                     ->description('Recurring schedule configuration.')
@@ -149,16 +151,14 @@ class ClassesForm
                             ->required()
                             ->seconds(false)
                             ->native(false)
-                            ->minutesStep(5)
-                            ->displayFormat('h:i A'),
+                            ->displayFormat('h:i A'), // minutesStep hata diya taaki 55 se upar type ho sake
 
                         TimePicker::make('end_time')
                             ->label('End Time')
                             ->required()
                             ->seconds(false)
                             ->native(false)
-                            ->minutesStep(5)
-                            ->displayFormat('h:i A'),
+                            ->displayFormat('h:i A'), // minutesStep hata diya
 
                     ])
                     ->columns(2)
@@ -168,11 +168,13 @@ class ClassesForm
                 |--------------------------------------------------------------------------
                 | DESCRIPTION & LOCATION
                 |--------------------------------------------------------------------------
+                |
                 */
                 Section::make('Additional Details')
                     ->schema([
 
                         TextInput::make('location')
+                            ->maxLength(255)
                             ->placeholder('e.g. Studio A'),
 
                         Textarea::make('description')
